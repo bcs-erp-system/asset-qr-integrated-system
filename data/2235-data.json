@@ -1,10 +1,10 @@
 {
-  "2803": {
-  "pmId": "2803",
+  "2235": {
+  "pmId": "2235",
   "equipmentType": "GAS ENGINE",
   "assetLocation": "RBKR",
-  "asset": "PM For Ras Bakr Gas Comp. Engine No 1",
-  "assetTag": "RBKR-CA-10",
+  "asset": "PM For Ras Bakr Gas Comp. Engine No 2",
+  "assetTag": "RBKR-CA-20",
   "failureClass": "CEGE",
   "responsibility": "RS-RECIP-NORTH",
   "glAccount": "03-90002060M9-RSBKR:4100-RSBKR:4100-P0",
@@ -13,14 +13,14 @@
   "status": "OPERATIONAL",
   "manufacturer": "Waukesha",
   "model": "L7042GSI",
-  "serial": "C-15420/1",
+  "serial": "C-15420/2",
   "installationDate": "2018-05-12",
   "criticality": "HIGH",
   "pmFrequencySummary": "6 Months / 1600 hrs",
   "lastPMDate": "2026-08-20",
   "nextPMDueDate": "2027-02-20",
   "assignedGroup": "RS-RECIP-NORTH",
-  "workOrder": "WO-PM-2803",
+  "workOrder": "WO-2026-9942",
   "notes": "PM loaded automatically from QR-linked PM record.",
   "engineParameters": {
     "ratedPower": "1480 HP / 1100 KW",
@@ -28,8 +28,8 @@
     "fuelType": "Natural Gas / LPG",
     "lubeOilCapacity": "340 Liters",
     "coolingCapacity": "450 Liters",
-    "currentHourMeter": "42,850 hrs",
-    "lastOverhaulMeter": "35,000 hrs",
+    "currentHourMeter": "41,200 hrs",
+    "lastOverhaulMeter": "34,000 hrs",
     "avgRunningHours": "24 hrs",
     "targetOilTemp": "180 - 195 °F",
     "targetOilPress": "45 ±5 PSI"

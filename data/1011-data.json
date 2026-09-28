@@ -1,10 +1,10 @@
 {
-  "2803": {
-  "pmId": "2803",
+  "1011": {
+  "pmId": "1011",
   "equipmentType": "GAS ENGINE",
   "assetLocation": "RBKR",
-  "asset": "PM For Ras Bakr Gas Comp. Engine No 1",
-  "assetTag": "RBKR-CA-10",
+  "asset": "Ras Bakr Gas Engine for C.O.P No 7",
+  "assetTag": "RBKR-GA-7360",
   "failureClass": "CEGE",
   "responsibility": "RS-RECIP-NORTH",
   "glAccount": "03-90002060M9-RSBKR:4100-RSBKR:4100-P0",
@@ -13,14 +13,14 @@
   "status": "OPERATIONAL",
   "manufacturer": "Waukesha",
   "model": "L7042GSI",
-  "serial": "C-15420/1",
+  "serial": "C-15420/1011",
   "installationDate": "2018-05-12",
   "criticality": "HIGH",
   "pmFrequencySummary": "6 Months / 1600 hrs",
   "lastPMDate": "2026-08-20",
   "nextPMDueDate": "2027-02-20",
   "assignedGroup": "RS-RECIP-NORTH",
-  "workOrder": "WO-PM-2803",
+  "workOrder": "WO-PM-1011",
   "notes": "PM loaded automatically from QR-linked PM record.",
   "engineParameters": {
     "ratedPower": "1480 HP / 1100 KW",
