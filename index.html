@@ -97,12 +97,28 @@ textarea {
     justify-content: space-between;
     align-items: center;
     gap: 15px;
+    flex-wrap: nowrap;
+}
+
+.app-logo {
+    width: 92px;
+    height: 72px;
+    object-fit: contain;
+    flex: 0 0 92px;
+}
+
+.app-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: right;
 }
 
 .app-title h1 {
     margin: 0 0 4px 0;
-    font-size: 22px;
+    font-size: 20px;
+    line-height: 1.15;
     color: var(--primary-color);
+    white-space: nowrap;
 }
 
 .app-title p {
@@ -112,7 +128,7 @@ textarea {
 }
 
 .qr-status {
-    display: flex;
+    display: none !important;
     align-items: center;
     gap: 8px;
     background: var(--bg-light);
@@ -938,18 +954,23 @@ textarea {
 
     <div class="app-header-content">
 
+        <img
+            class="app-logo"
+            src="./images/logo.png"
+            alt="Company Logo"
+        >
+
         <div class="app-title">
-            <h1>EAM Asset Management & Engine Inspection System</h1>
+            <h1>EAM Asset Management &amp; Engine Inspection System</h1>
             <p>
                 Enterprise Asset Management • Preventive Maintenance • Engine Inspection
             </p>
         </div>
 
-        <div id="qrStatus" class="qr-status">
+        <!-- Kept hidden for JavaScript compatibility; the old green status box is no longer displayed. -->
+        <div id="qrStatus" class="qr-status" aria-hidden="true">
             <span class="status-dot"></span>
-            <span id="qrStatusText">
-                Loading PM data...
-            </span>
+            <span id="qrStatusText">Loading PM data...</span>
         </div>
 
     </div>
