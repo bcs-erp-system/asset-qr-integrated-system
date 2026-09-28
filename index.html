@@ -1698,26 +1698,6 @@ textarea {
 <div id="printable-form" class="sheet-container">
 
 
-<div id="dynamicInspectionPanel" class="pm-panel" style="display:none;">
-    <div class="pm-panel-header">
-        <strong id="dynamicInspectionTitle">Equipment-Specific Inspection / فحص خاص بالمعدة</strong>
-        <span class="pm-source" id="dynamicInspectionSource">Equipment Type</span>
-    </div>
-    <div style="overflow-x:auto;">
-        <table class="inspection-table" id="dynamicInspectionTable">
-            <thead>
-                <tr>
-                    <th class="num">#</th>
-                    <th class="check">Done</th>
-                    <th class="item">Inspection / Maintenance Item</th>
-                    <th class="reading">Reading / Result</th>
-                </tr>
-            </thead>
-            <tbody id="dynamicInspectionBody"></tbody>
-        </table>
-    </div>
-</div>
-
     <!-- FORM HEADER -->
 
     <div class="section-title">
@@ -1815,14 +1795,43 @@ textarea {
 
 
     <!-- =====================================================
-         CHECKLIST
+         INSPECTION & PREVENTIVE MAINTENANCE HEADING
     ====================================================== -->
 
-    <div class="section-title">
+    <div class="section-title" style="text-align:center;">
+        Engine Inspection &amp; Preventive Maintenance
+        / فحص وصيانة المعدة
+        / Equipment Inspection &amp; Preventive Maintenance
+    </div>
 
-        Form 440-1-G
-        / Engine Inspection Checklist
 
+    <!-- EQUIPMENT-SPECIFIC DYNAMIC INSPECTION LIST -->
+
+    <div id="dynamicInspectionPanel" class="pm-panel" style="display:none;">
+        <div class="pm-panel-header">
+            <strong id="dynamicInspectionTitle">Equipment-Specific Inspection / فحص خاص بالمعدة</strong>
+            <span class="pm-source" id="dynamicInspectionSource">Equipment Type</span>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="inspection-table" id="dynamicInspectionTable">
+                <thead>
+                    <tr>
+                        <th class="num">#</th>
+                        <th class="check">Done</th>
+                        <th class="item">Inspection / Maintenance Item</th>
+                        <th class="reading">Reading / Result</th>
+                    </tr>
+                </thead>
+                <tbody id="dynamicInspectionBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- GAS ENGINE — FORM 440-1-G CHECKLIST -->
+
+    <div class="section-title" id="gasEngineChecklistTitle">
+        Form 440-1-G / Engine Inspection Checklist
     </div>
 
 
