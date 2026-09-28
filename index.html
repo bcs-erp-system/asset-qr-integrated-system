@@ -2722,18 +2722,18 @@ textarea {
  * New data arrangement:
  *
  *   data/
- *     2803-data.json
- *     2804-data.json
- *     2805-data.json
+ *     2803.json
+ *     2804.json
+ *     2805.json
  *     ...
  *
  * Each PM has its own JSON file:
  *
- *   [pmid]-data.json
+ *   [pmid].json
  *
  * Example:
  *   ?pm=2803
- *   -> ./data/2803-data.json
+ *   -> ./data/2803.json
  */
 
 let pmDatabase = {};
@@ -3562,7 +3562,7 @@ async function loadPMDatabase() {
      *
      * Example:
      *   index.html?pm=2803
-     *   -> data/2803-data.json
+     *   -> data/2803.json
      */
 
     try {
@@ -3604,7 +3604,7 @@ async function loadPMDatabase() {
          * For the new arrangement, the PM identifier is the
          * filename prefix:
          *
-         *   2803 -> 2803-data.json
+         *   2803 -> 2803.json
          *
          * encodeURIComponent prevents special characters from
          * being interpreted as part of the path.
@@ -3615,13 +3615,13 @@ async function loadPMDatabase() {
         const dataURL =
             "./data/" +
             encodeURIComponent(pmId) +
-            "-data.json?v=" +
+            ".json?v=" +
             Date.now();
 
         currentPMFile =
             "./data/" +
             pmId +
-            "-data.json";
+            ".json";
 
         const response =
             await fetch(
@@ -3638,7 +3638,7 @@ async function loadPMDatabase() {
                 response.status +
                 " - " +
                 pmId +
-                "-data.json"
+                ".json"
             );
         }
 
@@ -3732,7 +3732,7 @@ async function loadPMDatabase() {
                 "Requested PM: " + requestedPM,
                 "Expected file: data/" +
                     requestedPM +
-                    "-data.json",
+                    ".json",
                 "Please check that the file exists.",
                 "Error: " + error.message
             ]
@@ -3751,7 +3751,7 @@ function loadPMFromURL() {
      * of the application may call loadPMFromURL().
      *
      * The actual loading is now performed by loadPMDatabase(),
-     * which fetches [pmid]-data.json directly.
+     * which fetches [pmid].json directly.
      */
     loadPMDatabase();
 }
