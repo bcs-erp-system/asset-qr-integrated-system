@@ -243,6 +243,7 @@ textarea {
     margin-top: -4px;
     margin-bottom: 8px;
 }
+
 /* ================================
    META TABLE
 ================================ */
@@ -964,7 +965,6 @@ textarea {
 <div id="tab-asset" class="tab-content active">
 
 <div id="asset-form" class="sheet-container">
-</div>
 
     <div class="section-title">
         IBM Maximo EAM Module
@@ -2257,6 +2257,7 @@ function switchChecklistTemplate(templateKey) {
         tbody.appendChild(row);
     });
 }
+
 function onAssetModelChange(modelValue) {
     /*
        If equipmentType came from JSON, it has priority and the model
@@ -2290,6 +2291,7 @@ function onAssetModelChange(modelValue) {
 
     applyEquipmentTypeFromJSON(equipmentType);
 }
+
 
 /* ============================================================
    PM DATA & DATABASE
@@ -2374,51 +2376,8 @@ function updateQRStatus(type, message) {
     text.textContent = message;
 }
 
-
-function updateAssetImage(pmId) {
-    const image = document.getElementById("assetImage");
-    const placeholder = document.getElementById("assetImagePlaceholder");
-    if (!image || !placeholder) return;
-
-    const id = String(pmId ?? "").trim();
-    if (!id) {
-        image.removeAttribute("src");
-        image.style.display = "none";
-        placeholder.textContent = "No asset image available / لا توجد صورة للمعدة";
-        placeholder.style.display = "block";
-        return;
-    }
-
-    let fallbackUsed = false;
-    const jpg = "images/" + encodeURIComponent(id) + ".jpg";
-    const png = "images/" + encodeURIComponent(id) + ".png";
-
-    image.onerror = function () {
-        if (!fallbackUsed) {
-            fallbackUsed = true;
-            image.src = png;
-            return;
-        }
-
-        image.style.display = "none";
-        placeholder.textContent = "No asset image found / لم يتم العثور على صورة للمعدة";
-        placeholder.style.display = "block";
-    };
-
-    image.onload = function () {
-        image.style.display = "block";
-        placeholder.style.display = "none";
-    };
-
-    placeholder.textContent = "Loading asset image... / جاري تحميل صورة المعدة...";
-    placeholder.style.display = "block";
-    image.style.display = "none";
-    image.src = jpg;
-}
-
 function populatePM(pm) {
     currentPM = pm;
-    updateAssetImage(pm.pmId);
 
     setValue("assetTag", pm.assetTag);
     setValue("assetDescription", pm.asset);
@@ -2746,11 +2705,6 @@ async function loadPMDatabase() {
     }
 }
 
-/* Compatibility function used by older parts of the application. */
-function loadPMFromURL() {
-    loadPMDatabase();
-}
-
 /* ============================================================
    ACTIONS & PDF EXPORT
 ============================================================ */
@@ -2885,10 +2839,7 @@ function sanitizeFileName(value) {
 document.addEventListener("DOMContentLoaded", function() {
     const dateInput = document.getElementById("dateInput");
     if (dateInput && !dateInput.value) dateInput.value = getToday();
-    /*
-       Initial checklist is GAS ENGINE only until the PM JSON is loaded.
-       Once JSON is loaded, equipmentType automatically replaces it.
-    */
+    /* Initial checklist is GAS ENGINE only until the PM JSON is loaded. */
     switchChecklistTemplate("GAS ENGINE");
     loadPMDatabase();
 });
