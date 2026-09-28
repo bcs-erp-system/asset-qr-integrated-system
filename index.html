@@ -244,6 +244,54 @@ textarea {
     margin-bottom: 8px;
 }
 
+
+/* ================================
+   TOP ASSET IMAGE
+================================ */
+
+.asset-image-panel {
+    width: 100%;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: #f8fafc;
+    padding: 8px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.asset-image-panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 7px;
+}
+
+.asset-image-wrapper {
+    width: 100%;
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    background: white;
+}
+
+#assetImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.asset-image-placeholder {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 /* ================================
    META TABLE
 ================================ */
@@ -765,7 +813,8 @@ textarea {
         border: 1px solid #000;
     }
 }
-\n/* ================================
+
+/* ================================
    PRINT
 ================================ */
 
@@ -945,7 +994,7 @@ textarea {
     <button
         class="tab-btn"
         onclick="switchTab('tab-checklist', this)">
-        2. قائمة فحص وصيانة المحرك / Form 440-1-G
+        2. قائمة فحص وصيانة المحرك / Inspection & PM
     </button>
 
     <button
@@ -964,6 +1013,31 @@ textarea {
 <div id="tab-asset" class="tab-content active">
 
 <div id="asset-form" class="sheet-container">
+
+
+    <!-- =============================
+         TOP ASSET IMAGE
+    ============================== -->
+
+    <div id="assetImagePanel" class="asset-image-panel">
+
+        <div class="asset-image-panel-title">
+            Asset Image / صورة المعدة
+        </div>
+
+        <div class="asset-image-wrapper">
+            <img
+                id="assetImage"
+                src=""
+                alt="Asset Image"
+                style="display:none;">
+
+            <div id="assetImagePlaceholder" class="asset-image-placeholder">
+                Loading asset image... / جاري تحميل صورة المعدة...
+            </div>
+        </div>
+
+    </div>
 
     <div class="section-title">
         IBM Maximo EAM Module
@@ -1207,7 +1281,8 @@ textarea {
                 <input
                     id="modelInput"
                     type="text"
-                    value="L7042GSI">
+                    value="L7042GSI"
+                    oninput="onAssetModelChange(this.value)">
 
             </div>
 
@@ -1662,7 +1737,7 @@ textarea {
 
 
 <!-- =========================================================
-     TAB 2 — ENGINE INSPECTION
+     TAB 2 — INSPECTION & PREVENTIVE MAINTENANCE
 ========================================================= -->
 
 <div id="tab-checklist" class="tab-content">
@@ -1677,13 +1752,31 @@ textarea {
         Engine Inspection & Preventive Maintenance
 
         <span style="float:left;">
-            فحص وصيانة المحرك
+            فحص وصيانة المعدة
         </span>
 
     </div>
 
 
     <table class="meta-table">
+
+        <tr>
+
+            <th>
+                Asset Type / نوع المعدة
+            </th>
+
+            <td colspan="3">
+                <select id="assetTypeSelector" onchange="switchChecklistTemplate(this.value)">
+                    <option value="GAS ENGINE">GAS ENGINE / Waukesha Gas Engine (Form 440-1-G)</option>
+                    <option value="DIESEL ENGINE">DIESEL ENGINE / Diesel Engine & Generator</option>
+                    <option value="PUMP">PUMP / Centrifugal Pump & Rotating Equipment</option>
+                    <option value="AIR COPMRESSOR">AIR COPMRESSOR / Air Compressor (Screw/Reciprocating)</option>
+                    <option value="GAS COMPRESSOR">GAS COMPRESSOR / Gas Compressor (Reciprocating/Screw)</option>
+                </select>
+            </td>
+
+        </tr>
 
         <tr>
 
@@ -1770,11 +1863,8 @@ textarea {
          CHECKLIST
     ====================================================== -->
 
-    <div class="section-title">
-
-        Form 440-1-G
-        / Engine Inspection Checklist
-
+    <div class="section-title" id="checklistFormTitle">
+        Form 440-1-G / Engine Inspection Checklist
     </div>
 
 
@@ -1804,723 +1894,8 @@ textarea {
 
         </thead>
 
-        <tbody>
-
-
-            <!-- 1 -->
-
-            <tr>
-
-                <td class="num">1</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check1">
-                </td>
-
-                <td class="item">
-                    Change Oil & Clean Crank Case & Oil Cooler
-                    <br>
-                    تغيير زيت وتنظيف الكارتيرة ومبرد الزيت
-                </td>
-
-                <td>
-                    <input type="text" id="result1">
-                </td>
-
-            </tr>
-
-
-            <!-- 2 -->
-
-            <tr>
-
-                <td>2</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check2">
-                </td>
-
-                <td>
-                    Change Filter - Check Sealing Washer & "O" Ring
-                    <br>
-                    تغيير فلتر الزيت وفحص الجوان والحلقة
-                </td>
-
-                <td>
-                    <input type="text" id="result2">
-                </td>
-
-            </tr>
-
-
-            <!-- 3 -->
-
-            <tr>
-
-                <td>3</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check3">
-                </td>
-
-                <td>
-                    Remove & Clean Air Filter - Change If Needed
-                    <br>
-                    تنظيف فلتر الهواء واستبداله إذا لزم
-                </td>
-
-                <td>
-                    <input type="text" id="result3">
-                </td>
-
-            </tr>
-
-
-            <!-- 4 -->
-
-            <tr>
-
-                <td>4</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check4">
-                </td>
-
-                <td>
-                    Check Belt Wear & Adjust If Needed
-                    <br>
-                    فحص تآكل السيور وضبطها
-                </td>
-
-                <td>
-                    <input type="text" id="result4">
-                </td>
-
-            </tr>
-
-
-            <!-- 5 -->
-
-            <tr>
-
-                <td>5</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check5">
-                </td>
-
-                <td>
-                    Clean Carburetors & Regulators
-                    <br>
-                    فحص وتنظيف الكربوراتورات والمنظمات
-                </td>
-
-                <td>
-                    <input type="text" id="result5">
-                </td>
-
-            </tr>
-
-
-            <!-- 6 -->
-
-            <tr>
-
-                <td>6</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check6">
-                </td>
-
-                <td>
-                    Replace & Check Gap of Sparkplugs
-                    <br>
-                    فحص واستبدال البوجيهات وضبط الخلوص
-                </td>
-
-                <td>
-                    <input type="text" id="result6">
-                </td>
-
-            </tr>
-
-
-            <!-- 7 Compression -->
-
-            <tr>
-
-                <td>7</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check7">
-                </td>
-
-                <td>
-                    Compression Check L7042/L5108
-                    <br>
-                    فحص ضغط السلندرات
-                </td>
-
-                <td>
-
-                    <div class="cylinder-grid">
-
-                        <input placeholder="1L">
-                        <input placeholder="2L">
-                        <input placeholder="3L">
-                        <input placeholder="4L">
-                        <input placeholder="5L">
-                        <input placeholder="6L">
-
-                        <input placeholder="1R">
-                        <input placeholder="2R">
-                        <input placeholder="3R">
-                        <input placeholder="4R">
-                        <input placeholder="5R">
-                        <input placeholder="6R">
-
-                    </div>
-
-                </td>
-
-            </tr>
-
-
-            <!-- 8 -->
-
-            <tr>
-
-                <td>8</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check8">
-                </td>
-
-                <td>
-                    Check Valve Adjustment
-                    <br>
-                    فحص خلوص التاكيهات
-                </td>
-
-                <td>
-                    <input type="text" id="result8">
-                </td>
-
-            </tr>
-
-
-            <!-- 9 -->
-
-            <tr>
-
-                <td>9</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check9">
-                </td>
-
-                <td>
-                    Lubricate Synchro Motor & Change Oil in Governor
-                    <br>
-                    تشحيم محرك السينكرو وتغيير زيت الجافنر
-                </td>
-
-                <td>
-                    <input type="text" id="result9">
-                </td>
-
-            </tr>
-
-
-            <!-- 10 -->
-
-            <tr>
-
-                <td>10</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check10">
-                </td>
-
-                <td>
-                    Lubricate Fan Bearings
-                    <br>
-                    تشحيم كراسي المروحة
-                </td>
-
-                <td>
-                    <input type="text" id="result10">
-                </td>
-
-            </tr>
-
-
-            <!-- 11 -->
-
-            <tr>
-
-                <td>11</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check11">
-                </td>
-
-                <td>
-                    Check Safety Systems
-                    <br>
-                    فحص دائرة الأمان
-                </td>
-
-                <td>
-                    <input type="text" id="result11">
-                </td>
-
-            </tr>
-
-
-            <!-- 12 -->
-
-            <tr>
-
-                <td>12</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check12">
-                </td>
-
-                <td>
-                    Grease Water Pump
-                    <br>
-                    تشحيم كراسي طلمبة المياه
-                </td>
-
-                <td>
-                    <input type="text" id="result12">
-                </td>
-
-            </tr>
-
-
-            <!-- 13 -->
-
-            <tr>
-
-                <td>13</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check13">
-                </td>
-
-                <td>
-                    Clean Crankcase Breather
-                    <br>
-                    تنظيف هواية الكارتيرة
-                </td>
-
-                <td>
-                    <input type="text" id="result13">
-                </td>
-
-            </tr>
-
-
-            <!-- 14 -->
-
-            <tr>
-
-                <td>14</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check14">
-                </td>
-
-                <td>
-                    Check Crankcase Press. (0 To -1 In Water)
-                    <br>
-                    فحص ضغط الكارتيرة
-                </td>
-
-                <td>
-                    <input type="text" id="crankcasePressure">
-                </td>
-
-            </tr>
-
-
-            <!-- 15 -->
-
-            <tr>
-
-                <td>15</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check15">
-                </td>
-
-                <td>
-                    Check Timing (24° B.T.D.C.)
-                    <br>
-                    فحص التوقيت
-                </td>
-
-                <td>
-                    <input type="text" id="timingResult">
-                </td>
-
-            </tr>
-
-
-            <!-- 16 -->
-
-            <tr>
-
-                <td>16</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check16">
-                </td>
-
-                <td>
-                    Check Fuel-Air Ratio
-                    <br>
-                    فحص نسبة الوقود إلى الهواء
-                </td>
-
-                <td>
-
-                    <div class="reading-grid">
-
-                        <div class="reading-cell">
-                            <span>L.H.</span>
-                            <input type="text" placeholder="In Water">
-                        </div>
-
-                        <div class="reading-cell">
-                            <span>R.H.</span>
-                            <input type="text" placeholder="In Water">
-                        </div>
-
-                    </div>
-
-                </td>
-
-            </tr>
-
-
-            <!-- 17 -->
-
-            <tr>
-
-                <td>17</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check17">
-                </td>
-
-                <td>
-                    Check Turbocharger Air Pressure
-                    <br>
-                    فحص ضغط هواء التربينة
-                </td>
-
-                <td>
-
-                    <div class="reading-grid">
-
-                        <div class="reading-cell">
-                            <span>L.H.</span>
-                            <input type="text" placeholder="KPA">
-                        </div>
-
-                        <div class="reading-cell">
-                            <span>R.H.</span>
-                            <input type="text" placeholder="KPA">
-                        </div>
-
-                    </div>
-
-                </td>
-
-            </tr>
-
-
-            <!-- 18 -->
-
-            <tr>
-
-                <td>18</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check18">
-                </td>
-
-                <td>
-                    Check Manifold Press.
-                    <br>
-                    فحص ضغط المانيفولد
-                </td>
-
-                <td>
-
-                    <div class="reading-grid">
-
-                        <div class="reading-cell">
-                            <span>L.H.</span>
-                            <input type="text" placeholder="In HG">
-                        </div>
-
-                        <div class="reading-cell">
-                            <span>R.H.</span>
-                            <input type="text" placeholder="In HG">
-                        </div>
-
-                    </div>
-
-                </td>
-
-            </tr>
-
-
-            <!-- 19 -->
-
-            <tr>
-
-                <td>19</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check19">
-                </td>
-
-                <td>
-                    Check Instruments & Record Readings
-                    <br>
-                    فحص الأجهزة وتسجيل القراءات
-                </td>
-
-                <td>
-
-                    <div class="reading-grid">
-
-                        <div class="reading-cell">
-                            <span>A Oil Press</span>
-                            <input
-                                id="oilPressReading"
-                                type="text"
-                                placeholder="45±5 PSI">
-                        </div>
-
-                        <div class="reading-cell">
-                            <span>B Water Temp</span>
-                            <input
-                                id="waterTempReading"
-                                type="text"
-                                placeholder="185°F">
-                        </div>
-
-                        <div class="reading-cell">
-                            <span>C Tach RPM</span>
-                            <input
-                                id="tachReading"
-                                type="text">
-                        </div>
-
-                        <div class="reading-cell">
-                            <span>D Oil Temp</span>
-                            <input
-                                id="oilTempReading"
-                                type="text">
-                        </div>
-
-                    </div>
-
-                </td>
-
-            </tr>
-
-
-            <!-- 20 -->
-
-            <tr>
-
-                <td>20</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check20">
-                </td>
-
-                <td>
-                    Check For Oil or Water Leaks
-                    <br>
-                    لا يوجد تسريب ماء أو زيت
-                </td>
-
-                <td>
-                    <input type="text" id="result20">
-                </td>
-
-            </tr>
-
-
-            <!-- 21 -->
-
-            <tr>
-
-                <td>21</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check21">
-                </td>
-
-                <td>
-                    Wipe Down Engine
-                    <br>
-                    تنظيف المحرك
-                </td>
-
-                <td>
-                    <input type="text" id="result21">
-                </td>
-
-            </tr>
-
-
-            <!-- 22 -->
-
-            <tr>
-
-                <td>22</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check22">
-                </td>
-
-                <td>
-                    Clean Radiator Core (External)
-                    <br>
-                    تنظيف الردياتير من الخارج
-                </td>
-
-                <td>
-                    <input type="text" id="result22">
-                </td>
-
-            </tr>
-
-
-            <!-- 23 -->
-
-            <tr>
-
-                <td>23</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check23">
-                </td>
-
-                <td>
-                    Check Cooling Water For Rust or Contamination
-                    <br>
-                    فحص مياه التبريد
-                </td>
-
-                <td>
-                    <input type="text" id="result23">
-                </td>
-
-            </tr>
-
-
-            <!-- 24 -->
-
-            <tr>
-
-                <td>24</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check24">
-                </td>
-
-                <td>
-                    Add Nalcool 2000 (1 Gallon)
-                    <br>
-                    إضافة Nalcool 2000
-                </td>
-
-                <td>
-                    <input type="text" id="result24">
-                </td>
-
-            </tr>
-
-
-            <!-- 25 -->
-
-            <tr>
-
-                <td>25</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check25">
-                </td>
-
-                <td>
-                    Change PICO Filters
-                    <br>
-                    تغيير فلتر السولار
-                </td>
-
-                <td>
-                    <input type="text" id="result25">
-                </td>
-
-            </tr>
-
-
-            <!-- 26 -->
-
-            <tr>
-
-                <td>26</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check26">
-                </td>
-
-                <td>
-                    Is Radiator Caps On?
-                    <br>
-                    غطاء الردياتير
-                </td>
-
-                <td>
-                    <input type="text" id="result26">
-                </td>
-
-            </tr>
-
-
-            <!-- 27 -->
-
-            <tr>
-
-                <td>27</td>
-
-                <td class="check">
-                    <input type="checkbox" id="check27">
-                </td>
-
-                <td>
-                    Check Overspeed (Gen. Only)
-                    <br>
-                    فحص السرعة الزائدة
-                </td>
-
-                <td>
-                    <input type="text" id="result27">
-                </td>
-
-            </tr>
-
+        <tbody id="dynamicChecklistBody">
+            <!-- Dynamically populated based on asset type -->
         </tbody>
 
     </table>
@@ -2562,7 +1937,7 @@ textarea {
     <div class="form-footer">
 
         <span>
-            Form 440-1-G (1/89)
+            EAM Form Revision 2.0
         </span>
 
         <span>
@@ -2571,7 +1946,7 @@ textarea {
         </span>
 
         <span>
-            EAM Engine Inspection System
+            EAM Maintenance System
         </span>
 
     </div>
@@ -2715,107 +2090,314 @@ textarea {
 <script>
 
 /* ============================================================
-   PM DATA
-   ============================================================= */
+   CHECKLIST TEMPLATES BY ASSET TYPE
+============================================================ */
 
-/*
- * New data arrangement:
- *
- *   data/
- *     2803.json
- *     2804.json
- *     2805.json
- *     ...
- *
- * Each PM has its own JSON file:
- *
- *   [pmid].json
- *
- * Example:
- *   ?pm=2803
- *   -> ./data/2803.json
- */
+const checklistTemplates = {
+    waukesha: {
+        title: "Form 440-1-G / Waukesha Gas Engine Inspection Checklist",
+        items: [
+            { id: 1, textEn: "Change Oil & Clean Crank Case & Oil Cooler", textAr: "تغيير زيت وتنظيف الكارتيرة ومبرد الزيت", type: "text", defaultResult: "" },
+            { id: 2, textEn: "Change Filter - Check Sealing Washer & 'O' Ring", textAr: "تغيير فلتر الزيت وفحص الجوان والحلقة", type: "text", defaultResult: "" },
+            { id: 3, textEn: "Remove & Clean Air Filter - Change If Needed", textAr: "تنظيف فلتر الهواء واستبداله إذا لزم", type: "text", defaultResult: "" },
+            { id: 4, textEn: "Check Belt Wear & Adjust If Needed", textAr: "فحص تآكل السيور وضبطها", type: "text", defaultResult: "" },
+            { id: 5, textEn: "Clean Carburetors & Regulators", textAr: "فحص وتنظيف الكربوراتورات والمنظمات", type: "text", defaultResult: "" },
+            { id: 6, textEn: "Replace & Check Gap of Sparkplugs", textAr: "فحص واستبدال البوجيهات وضبط الخلوص", type: "text", defaultResult: "" },
+            { id: 7, textEn: "Compression Check L7042/L5108", textAr: "فحص ضغط السلندرات", type: "cylinder_grid" },
+            { id: 8, textEn: "Check Valve Adjustment", textAr: "فحص خلوص التاكيهات", type: "text", defaultResult: "" },
+            { id: 9, textEn: "Lubricate Synchro Motor & Change Oil in Governor", textAr: "تشحيم محرك السينكرو وتغيير زيت الجافنر", type: "text", defaultResult: "" },
+            { id: 10, textEn: "Lubricate Fan Bearings", textAr: "تشحيم كراسي المروحة", type: "text", defaultResult: "" },
+            { id: 11, textEn: "Check Safety Systems", textAr: "فحص دائرة الأمان", type: "text", defaultResult: "" },
+            { id: 12, textEn: "Grease Water Pump", textAr: "تشحيم كراسي طلمبة المياه", type: "text", defaultResult: "" },
+            { id: 13, textEn: "Clean Crankcase Breather", textAr: "تنظيف هواية الكارتيرة", type: "text", defaultResult: "" },
+            { id: 14, textEn: "Check Crankcase Press. (0 To -1 In Water)", textAr: "فحص ضغط الكارتيرة", type: "text", idOverride: "crankcasePressure" },
+            { id: 15, textEn: "Check Timing (24° B.T.D.C.)", textAr: "فحص التوقيت", type: "text", idOverride: "timingResult" },
+            { id: 16, textEn: "Check Fuel-Air Ratio", textAr: "فحص نسبة الوقود إلى الهواء", type: "dual_reading", labels: ["L.H.", "R.H."], placeholder: "In Water" },
+            { id: 17, textEn: "Check Turbocharger Air Pressure", textAr: "فحص ضغط هواء التربينة", type: "dual_reading", labels: ["L.H.", "R.H."], placeholder: "KPA" },
+            { id: 18, textEn: "Check Manifold Press.", textAr: "فحص ضغط المانيفولد", type: "dual_reading", labels: ["L.H.", "R.H."], placeholder: "In HG" },
+            { id: 19, textEn: "Check Instruments & Record Readings", textAr: "فحص الأجهزة وتسجيل القراءات", type: "quad_reading" },
+            { id: 20, textEn: "Check For Oil or Water Leaks", textAr: "لا يوجد تسريب ماء أو زيت", type: "text", defaultResult: "" },
+            { id: 21, textEn: "Wipe Down Engine", textAr: "تنظيف المحرك", type: "text", defaultResult: "" },
+            { id: 22, textEn: "Clean Radiator Core (External)", textAr: "تنظيف الردياتير من الخارج", type: "text", defaultResult: "" },
+            { id: 23, textEn: "Check Cooling Water For Rust or Contamination", textAr: "فحص مياه التبريد", type: "text", defaultResult: "" },
+            { id: 24, textEn: "Add Nalcool 2000 (1 Gallon)", textAr: "إضافة Nalcool 2000", type: "text", defaultResult: "" },
+            { id: 25, textEn: "Change PICO Filters", textAr: "تغيير فلتر السولار", type: "text", defaultResult: "" },
+            { id: 26, textEn: "Is Radiator Caps On?", textAr: "غطاء الردياتير", type: "text", defaultResult: "" },
+            { id: 27, textEn: "Check Overspeed (Gen. Only)", textAr: "فحص السرعة الزائدة", type: "text", defaultResult: "" }
+        ]
+    },
+    diesel: {
+        title: "Diesel Engine & Generator Preventive Maintenance Checklist",
+        items: [
+            { id: 1, textEn: "Change Engine Oil and Lube Oil Filters", textAr: "تغيير زيت المحرك وفلاتر الزيت", type: "text" },
+            { id: 2, textEn: "Replace Fuel Primary & Secondary Filters", textAr: "استبدال فلاتر الوقود الابتدائية والثانوية", type: "text" },
+            { id: 3, textEn: "Inspect and Clean Air Cleaner Elements", textAr: "فحص وتنظيف عناصر فلتر الهواء", type: "text" },
+            { id: 4, textEn: "Check Coolant Level and Add SCA / Antifreeze", textAr: "فحص مستوى مياه التبريد وإضافة مانع التجمد", type: "text" },
+            { id: 5, textEn: "Check Fan Drive, Alternator, and Water Pump Belts", textAr: "فحص سيور المروحة والدينامو وطلمبة المياه", type: "text" },
+            { id: 6, textEn: "Test Battery Specific Gravity and Terminal Connections", textAr: "اختبار الكثافة النوعية للبطارية وتوصيلات الأقطاب", type: "text" },
+            { id: 7, textEn: "Check Fuel Injector Spray Pattern & Pressure", textAr: "فحص ضغط ونمط رشاشات الوقود", type: "text" },
+            { id: 8, textEn: "Check Valve Clearance (Lash) Adjustment", textAr: "فحص وضبط خلوص الصمامات", type: "text" },
+            { id: 9, textEn: "Check Turbocharger End Play and Impeller Condition", textAr: "فحص خلوص التربو وحالة الريشة", type: "text" },
+            { id: 10, textEn: "Inspect Exhaust Manifold and Temperature", textAr: "فحص مانيفولد العادم ودرجة الحرارة", type: "text" },
+            { id: 11, textEn: "Test Safety Shutdowns (Low Oil Press / High Water Temp)", textAr: "اختبار إيقاف الطوارئ (ضغط زيت منخفض / حرارة عالية)", type: "text" },
+            { id: 12, textEn: "Record Operational Parameters (RPM, Oil Press, Temp, Hz)", textAr: "تسجيل بارامترات التشغيل (السرعة، الضغط، الحرارة، التردد)", type: "quad_reading" },
+            { id: 13, textEn: "Check for Fuel, Oil, and Coolant Leaks", textAr: "فحص وجود تسريب وقود أو زيت أو مياه", type: "text" },
+            { id: 14, textEn: "General Unit Cleaning and Housekeeping", textAr: "النظافة العامة للوحدة", type: "text" }
+        ]
+    },
+    pump: {
+        title: "Centrifugal Pump & Rotating Equipment Maintenance Checklist",
+        items: [
+            { id: 1, textEn: "Check and Grease / Oil Bearing Housings", textAr: "فحص وتشحيم/تزييت كراسي البيرنج", type: "text" },
+            { id: 2, textEn: "Check Pump-Motor Shaft Alignment", textAr: "فحص استقامة عمود المضخة والمحرك", type: "text" },
+            { id: 3, textEn: "Inspect Mechanical Seal / Packing Leakage Rate", textAr: "فحص معدل تسريب الميكانيكال سيل", type: "text" },
+            { id: 4, textEn: "Check Coupling Condition and Insert Wear", textAr: "فحص حالة الكوبلن وتآكل الحشوات", type: "text" },
+            { id: 5, textEn: "Record Suction and Discharge Pressures", textAr: "تسجيل ضغوط السحب والطرد", type: "dual_reading", labels: ["Suction", "Discharge"], placeholder: "BAR / PSI" },
+            { id: 6, textEn: "Check Vibration Levels across Motor and Pump Bearings", textAr: "فحص مستويات الاهتزاز على كراسي المحرك والمضخة", type: "text" },
+            { id: 7, textEn: "Inspect Foundation Bolts and Baseplate Grouting", textAr: "فحص مسامير القواعد والخرسانة الأساسية", type: "text" },
+            { id: 8, textEn: "Check Cooling Water Lines to Seal Flush System", textAr: "فحص خطوط مياه التبريد لنظام غسيل السيل", type: "text" },
+            { id: 9, textEn: "Verify Operation of Pressure Gauges and Transmitters", textAr: "التحقق من عمل عدادات الضغط والمانوميترات", type: "text" },
+            { id: 10, textEn: "General Cleaning and Housekeeping", textAr: "النظافة العامة للمعدة", type: "text" }
+        ]
+    },
+    gas_compressor: {
+        title: "Gas Compressor (Reciprocating / Screw) Inspection Checklist",
+        items: [
+            { id: 1, textEn: "Check Lube Oil Level and Compressor Frame Pressures", textAr: "فحص مستوى زيت الكارتيرة وضغوط الإطار", type: "text" },
+            { id: 2, textEn: "Inspect Cylinder Valves, Pockets, and Unloaders", textAr: "فحص صمامات السلندرات وغيور التفريغ", type: "text" },
+            { id: 3, textEn: "Check Suction & Discharge Stage Pressures", textAr: "فحص ضغوط السحب والطرد للمراحل", type: "dual_reading", labels: ["Suction", "Discharge"], placeholder: "PSI / BAR" },
+            { id: 4, textEn: "Monitor Interstage Gas Temperatures", textAr: "مراقبة درجات حرارة الغاز بين المراحل", type: "text" },
+            { id: 5, textEn: "Inspect Scrubber / Separator Liquid Dump Traps", textAr: "فحص مصائد تصريف السوائل للسكربلر", type: "text" },
+            { id: 6, textEn: "Check Rod Packing Leakage and Vent Line Flow", textAr: "فحص تسريب حشو الساق (Rod Packing) وخط الفنت", type: "text" },
+            { id: 7, textEn: "Test High Discharge Pressure & Low Lube Oil Trip Switches", textAr: "اختبار مفاتيح الحماية لضغط الطرد العالي وزيت التزييت", type: "text" },
+            { id: 8, textEn: "Check Gas Cooler Fins and Fan Operation", textAr: "فحص ريش مبرد الغاز وعمل المراوح", type: "text" },
+            { id: 9, textEn: "Inspect Drive Coupling and Alignment", textAr: "فحص كوبلن الإدارة والاستقامة", type: "text" },
+            { id: 10, textEn: "Check for Hydrocarbon Gas Leaks via Gas Detector", textAr: "فحص تسريب الغاز باستخدام كاشف الغازات", type: "text" }
+        ]
+    },
+    air_compressor: {
+        title: "Air Compressor (Screw / Reciprocating) Inspection Checklist",
+        items: [
+            { id: 1, textEn: "Check Compressor Oil Level and Separator Element Delta-P", textAr: "فحص مستوى الزيت وفرق الضغط لفاصل الزيت", type: "text" },
+            { id: 2, textEn: "Clean / Replace Air Intake Filters", textAr: "تنظيف أو استبدال فلاتر سحب الهواء", type: "text" },
+            { id: 3, textEn: "Inspect Air/Oil Cooler Core for Fouling", textAr: "فحص ردياتير الهواء/الزيت من الانسداد", type: "text" },
+            { id: 4, textEn: "Test Automatic Condensate Drain Trap Operation", textAr: "اختبار عمل مصيدة تصريف التكثيف الأوتوماتيكية", type: "text" },
+            { id: 5, textEn: "Record Working Pressure and Air Discharge Temperature", textAr: "تسجيل ضغط التشغيل ودرجة حرارة هواء الطرد", type: "dual_reading", labels: ["Press", "Temp"], placeholder: "BAR / °C" },
+            { id: 6, textEn: "Check V-Belt Tension and Alignment (Screw Units)", textAr: "فحص شد السيور والاستقامة للوحدات اللولبية", type: "text" },
+            { id: 7, textEn: "Test Unloader Valve, Load/Unload Cycling, and Pressure Switch", textAr: "اختبار صمام التفريغ، دورة التحميل، ومفتاح الضغط", type: "text" },
+            { id: 8, textEn: "Inspect Electrical Motor Amperage and Terminals", textAr: "فحص شدة تيار المحرك الكهربائي والأطراف", type: "text" },
+            { id: 9, textEn: "Drain Receiver Tank and Check Safety Relief Valve", textAr: "تفريغ خزان التجميع وفحص صمام الأمان", type: "text" },
+            { id: 10, textEn: "General Housekeeping and Compressor Room Ventilation", textAr: "النظافة العامة وتهوية غرفة الكبريسورات", type: "text" }
+        ]
+    }
+};
+
+/* ============================================================
+   RENDER DYNAMIC CHECKLIST
+============================================================ */
+
+/* ============================================================
+   EQUIPMENT TYPE -> CHECKLIST TEMPLATE
+   The JSON field "equipmentType" is the primary source.
+   Supported JSON values:
+     GAS ENGINE
+     DIESEL ENGINE
+     PUMP
+     AIR COPMRESSOR
+     GAS COMPRESSOR
+============================================================ */
+
+const equipmentTypeMap = {
+    "GAS ENGINE": "waukesha",
+    "DIESEL ENGINE": "diesel",
+    "PUMP": "pump",
+    "AIR COPMRESSOR": "air_compressor",
+    "AIR COMPRESSOR": "air_compressor",
+    "GAS COMPRESSOR": "gas_compressor"
+};
+
+let currentEquipmentType = "";
+
+function normalizeEquipmentType(value) {
+    return String(value ?? "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, " ");
+}
+
+function getChecklistTemplateKeyFromEquipmentType(equipmentType) {
+    const normalized = normalizeEquipmentType(equipmentType);
+    return equipmentTypeMap[normalized] || null;
+}
+
+function applyEquipmentTypeFromJSON(equipmentType) {
+    const normalized = normalizeEquipmentType(equipmentType);
+    const templateKey = getChecklistTemplateKeyFromEquipmentType(normalized);
+
+    if (!templateKey) {
+        showDiagnostics("warning", "Unknown Equipment Type", [
+            'JSON equipmentType: "' + normalized + '"',
+            "Supported values: GAS ENGINE, DIESEL ENGINE, PUMP, AIR COPMRESSOR, GAS COMPRESSOR",
+            "The checklist was not changed automatically."
+        ]);
+        return false;
+    }
+
+    currentEquipmentType = normalized;
+
+    const selector = document.getElementById("assetTypeSelector");
+    if (selector) {
+        selector.value = normalized;
+    }
+
+    switchChecklistTemplate(templateKey);
+    return true;
+}
+
+function switchChecklistTemplate(templateKey) {
+    /* Accept either an internal template key or a JSON equipmentType value. */
+    const normalized = normalizeEquipmentType(templateKey);
+    const resolvedKey = equipmentTypeMap[normalized] || templateKey;
+    const template = checklistTemplates[resolvedKey] || checklistTemplates.waukesha;
+    document.getElementById("checklistFormTitle").textContent = template.title;
+
+    const tbody = document.getElementById("dynamicChecklistBody");
+    tbody.innerHTML = "";
+
+    template.items.forEach((item, index) => {
+        const row = document.createElement("tr");
+        let readingHtml = "";
+
+        if (item.type === "cylinder_grid") {
+            readingHtml = `
+                <div class="cylinder-grid">
+                    <input placeholder="1L"><input placeholder="2L"><input placeholder="3L"><input placeholder="4L"><input placeholder="5L"><input placeholder="6L">
+                    <input placeholder="1R"><input placeholder="2R"><input placeholder="3R"><input placeholder="4R"><input placeholder="5R"><input placeholder="6R">
+                </div>
+            `;
+        } else if (item.type === "dual_reading") {
+            readingHtml = `
+                <div class="reading-grid">
+                    <div class="reading-cell">
+                        <span>${item.labels[0]}</span>
+                        <input type="text" placeholder="${item.placeholder || ''}">
+                    </div>
+                    <div class="reading-cell">
+                        <span>${item.labels[1]}</span>
+                        <input type="text" placeholder="${item.placeholder || ''}">
+                    </div>
+                </div>
+            `;
+        } else if (item.type === "quad_reading") {
+            readingHtml = `
+                <div class="reading-grid">
+                    <div class="reading-cell">
+                        <span>Oil Press</span>
+                        <input id="oilPressReading" type="text" placeholder="PSI">
+                    </div>
+                    <div class="reading-cell">
+                        <span>Water Temp</span>
+                        <input id="waterTempReading" type="text" placeholder="°F">
+                    </div>
+                    <div class="reading-cell">
+                        <span>Speed RPM</span>
+                        <input id="tachReading" type="text" placeholder="RPM">
+                    </div>
+                    <div class="reading-cell">
+                        <span>Oil Temp</span>
+                        <input id="oilTempReading" type="text" placeholder="°F">
+                    </div>
+                </div>
+            `;
+        } else {
+            const inputId = item.idOverride ? item.idOverride : `result${item.id}`;
+            readingHtml = `<input type="text" id="${inputId}">`;
+        }
+
+        row.innerHTML = `
+            <td class="num">${index + 1}</td>
+            <td class="check">
+                <input type="checkbox" id="check${index + 1}">
+            </td>
+            <td class="item">
+                ${escapeHTML(item.textEn)}
+                <br>
+                <span class="ar">${escapeHTML(item.textAr)}</span>
+            </td>
+            <td>${readingHtml}</td>
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+function onAssetModelChange(modelValue) {
+    /*
+       If equipmentType came from JSON, it has priority and the model
+       must NOT overwrite the JSON-selected checklist.
+    */
+    if (currentPM && currentPM.equipmentType) {
+        applyEquipmentTypeFromJSON(currentPM.equipmentType);
+        return;
+    }
+
+    /* Fallback only when equipmentType is not available in the JSON. */
+    const val = String(modelValue || "").toLowerCase();
+    let equipmentType = "GAS ENGINE";
+
+    if (val.includes("gas comp")) {
+        equipmentType = "GAS COMPRESSOR";
+    } else if (val.includes("air") && val.includes("compress")) {
+        equipmentType = "AIR COPMRESSOR";
+    } else if (val.includes("compressor") || val.includes("recip")) {
+        equipmentType = "GAS COMPRESSOR";
+    } else if (
+        val.includes("diesel") ||
+        val.includes("cat") ||
+        val.includes("cummins") ||
+        val.includes("generator")
+    ) {
+        equipmentType = "DIESEL ENGINE";
+    } else if (val.includes("pump") || val.includes("centrifugal")) {
+        equipmentType = "PUMP";
+    }
+
+    applyEquipmentTypeFromJSON(equipmentType);
+}
+
+/* ============================================================
+   PM DATA & DATABASE
+============================================================ */
 
 let pmDatabase = {};
 let currentPMFile = "";
-
-/* ============================================================
-   GLOBAL STATE
-============================================================ */
-
 let currentPM = null;
 
-
-/* ============================================================
-   TAB SWITCHING
-============================================================ */
-
 function switchTab(tabId, btnElement) {
+    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
 
-    document
-        .querySelectorAll(".tab-content")
-        .forEach(tab => {
-            tab.classList.remove("active");
-        });
-
-    document
-        .querySelectorAll(".tab-btn")
-        .forEach(btn => {
-            btn.classList.remove("active");
-        });
-
-    const selectedTab =
-        document.getElementById(tabId);
-
-    if (selectedTab) {
-        selectedTab.classList.add("active");
-    }
-
-    if (btnElement) {
-        btnElement.classList.add("active");
-    }
-
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) selectedTab.classList.add("active");
+    if (btnElement) btnElement.classList.add("active");
 }
 
-
-/* ============================================================
-   DIAGNOSTICS (Image on Left, Filling the box area)
-============================================================ */
-
 function showDiagnostics(type, title, items = [], pmId = null) {
+    const box = document.getElementById("diagnostics");
+    const titleEl = document.getElementById("diagnosticsTitle");
+    const bodyEl = document.getElementById("diagnosticsBody");
 
-    const box =
-        document.getElementById("diagnostics");
-
-    const titleEl =
-        document.getElementById("diagnosticsTitle");
-
-    const bodyEl =
-        document.getElementById("diagnosticsBody");
-
-    box.className =
-        "diagnostics show " + type;
-
-    titleEl.textContent =
-        title;
+    box.className = "diagnostics show " + type;
+    titleEl.textContent = title;
 
     let content = "";
-
     if (title === "PM Data Loaded Successfully" && pmId) {
         content = `
             <div style="display: flex; gap: 20px; align-items: stretch; flex-wrap: wrap;">
                 <div style="flex: 1; min-width: 220px; order: 2;">
         `;
-        
         if (items.length > 0) {
-            content +=
-                "<ul style=\"margin-top: 5px;\">" +
-                items
-                    .map(item => `<li style="margin-bottom: 5px; font-size: 13.5px;">${escapeHTML(item)}</li>`)
-                    .join("") +
-                "</ul>";
+            content += "<ul style=\"margin-top: 5px;\">" + items.map(item => `<li style="margin-bottom: 5px; font-size: 13.5px;">${escapeHTML(item)}</li>`).join("") + "</ul>";
         }
-
         content += `
                 </div>
                 <div style="flex: 0 0 280px; order: 1;">
@@ -2827,41 +2409,20 @@ function showDiagnostics(type, title, items = [], pmId = null) {
         `;
     } else {
         if (items.length > 0) {
-            content +=
-                "<ul>" +
-                items
-                    .map(item => `<li>${escapeHTML(item)}</li>`)
-                    .join("") +
-                "</ul>";
+            content += "<ul>" + items.map(item => `<li>${escapeHTML(item)}</li>`).join("") + "</ul>";
         }
     }
-
     bodyEl.innerHTML = content;
 }
 
-
 function clearDiagnostics() {
-
-    const box =
-        document.getElementById("diagnostics");
-
-    box.className =
-        "diagnostics";
-
-    document.getElementById("diagnosticsTitle").textContent =
-        "";
-
-    document.getElementById("diagnosticsBody").innerHTML =
-        "";
+    const box = document.getElementById("diagnostics");
+    box.className = "diagnostics";
+    document.getElementById("diagnosticsTitle").textContent = "";
+    document.getElementById("diagnosticsBody").innerHTML = "";
 }
 
-
-/* ============================================================
-   ESCAPE HTML
-============================================================ */
-
 function escapeHTML(value) {
-
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -2870,482 +2431,221 @@ function escapeHTML(value) {
         .replace(/'/g, "&#039;");
 }
 
-
-/* ============================================================
-   URL PARAMETER READING
-============================================================ */
-
 function getPMIdentifierFromURL() {
-
-    const params =
-        new URLSearchParams(window.location.search);
-
-    const pm =
-        params.get("pm");
-
-    const id =
-        params.get("id");
-
-    const asset =
-        params.get("asset");
-
+    const params = new URLSearchParams(window.location.search);
     return {
-        pm: pm,
-        id: id,
-        asset: asset
+        pm: params.get("pm"),
+        id: params.get("id"),
+        asset: params.get("asset")
     };
 }
 
-
-/* ============================================================
-   FIND PM
-============================================================ */
-
-function findPM(identifier) {
-    if (!pmDatabase || Object.keys(pmDatabase).length === 0) {
-        return null;
-    }
-
-    if (identifier.pm && pmDatabase[identifier.pm]) {
-        return pmDatabase[identifier.pm];
-    }
-
-    if (identifier.id && pmDatabase[identifier.id]) {
-        return pmDatabase[identifier.id];
-    }
-
-    if (identifier.assetLocation) {
-        const matchingPM = Object.values(pmDatabase).find(
-            pm => pm.assetLocation === identifier.assetLocation
-        );
-
-        if (matchingPM) {
-            return matchingPM;
-        }
-    }
-
-    return null;
-}
-
-/* ============================================================
-   UPDATE QR STATUS
-============================================================ */
-
 function updateQRStatus(type, message) {
-
-    const status =
-        document.getElementById("qrStatus");
-
-    const text =
-        document.getElementById("qrStatusText");
-
-    status.className =
-        "qr-status " + type;
-
-    text.textContent =
-        message;
+    const status = document.getElementById("qrStatus");
+    const text = document.getElementById("qrStatusText");
+    status.className = "qr-status " + type;
+    text.textContent = message;
 }
 
 
-/* ============================================================
-   POPULATE PM MASTER DATA
-============================================================ */
-
-function populatePM(pm) {
-
-    currentPM = pm;
-
-
-    /* Header */
-
-    setValue("assetTag", pm.assetTag);
-
-    setValue("assetDescription", pm.asset);
-
-    setValue("assetLocation", pm.assetLocation);
-
-    setValue("assetStatus", pm.status);
-
-
-    /* PM */
-
-    setValue("pmIdInput", pm.pmId);
-
-    setValue("failureClassInput", pm.failureClass);
-
-    setValue("responsibilityInput", pm.responsibility);
-
-    setValue("glAccountInput", pm.glAccount);
-
-    setValue("jobPlanInput", pm.jobPlan);
-
-    setValue("frequencyInput", pm.frequency);
-
-
-    /* Equipment */
-
-    setValue("manufacturerInput", pm.manufacturer);
-
-    setValue("modelInput", pm.model);
-
-    setValue("serialInput", pm.serial);
-
-    setValue("installationDateInput", pm.installationDate);
-
-    setValue("criticalityInput", pm.criticality);
-
-
-    /* Technical */
-
-    setValue("ratedPowerInput", pm.ratedPower);
-
-    setValue("speedInput", pm.operatingSpeed);
-
-    setValue("fuelInput", pm.fuelType);
-
-    setValue("oilCapacityInput", pm.lubeOilCapacity);
-
-    setValue("coolingCapacityInput", pm.coolingCapacity);
-
-
-    /* Meter */
-
-    setValue(
-        "currentHourMeterInput",
-        pm.currentHourMeter
-    );
-
-    setValue(
-        "lastOverhaulInput",
-        pm.lastOverhaulMeter
-    );
-
-    setValue(
-        "avgHoursInput",
-        pm.avgRunningHours
-    );
-
-    setValue(
-        "targetOilTempInput",
-        pm.targetOilTemp
-    );
-
-    setValue(
-        "targetOilPressInput",
-        pm.targetOilPress
-    );
-
-
-    /* PM Summary */
-
-    setValue(
-        "pmFrequencySummaryInput",
-        pm.pmFrequencySummary
-    );
-
-    setValue(
-        "lastPMDateInput",
-        pm.lastPMDate
-    );
-
-    setValue(
-        "nextPMDateInput",
-        pm.nextPMDueDate
-    );
-
-    setValue(
-        "assignedGroupInput",
-        pm.assignedGroup
-    );
-
-    setValue(
-        "workOrderInput",
-        pm.workOrder
-    );
-
-    setValue(
-        "assetNotes",
-        pm.notes
-    );
-
-
-    /* Inspection */
-
-    setValue(
-        "locInput",
-        pm.assetLocation
-    );
-
-    setValue(
-        "unitInput",
-        pm.assetTag
-    );
-
-    setValue(
-        "serialInspectionInput",
-        pm.serial
-    );
-
-    setValue(
-        "hourMeterInput",
-        pm.currentHourMeter
-    );
-
-    setValue(
-        "inspectionPMId",
-        pm.pmId
-    );
-
-
-    document.getElementById("footerPMId")
-        .textContent =
-        pm.pmId;
-
-
-    document.getElementById("pmSource")
-        .textContent =
-        "Loaded from PM ID: " + pm.pmId;
-
-
-    renderMaterials(pm.materials);
-
-    // Prepare the third tab for the newly loaded PM.
-    loadPMAttachments(pm.pmId);
-
-
-    updateQRStatus(
-        "loaded",
-        "PM " + pm.pmId + " loaded from URL"
-    );
-
-
-    showDiagnostics(
-        "success",
-        "PM Data Loaded Successfully",
-        [
-            "PM ID: " + pm.pmId,
-            "Asset: " + pm.asset,
-            "Location: " + pm.assetLocation,
-            "Job Plan: " + pm.jobPlan,
-            "Frequency: " + pm.frequency
-        ],
-        pm.pmId
-    );
-
-}
-
-
-/* ============================================================
-   SET VALUE
-============================================================ */
-
-function setValue(id, value) {
-
-    const element =
-        document.getElementById(id);
-
-    if (!element) {
+function updateAssetImage(pmId) {
+    const image = document.getElementById("assetImage");
+    const placeholder = document.getElementById("assetImagePlaceholder");
+    if (!image || !placeholder) return;
+
+    const id = String(pmId ?? "").trim();
+    if (!id) {
+        image.removeAttribute("src");
+        image.style.display = "none";
+        placeholder.textContent = "No asset image available / لا توجد صورة للمعدة";
+        placeholder.style.display = "block";
         return;
     }
 
-    element.value =
-        value ?? "";
+    let fallbackUsed = false;
+    const jpg = "images/" + encodeURIComponent(id) + ".jpg";
+    const png = "images/" + encodeURIComponent(id) + ".png";
+
+    image.onerror = function () {
+        if (!fallbackUsed) {
+            fallbackUsed = true;
+            image.src = png;
+            return;
+        }
+
+        image.style.display = "none";
+        placeholder.textContent = "No asset image found / لم يتم العثور على صورة للمعدة";
+        placeholder.style.display = "block";
+    };
+
+    image.onload = function () {
+        image.style.display = "block";
+        placeholder.style.display = "none";
+    };
+
+    placeholder.textContent = "Loading asset image... / جاري تحميل صورة المعدة...";
+    placeholder.style.display = "block";
+    image.style.display = "none";
+    image.src = jpg;
 }
 
+function populatePM(pm) {
+    currentPM = pm;
+    updateAssetImage(pm.pmId);
 
-/* ============================================================
-   RENDER MATERIALS
-============================================================ */
+    setValue("assetTag", pm.assetTag);
+    setValue("assetDescription", pm.asset);
+    setValue("assetLocation", pm.assetLocation);
+    setValue("assetStatus", pm.status);
+
+    setValue("pmIdInput", pm.pmId);
+    setValue("failureClassInput", pm.failureClass);
+    setValue("responsibilityInput", pm.responsibility);
+    setValue("glAccountInput", pm.glAccount);
+    setValue("jobPlanInput", pm.jobPlan);
+    setValue("frequencyInput", pm.frequency);
+
+    setValue("manufacturerInput", pm.manufacturer);
+    setValue("modelInput", pm.model);
+    setValue("serialInput", pm.serial);
+    setValue("installationDateInput", pm.installationDate);
+    setValue("criticalityInput", pm.criticality);
+
+    setValue("ratedPowerInput", pm.ratedPower);
+    setValue("speedInput", pm.operatingSpeed);
+    setValue("fuelInput", pm.fuelType);
+    setValue("oilCapacityInput", pm.lubeOilCapacity);
+    setValue("coolingCapacityInput", pm.coolingCapacity);
+
+    setValue("currentHourMeterInput", pm.currentHourMeter);
+    setValue("lastOverhaulInput", pm.lastOverhaulMeter);
+    setValue("avgHoursInput", pm.avgRunningHours);
+    setValue("targetOilTempInput", pm.targetOilTemp);
+    setValue("targetOilPressInput", pm.targetOilPress);
+
+    setValue("pmFrequencySummaryInput", pm.pmFrequencySummary);
+    setValue("lastPMDateInput", pm.lastPMDate);
+    setValue("nextPMDateInput", pm.nextPMDueDate);
+    setValue("assignedGroupInput", pm.assignedGroup);
+    setValue("workOrderInput", pm.workOrder);
+    setValue("assetNotes", pm.notes);
+
+    setValue("locInput", pm.assetLocation);
+    setValue("unitInput", pm.assetTag);
+    setValue("serialInspectionInput", pm.serial);
+    setValue("hourMeterInput", pm.currentHourMeter);
+    setValue("inspectionPMId", pm.pmId);
+
+    document.getElementById("footerPMId").textContent = pm.pmId;
+    document.getElementById("pmSource").textContent = "Loaded from PM ID: " + pm.pmId;
+
+    renderMaterials(pm.materials);
+    loadPMAttachments(pm.pmId);
+
+    /*
+       IMPORTANT:
+       The checklist is selected from JSON equipmentType.
+       Model-based detection is used only as a fallback when
+       equipmentType does not exist.
+    */
+    if (pm.equipmentType !== undefined && pm.equipmentType !== null && String(pm.equipmentType).trim() !== "") {
+        applyEquipmentTypeFromJSON(pm.equipmentType);
+    } else {
+        onAssetModelChange(pm.model || "");
+    }
+
+    updateQRStatus("loaded", "PM " + pm.pmId + " loaded from URL");
+    showDiagnostics("success", "PM Data Loaded Successfully", [
+        "PM ID: " + pm.pmId,
+        "Asset: " + pm.asset,
+        "Location: " + pm.assetLocation,
+        "Job Plan: " + pm.jobPlan,
+        "Frequency: " + pm.frequency
+    ], pm.pmId);
+}
+
+function setValue(id, value) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    element.value = value ?? "";
+}
 
 function renderMaterials(materials) {
-
-    const body =
-        document.getElementById("materialsBody");
-
-    const total =
-        document.getElementById("materialsTotal");
-
+    const body = document.getElementById("materialsBody");
+    const total = document.getElementById("materialsTotal");
     body.innerHTML = "";
 
     if (!materials || materials.length === 0) {
-
-        body.innerHTML =
-            `<tr>
-                <td colspan="6">
-                    No PM materials defined.
-                </td>
-            </tr>`;
-
-        total.textContent =
-            "No materials.";
-
+        body.innerHTML = `<tr><td colspan="6">No PM materials defined.</td></tr>`;
+        total.textContent = "No materials.";
         return;
     }
 
-
     let totalQuantity = 0;
-
-
     materials.forEach((item, index) => {
-
-        totalQuantity +=
-            Number(item.quantity) || 0;
-
-        const row =
-            document.createElement("tr");
-
+        totalQuantity += Number(item.quantity) || 0;
+        const row = document.createElement("tr");
         row.innerHTML = `
-
-            <td>
-                ${index + 1}
-            </td>
-
-            <td>
-                ${escapeHTML(item.quantity)}
-            </td>
-
-            <td>
-                ${escapeHTML(item.unit)}
-            </td>
-
-            <td>
-                ${escapeHTML(item.itemNo)}
-            </td>
-
-            <td>
-                ${escapeHTML(item.description)}
-            </td>
-
-            <td dir="rtl">
-                ${escapeHTML(item.descriptionAr)}
-            </td>
-
+            <td>${index + 1}</td>
+            <td>${escapeHTML(item.quantity)}</td>
+            <td>${escapeHTML(item.unit)}</td>
+            <td>${escapeHTML(item.itemNo)}</td>
+            <td>${escapeHTML(item.description)}</td>
+            <td dir="rtl">${escapeHTML(item.descriptionAr)}</td>
         `;
-
         body.appendChild(row);
-
     });
 
-
-    total.textContent =
-        "Total material lines: " +
-        materials.length +
-        " | Total quantity: " +
-        totalQuantity;
-
+    total.textContent = "Total material lines: " + materials.length + " | Total quantity: " + totalQuantity;
 }
 
 /* ============================================================
    ATTACHMENTS
-   Lists files from attachments/<pmId>/ and opens each file
-   in a new browser tab.
-   ============================================================ */
+============================================================ */
 
-/*
- * Optional configuration for custom-domain deployments:
- *
- * window.EAM_GITHUB_REPOSITORY = "OWNER/REPOSITORY";
- *
- * When the application is hosted directly on GitHub Pages,
- * the repository is inferred from the github.io URL.
- */
 const ATTACHMENTS_FOLDER = "attachments";
 
 function getGitHubRepository() {
-    if (window.EAM_GITHUB_REPOSITORY) {
-        return String(window.EAM_GITHUB_REPOSITORY).trim();
-    }
-
+    if (window.EAM_GITHUB_REPOSITORY) return String(window.EAM_GITHUB_REPOSITORY).trim();
     const host = window.location.hostname;
-    const pathParts = window.location.pathname
-        .split("/")
-        .filter(Boolean);
-
-    if (!host.endsWith(".github.io")) {
-        return null;
-    }
-
+    const pathParts = window.location.pathname.split("/").filter(Boolean);
+    if (!host.endsWith(".github.io")) return null;
     const owner = host.split(".")[0];
-
-    /*
-     * User/organization Pages:
-     *   https://owner.github.io/
-     * normally maps to owner/owner.github.io
-     *
-     * Project Pages:
-     *   https://owner.github.io/repository/
-     * maps to owner/repository
-     */
-    const repo = pathParts.length > 0
-        ? pathParts[0]
-        : owner + ".github.io";
-
+    const repo = pathParts.length > 0 ? pathParts[0] : owner + ".github.io";
     return owner + "/" + repo;
 }
 
 function getAttachmentURL(pmId, fileName) {
-    return (
-        "./" +
-        ATTACHMENTS_FOLDER +
-        "/" +
-        encodeURIComponent(String(pmId)) +
-        "/" +
-        encodeURIComponent(String(fileName))
-    );
+    return "./" + ATTACHMENTS_FOLDER + "/" + encodeURIComponent(String(pmId)) + "/" + encodeURIComponent(String(fileName));
 }
 
 function renderAttachmentsMessage(message) {
     const list = document.getElementById("attachmentsList");
-
-    if (!list) {
-        return;
-    }
-
-    list.innerHTML = `
-        <li class="attachments-empty">
-            ${escapeHTML(message)}
-        </li>
-    `;
+    if (!list) return;
+    list.innerHTML = `<li class="attachments-empty">${escapeHTML(message)}</li>`;
 }
 
 function renderAttachments(files, pmId) {
     const list = document.getElementById("attachmentsList");
     const status = document.getElementById("attachmentsStatus");
-
-    if (!list || !status) {
-        return;
-    }
+    if (!list || !status) return;
 
     list.innerHTML = "";
-
     if (!files || files.length === 0) {
         status.textContent = "0 files";
-        renderAttachmentsMessage(
-            "No attachment files found for PM " + pmId + "."
-        );
+        renderAttachmentsMessage("No attachment files found for PM " + pmId + ".");
         return;
     }
 
-    const sortedFiles = [...files].sort((a, b) =>
-        String(a.name).localeCompare(
-            String(b.name),
-            undefined,
-            {
-                numeric: true,
-                sensitivity: "base"
-            }
-        )
-    );
+    const sortedFiles = [...files].sort((a, b) => String(a.name).localeCompare(String(b.name), undefined, { numeric: true, sensitivity: "base" }));
 
     sortedFiles.forEach(file => {
         const li = document.createElement("li");
-
         const link = document.createElement("a");
         link.className = "attachment-link";
         link.href = file.url || getAttachmentURL(pmId, file.name);
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        link.title = "Open " + file.name + " in a new page";
 
         const icon = document.createElement("span");
         icon.className = "attachment-icon";
@@ -3360,680 +2660,220 @@ function renderAttachments(files, pmId) {
         list.appendChild(li);
     });
 
-    status.textContent =
-        sortedFiles.length +
-        (sortedFiles.length === 1 ? " file" : " files");
+    status.textContent = sortedFiles.length + (sortedFiles.length === 1 ? " file" : " files");
 }
 
 async function fetchAttachmentsFromGitHub(pmId) {
     const repository = getGitHubRepository();
+    if (!repository || !repository.includes("/")) throw new Error("GitHub repository could not be determined.");
 
-    if (!repository || !repository.includes("/")) {
-        throw new Error(
-            "GitHub repository could not be determined."
-        );
-    }
-
-    const apiURL =
-        "https://api.github.com/repos/" +
-        repository +
-        "/contents/" +
-        ATTACHMENTS_FOLDER +
-        "/" +
-        encodeURIComponent(String(pmId));
-
-    const response = await fetch(apiURL, {
-        headers: {
-            "Accept": "application/vnd.github+json"
-        },
-        cache: "no-store"
-    });
-
-    if (!response.ok) {
-        throw new Error(
-            "GitHub API HTTP " + response.status
-        );
-    }
+    const apiURL = "https://api.github.com/repos/" + repository + "/contents/" + ATTACHMENTS_FOLDER + "/" + encodeURIComponent(String(pmId));
+    const response = await fetch(apiURL, { headers: { "Accept": "application/vnd.github+json" }, cache: "no-store" });
+    if (!response.ok) throw new Error("GitHub API HTTP " + response.status);
 
     const entries = await response.json();
+    if (!Array.isArray(entries)) throw new Error("The attachment path is not a directory.");
 
-    if (!Array.isArray(entries)) {
-        throw new Error(
-            "The attachment path is not a directory."
-        );
-    }
-
-    return entries
-        .filter(entry => entry.type === "file")
-        .map(entry => ({
-            name: entry.name,
-            /*
-             * Use the actual GitHub Pages file URL instead of
-             * the API download URL, so the file opens on the
-             * same deployed application when possible.
-             */
-            url: getAttachmentURL(pmId, entry.name)
-        }));
+    return entries.filter(entry => entry.type === "file").map(entry => ({
+        name: entry.name,
+        url: getAttachmentURL(pmId, entry.name)
+    }));
 }
 
 async function fetchAttachmentsFromManifest(pmId) {
-    const manifestURL =
-        "./" +
-        ATTACHMENTS_FOLDER +
-        "/" +
-        encodeURIComponent(String(pmId)) +
-        "/index.json?v=" +
-        Date.now();
-
-    const response = await fetch(manifestURL, {
-        cache: "no-store"
-    });
-
-    if (!response.ok) {
-        throw new Error(
-            "Attachment manifest HTTP " + response.status
-        );
-    }
+    const manifestURL = "./" + ATTACHMENTS_FOLDER + "/" + encodeURIComponent(String(pmId)) + "/index.json?v=" + Date.now();
+    const response = await fetch(manifestURL, { cache: "no-store" });
+    if (!response.ok) throw new Error("Attachment manifest HTTP " + response.status);
 
     const data = await response.json();
-
-    /*
-     * Supported formats:
-     *   ["file1.pdf", "file2.jpg"]
-     * or
-     *   { "files": ["file1.pdf", "file2.jpg"] }
-     */
-    const names = Array.isArray(data)
-        ? data
-        : Array.isArray(data.files)
-            ? data.files
-            : [];
-
-    return names
-        .filter(name =>
-            typeof name === "string" &&
-            name.trim() !== ""
-        )
-        .map(name => ({
-            name: name,
-            url: getAttachmentURL(pmId, name)
-        }));
+    const names = Array.isArray(data) ? data : Array.isArray(data.files) ? data.files : [];
+    return names.filter(name => typeof name === "string" && name.trim() !== "").map(name => ({
+        name: name,
+        url: getAttachmentURL(pmId, name)
+    }));
 }
 
 async function loadPMAttachments(pmId) {
-    const status =
-        document.getElementById("attachmentsStatus");
-
-    const source =
-        document.getElementById("attachmentsPMSource");
+    const status = document.getElementById("attachmentsStatus");
+    const source = document.getElementById("attachmentsPMSource");
 
     if (!pmId) {
-        if (source) {
-            source.textContent = "PM ID: ---";
-        }
-
-        if (status) {
-            status.textContent = "No PM selected";
-        }
-
-        renderAttachmentsMessage(
-            "No PM ID is currently loaded."
-        );
-
+        if (source) source.textContent = "PM ID: ---";
+        if (status) status.textContent = "No PM selected";
+        renderAttachmentsMessage("No PM ID is currently loaded.");
         return;
     }
 
-    if (source) {
-        source.textContent = "PM ID: " + pmId;
-    }
-
-    if (status) {
-        status.textContent = "Loading...";
-    }
-
-    renderAttachmentsMessage(
-        "Loading attachments for PM " + pmId + "..."
-    );
+    if (source) source.textContent = "PM ID: " + pmId;
+    if (status) status.textContent = "Loading...";
+    renderAttachmentsMessage("Loading attachments for PM " + pmId + "...");
 
     try {
-        /*
-         * Preferred method for GitHub Pages:
-         * query the repository contents directly.
-         */
-        const files =
-            await fetchAttachmentsFromGitHub(pmId);
-
+        const files = await fetchAttachmentsFromGitHub(pmId);
         renderAttachments(files, pmId);
-
     } catch (githubError) {
-
-        console.warn(
-            "GitHub attachment listing failed:",
-            githubError
-        );
-
         try {
-            /*
-             * Fallback for custom domains or repositories
-             * where the GitHub API cannot be used.
-             */
-            const files =
-                await fetchAttachmentsFromManifest(pmId);
-
+            const files = await fetchAttachmentsFromManifest(pmId);
             renderAttachments(files, pmId);
-
         } catch (manifestError) {
-
-            console.error(
-                "Attachment manifest loading failed:",
-                manifestError
-            );
-
-            if (status) {
-                status.textContent = "Unable to list files";
-            }
-
-            renderAttachmentsMessage(
-                "No attachment listing is available for PM " +
-                pmId +
-                ". Add attachments/" +
-                pmId +
-                "/index.json or configure EAM_GITHUB_REPOSITORY."
-            );
+            if (status) status.textContent = "Unable to list files";
+            renderAttachmentsMessage("No attachment listing available for PM " + pmId + ".");
         }
     }
 }
 
 function loadCurrentPMAttachments() {
-    const pmId =
-        currentPM?.pmId ||
-        document.getElementById("pmIdInput")?.value ||
-        document.getElementById("inspectionPMId")?.value ||
-        "";
-
+    const pmId = currentPM?.pmId || document.getElementById("pmIdInput")?.value || document.getElementById("inspectionPMId")?.value || "";
     loadPMAttachments(pmId);
 }
 
 async function loadPMDatabase() {
-
-    /*
-     * The application now loads only the JSON file belonging
-     * to the PM ID supplied in the URL.
-     *
-     * Example:
-     *   index.html?pm=2803
-     *   -> data/2803.json
-     */
-
     try {
-
-        updateQRStatus(
-            "",
-            "Loading PM data..."
-        );
-
-        const identifier =
-            getPMIdentifierFromURL();
-
-        const requestedPM =
-            identifier.pm ||
-            identifier.id ||
-            identifier.asset;
+        updateQRStatus("", "Loading PM data...");
+        const identifier = getPMIdentifierFromURL();
+        const requestedPM = identifier.pm || identifier.id || identifier.asset;
 
         if (!requestedPM) {
-
-            updateQRStatus(
-                "warning",
-                "No PM ID in URL"
-            );
-
-            showDiagnostics(
-                "info",
-                "Application Ready",
-                [
-                    "No PM parameter was supplied.",
-                    "Use ?pm=2803 to load PM 2803.",
-                    "Example: ?pm=2803"
-                ]
-            );
-
+            updateQRStatus("warning", "No PM ID in URL");
+            showDiagnostics("info", "Application Ready", [
+                "No PM parameter was supplied.",
+                "Use ?pm=2803 to load PM 2803.",
+                "Example: ?pm=2803"
+            ]);
             return;
         }
 
-        /*
-         * For the new arrangement, the PM identifier is the
-         * filename prefix:
-         *
-         *   2803 -> 2803.json
-         *
-         * encodeURIComponent prevents special characters from
-         * being interpreted as part of the path.
-         */
-        const pmId =
-            String(requestedPM).trim();
+        const pmId = String(requestedPM).trim();
+        const dataURL = "./data/" + encodeURIComponent(pmId) + ".json?v=" + Date.now();
+        currentPMFile = "./data/" + pmId + ".json";
 
-        const dataURL =
-            "./data/" +
-            encodeURIComponent(pmId) +
-            ".json?v=" +
-            Date.now();
+        const response = await fetch(dataURL, { cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status + " - " + pmId + ".json");
 
-        currentPMFile =
-            "./data/" +
-            pmId +
-            ".json";
-
-        const response =
-            await fetch(
-                dataURL,
-                {
-                    cache: "no-store"
-                }
-            );
-
-        if (!response.ok) {
-
-            throw new Error(
-                "HTTP " +
-                response.status +
-                " - " +
-                pmId +
-                ".json"
-            );
-        }
-
-        const data =
-            await response.json();
-
-        /*
-         * Each file normally contains one PM object.
-         *
-         * For compatibility, an array containing one object
-         * is also accepted.
-         */
+        const data = await response.json();
         let pmRecord = data;
-
         if (Array.isArray(data)) {
-
-            if (data.length === 0) {
-                throw new Error(
-                    "The PM JSON file contains no records."
-                );
-            }
-
+            if (data.length === 0) throw new Error("The PM JSON file contains no records.");
             pmRecord = data[0];
         }
 
-        if (
-            !pmRecord ||
-            typeof pmRecord !== "object" ||
-            Array.isArray(pmRecord)
-        ) {
-            throw new Error(
-                "Invalid PM JSON structure."
-            );
-        }
-
-        /*
-         * Keep the existing application architecture working:
-         * pmDatabase contains the currently loaded PM only.
-         */
-        const actualPMId =
-            String(
-                pmRecord.pmId ??
-                pmRecord.PM_ID ??
-                pmRecord.id ??
-                pmId
-            ).trim();
-
-        if (!pmRecord.pmId) {
-            pmRecord.pmId = actualPMId;
-        }
+        const actualPMId = String(pmRecord.pmId ?? pmRecord.PM_ID ?? pmRecord.id ?? pmId).trim();
+        if (!pmRecord.pmId) pmRecord.pmId = actualPMId;
 
         pmDatabase = {};
         pmDatabase[actualPMId] = pmRecord;
 
-        console.log(
-            "PM file loaded:",
-            currentPMFile,
-            pmRecord
-        );
-
-        /*
-         * Populate the form directly from the selected file.
-         */
         populatePM(pmRecord);
 
     } catch (error) {
-
-        console.error(
-            "PM data loading error:",
-            error
-        );
-
         pmDatabase = {};
-
-        updateQRStatus(
-            "error",
-            "PM Data unavailable"
-        );
-
-        const requestedPM =
-            getPMIdentifierFromURL().pm ||
-            getPMIdentifierFromURL().id ||
-            getPMIdentifierFromURL().asset ||
-            "---";
-
-        showDiagnostics(
-            "error",
-            "PM Data Error",
-            [
-                "Unable to load the PM data file.",
-                "Requested PM: " + requestedPM,
-                "Expected file: data/" +
-                    requestedPM +
-                    ".json",
-                "Please check that the file exists.",
-                "Error: " + error.message
-            ]
-        );
+        updateQRStatus("error", "PM Data unavailable");
+        const requestedPM = getPMIdentifierFromURL().pm || getPMIdentifierFromURL().id || "---";
+        showDiagnostics("error", "PM Data Error", [
+            "Unable to load the PM data file.",
+            "Requested PM: " + requestedPM,
+            "Error: " + error.message
+        ]);
     }
 }
 
 /* ============================================================
-   LOAD PM FROM URL
-============================================================ */
-
-function loadPMFromURL() {
-
-    /*
-     * Kept as a public compatibility function because other parts
-     * of the application may call loadPMFromURL().
-     *
-     * The actual loading is now performed by loadPMDatabase(),
-     * which fetches [pmid].json directly.
-     */
-    loadPMDatabase();
-}
-
-/* ============================================================
-   PRINT ACTIVE TAB
+   ACTIONS & PDF EXPORT
 ============================================================ */
 
 function printActiveTab() {
     window.print();
 }
 
-
-/* ============================================================
-   SAVE ASSET TAB PDF
-============================================================ */
-
 function saveAssetPDF() {
+    const element = document.getElementById("asset-form");
+    if (!element) return;
+    const pmId = document.getElementById("pmIdInput").value || "Unknown";
+    const asset = document.getElementById("assetTag").value || "Asset";
+    const fileName = `EAM_Asset_PM_${pmId}_${sanitizeFileName(asset)}.pdf`;
 
-    const element =
-        document.getElementById("asset-form");
-
-    if (!element) {
-        return;
-    }
-
-    const pmId =
-        document.getElementById("pmIdInput").value ||
-        "Unknown";
-
-    const asset =
-        document.getElementById("assetTag").value ||
-        "Asset";
-
-    const fileName =
-        `EAM_Asset_PM_${pmId}_${sanitizeFileName(asset)}.pdf`;
-
-    const opt = {
+    html2pdf().set({
         margin: 5,
         filename: fileName,
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2,
-            useCORS: true
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait"
-        }
-    };
-
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save();
-
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+    }).from(element).save();
 }
-
-
-/* ============================================================
-   SAVE INSPECTION PDF
-============================================================ */
 
 function saveInspectionPDF() {
+    const element = document.getElementById("printable-form");
+    if (!element) return;
+    const unitNo = document.getElementById("unitInput").value || "Unspecified";
+    const dateVal = document.getElementById("dateInput").value || getToday();
+    const pmId = document.getElementById("inspectionPMId").value || "Unknown";
+    const fileName = `Inspection_PM_${pmId}_${sanitizeFileName(unitNo)}_${dateVal}.pdf`;
 
-    const element =
-        document.getElementById("printable-form");
+    const actions = element.querySelector(".actions");
+    if (actions) actions.style.display = "none";
 
-    if (!element) {
-        return;
-    }
-
-    const unitNo =
-        document.getElementById("unitInput").value ||
-        "Unspecified";
-
-    const dateVal =
-        document.getElementById("dateInput").value ||
-        getToday();
-
-    const pmId =
-        document.getElementById("inspectionPMId").value ||
-        "Unknown";
-
-    const fileName =
-        `Engine_Inspection_PM_${pmId}_${sanitizeFileName(unitNo)}_${dateVal}.pdf`;
-
-    const actions =
-        element.querySelector(".actions");
-
-    if (actions) {
-        actions.style.display = "none";
-    }
-
-    const opt = {
+    html2pdf().set({
         margin: 5,
         filename: fileName,
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2,
-            useCORS: true
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait"
-        }
-    };
-
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .then(() => {
-            if (actions) {
-                actions.style.display = "flex";
-            }
-        })
-        .catch(error => {
-            if (actions) {
-                actions.style.display = "flex";
-            }
-            showDiagnostics(
-                "error",
-                "PDF Generation Error",
-                [error.message]
-            );
-        });
-
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+    }).from(element).save().then(() => {
+        if (actions) actions.style.display = "flex";
+    }).catch(error => {
+        if (actions) actions.style.display = "flex";
+        showDiagnostics("error", "PDF Generation Error", [error.message]);
+    });
 }
-
-
-/* ============================================================
-   EMAIL
-============================================================ */
 
 function sendFormViaEmail() {
+    const element = document.getElementById("printable-form");
+    const actionsDiv = element.querySelector(".actions");
+    if (actionsDiv) actionsDiv.style.display = "none";
 
-    const element =
-        document.getElementById("printable-form");
+    const unitNo = document.getElementById("unitInput").value || "Unspecified";
+    const dateVal = document.getElementById("dateInput").value || getToday();
+    const pmId = document.getElementById("inspectionPMId").value || "Unknown";
+    const fileName = `Inspection_PM_${pmId}_${sanitizeFileName(unitNo)}_${dateVal}.pdf`;
 
-    const actionsDiv =
-        element.querySelector(".actions");
+    document.getElementById("modalFileName").textContent = fileName;
 
-    if (actionsDiv) {
-        actionsDiv.style.display = "none";
-    }
-
-    const unitNo =
-        document.getElementById("unitInput").value ||
-        "Unspecified";
-
-    const dateVal =
-        document.getElementById("dateInput").value ||
-        getToday();
-
-    const locVal =
-        document.getElementById("locInput").value ||
-        "N/A";
-
-    const pmId =
-        document.getElementById("inspectionPMId").value ||
-        "Unknown";
-
-    const fileName =
-        `Engine_Inspection_PM_${pmId}_${sanitizeFileName(unitNo)}_${dateVal}.pdf`;
-
-    document.getElementById("modalFileName")
-        .textContent =
-        fileName;
-
-    const opt = {
+    html2pdf().set({
         margin: 5,
         filename: fileName,
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait"
-        }
-    };
-
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .then(() => {
-
-            if (actionsDiv) {
-                actionsDiv.style.display = "flex";
-            }
-
-            const subject =
-                encodeURIComponent(
-                    `Engine Inspection Checklist - PM ${pmId} - Unit: ${unitNo}`
-                );
-
-            const body =
-                encodeURIComponent(
-                    `Dear Team,\n\n` +
-                    `Please find attached the Engine Inspection & Maintenance Checklist (Form 440-1-G).\n\n` +
-                    `Details:\n` +
-                    `- PM ID: ${pmId}\n` +
-                    `- Location: ${locVal}\n` +
-                    `- Unit No: ${unitNo}\n` +
-                    `- Date: ${dateVal}\n\n` +
-                    `Best regards,`
-                );
-
-            window.location.href =
-                `mailto:?subject=${subject}&body=${body}`;
-
-            document.getElementById("modalFileName")
-                .textContent = fileName;
-
-            document.getElementById("mailModal")
-                .style.display =
-                "flex";
-
-        })
-        .catch(error => {
-
-            if (actionsDiv) {
-                actionsDiv.style.display = "flex";
-            }
-
-            showDiagnostics(
-                "error",
-                "PDF Generation Error",
-                [error.message]
-            );
-
-        });
-
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+    }).from(element).save().then(() => {
+        if (actionsDiv) actionsDiv.style.display = "flex";
+        const subject = encodeURIComponent(`Inspection Checklist - PM ${pmId} - Unit: ${unitNo}`);
+        const body = encodeURIComponent(`Dear Team,\n\nPlease find attached the Inspection & Maintenance Checklist.\n\n- PM ID: ${pmId}\n- Unit No: ${unitNo}\n- Date: ${dateVal}\n\nBest regards,`);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        document.getElementById("mailModal").style.display = "flex";
+    }).catch(error => {
+        if (actionsDiv) actionsDiv.style.display = "flex";
+        showDiagnostics("error", "PDF Generation Error", [error.message]);
+    });
 }
-
-
-/* ============================================================
-   CLOSE MODAL
-============================================================ */
 
 function closeModal() {
-    document.getElementById("mailModal")
-        .style.display =
-        "none";
+    document.getElementById("mailModal").style.display = "none";
 }
 
-
-/* ============================================================
-   SAVE EXECUTION LOCALLY
-============================================================ */
-
 function saveExecutionLocally() {
-
-    const pmId =
-        document.getElementById("inspectionPMId").value ||
-        "Unknown";
-
+    const pmId = document.getElementById("inspectionPMId").value || "Unknown";
     const execution = {
         pmId: pmId,
         timestamp: new Date().toISOString(),
+        assetType: currentEquipmentType || document.getElementById("assetTypeSelector").value,
+        equipmentType: currentEquipmentType || document.getElementById("assetTypeSelector").value,
         location: getValue("locInput"),
         unitNo: getValue("unitInput"),
         serial: getValue("serialInspectionInput"),
         hourMeter: getValue("hourMeterInput"),
         date: getValue("dateInput"),
         inspector: getValue("inspectionInspector"),
-        departmentHead: getValue("departmentHead"),
-        checklist: collectChecklistData()
+        departmentHead: getValue("departmentHead")
     };
 
     const key = "eam_pm_execution";
@@ -4041,167 +2881,41 @@ function saveExecutionLocally() {
     existing.push(execution);
     localStorage.setItem(key, JSON.stringify(existing));
 
-    showDiagnostics(
-        "success",
-        "PM Execution Saved Locally",
-        [
-            "PM ID: " + pmId,
-            "Unit: " + execution.unitNo,
-            "Date: " + execution.date,
-            "Stored in browser localStorage."
-        ]
-    );
-
+    showDiagnostics("success", "PM Execution Saved Locally", [
+        "PM ID: " + pmId,
+        "Unit: " + execution.unitNo,
+        "Stored in browser localStorage."
+    ]);
 }
-
-
-/* ============================================================
-   COLLECT CHECKLIST
-============================================================ */
-
-function collectChecklistData() {
-
-    const data = [];
-
-    for (let i = 1; i <= 27; i++) {
-        const checkbox = document.getElementById("check" + i);
-        const result = document.getElementById("result" + i);
-
-        data.push({
-            item: i,
-            completed: checkbox ? checkbox.checked : false,
-            result: result ? result.value : ""
-        });
-    }
-
-    return data;
-
-}
-
-
-/* ============================================================
-   CLEAR EXECUTION
-============================================================ */
 
 function clearExecutionForm() {
-
-    const confirmed =
-        confirm(
-            "Clear inspection execution data?\n\n" +
-            "Asset and PM master data will not be deleted."
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    for (let i = 1; i <= 27; i++) {
-        const checkbox = document.getElementById("check" + i);
-        if (checkbox) {
-            checkbox.checked = false;
-        }
-
-        const result = document.getElementById("result" + i);
-        if (result) {
-            result.value = "";
-        }
-    }
-
-    const fields = [
-        "inspectionInspector",
-        "departmentHead",
-        "crankcasePressure",
-        "timingResult",
-        "oilPressReading",
-        "waterTempReading",
-        "tachReading",
-        "oilTempReading"
-    ];
-
-    fields.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.value = "";
-        }
-    });
-
-    showDiagnostics(
-        "info",
-        "Execution Form Cleared",
-        [
-            "PM master data remains loaded.",
-            "Inspection execution fields have been cleared."
-        ]
-    );
-
+    if (!confirm("Clear inspection execution data?")) return;
+    document.querySelectorAll("#dynamicChecklistBody input[type='checkbox']").forEach(cb => cb.checked = false);
+    document.querySelectorAll("#dynamicChecklistBody input[type='text']").forEach(input => input.value = "");
+    showDiagnostics("info", "Execution Form Cleared", ["Inspection execution fields have been cleared."]);
 }
-
-
-/* ============================================================
-   GET VALUE
-============================================================ */
 
 function getValue(id) {
     const element = document.getElementById(id);
     return element ? element.value : "";
 }
 
-
-/* ============================================================
-   TODAY
-============================================================ */
-
 function getToday() {
-    return new Date()
-        .toISOString()
-        .split("T")[0];
+    return new Date().toISOString().split("T")[0];
 }
-
-
-/* ============================================================
-   FILE NAME SANITIZER
-============================================================ */
 
 function sanitizeFileName(value) {
-    return String(value)
-        .replace(/[<>:"/\\|?*]+/g, "_")
-        .replace(/\s+/g, "_");
+    return String(value).replace(/[<>:"/\\|?*]+/g, "_").replace(/\s+/g, "_");
 }
-
-
-/* ============================================================
-   AUTO DATE
-============================================================ */
-
-function initializeDate() {
-    const dateInput = document.getElementById("dateInput");
-    if (dateInput && !dateInput.value) {
-        dateInput.value = getToday();
-    }
-}
-
-
-/* ============================================================
-   WINDOW CLICK MODAL CLOSE
-============================================================ */
-
-window.addEventListener(
-    "click",
-    function(event) {
-        const modal = document.getElementById("mailModal");
-        if (event.target === modal) {
-            closeModal();
-        }
-    }
-);
-
-
-/* ============================================================
-   INITIALIZATION
-============================================================ */
 
 document.addEventListener("DOMContentLoaded", function() {
-    initializeDate();
+    const dateInput = document.getElementById("dateInput");
+    if (dateInput && !dateInput.value) dateInput.value = getToday();
+    /*
+       Initial checklist is GAS ENGINE only until the PM JSON is loaded.
+       Once JSON is loaded, equipmentType automatically replaces it.
+    */
+    switchChecklistTemplate("GAS ENGINE");
     loadPMDatabase();
 });
 
