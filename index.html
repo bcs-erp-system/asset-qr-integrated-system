@@ -3920,37 +3920,6 @@ function renderAttachments(files, pmId) {
         sortedFiles.length +
         (sortedFiles.length === 1 ? " file" : " files");
 }
-async function fetchAttachmentsFromDirectoryHTML(pmId) {
-    const folderURL = "./" + ATTACHMENTS_FOLDER + "/" + encodeURIComponent(String(pmId)) + "/";
-    const response = await fetch(folderURL, { cache: "no-store" });
-
-    if (!response.ok) {
-        throw new Error("Directory listing HTTP " + response.status);
-    }
-
-    const htmlText = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlText, "text/html");
-    const links = doc.querySelectorAll("a");
-    
-    const files = [];
-    links.forEach(link => {
-        const href = link.getAttribute("href");
-        // Filter out parent directory links ("../") and query parameters/slashes
-        if (href && href !== "../" && !href.endsWith("/")) {
-            // Decode URI component in case names are URL-encoded
-            const fileName = decodeURIComponent(href.split("/").pop());
-            if (fileName && fileName !== "index.json") {
-                files.push({
-                    name: fileName,
-                    url: getAttachmentURL(pmId, fileName)
-                });
-            }
-        }
-    });
-
-    return files;
-}
 
 async function fetchAttachmentsFromGitHub(pmId) {
     const repository = getGitHubRepository();
@@ -4046,50 +4015,91 @@ async function fetchAttachmentsFromManifest(pmId) {
             url: getAttachmentURL(pmId, name)
         }));
 }
+
 async function loadPMAttachments(pmId) {
-    const status = document.getElementById("attachmentsStatus");
-    const source = document.getElementById("attachmentsPMSource");
+    const status =
+        document.getElementById("attachmentsStatus");
+
+    const source =
+        document.getElementById("attachmentsPMSource");
 
     if (!pmId) {
-        if (source) source.textContent = "PM ID: ---";
-        if (status) status.textContent = "No PM selected";
-        renderAttachmentsMessage("No PM ID is currently loaded.");
+        if (source) {
+            source.textContent = "PM ID: ---";
+        }
+
+        if (status) {
+            status.textContent = "No PM selected";
+        }
+
+        renderAttachmentsMessage(
+            "No PM ID is currently loaded."
+        );
+
         return;
     }
 
-    if (source) source.textContent = "PM ID: " + pmId;
-    if (status) status.textContent = "Loading...";
-    renderAttachmentsMessage("Loading attachments for PM " + pmId + "...");
+    if (source) {
+        source.textContent = "PM ID: " + pmId;
+    }
+
+    if (status) {
+        status.textContent = "Loading...";
+    }
+
+    renderAttachmentsMessage(
+        "Loading attachments for PM " + pmId + "..."
+    );
 
     try {
-        // 1. Try GitHub API (for GitHub Pages)
-        const files = await fetchAttachmentsFromGitHub(pmId);
+        /*
+         * Preferred method for GitHub Pages:
+         * query the repository contents directly.
+         */
+        const files =
+            await fetchAttachmentsFromGitHub(pmId);
+
         renderAttachments(files, pmId);
+
     } catch (githubError) {
-        console.warn("GitHub attachment listing failed, trying local directory listing...", githubError);
+
+        console.warn(
+            "GitHub attachment listing failed:",
+            githubError
+        );
 
         try {
-            // 2. Try Local Server HTML Directory Listing (for Live Server / Local Dev)
-            const files = await fetchAttachmentsFromDirectoryHTML(pmId);
-            renderAttachments(files, pmId);
-        } catch (dirError) {
-            console.warn("Directory listing failed, trying manifest JSON...", dirError);
+            /*
+             * Fallback for custom domains or repositories
+             * where the GitHub API cannot be used.
+             */
+            const files =
+                await fetchAttachmentsFromManifest(pmId);
 
-            try {
-                // 3. Fallback to index.json manifest
-                const files = await fetchAttachmentsFromManifest(pmId);
-                renderAttachments(files, pmId);
-            } catch (manifestError) {
-                console.error("All attachment loading methods failed:", manifestError);
-                if (status) status.textContent = "Unable to list files";
-                renderAttachmentsMessage(
-                    "No attachment listing is available for PM " + pmId + 
-                    ". Drop files into attachments/" + pmId + "/ using a local web server (like Live Server)."
-                );
+            renderAttachments(files, pmId);
+
+        } catch (manifestError) {
+
+            console.error(
+                "Attachment manifest loading failed:",
+                manifestError
+            );
+
+            if (status) {
+                status.textContent = "Unable to list files";
             }
+
+            renderAttachmentsMessage(
+                "No attachment listing is available for PM " +
+                pmId +
+                ". Add attachments/" +
+                pmId +
+                "/index.json or configure EAM_GITHUB_REPOSITORY."
+            );
         }
     }
 }
+
 function loadCurrentPMAttachments() {
     const pmId =
         currentPM?.pmId ||
@@ -4099,7 +4109,6 @@ function loadCurrentPMAttachments() {
 
     loadPMAttachments(pmId);
 }
-
 async function loadPMDatabase() {
 
     /*
