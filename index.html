@@ -237,6 +237,43 @@ textarea {
     margin-top: 0;
 }
 
+/* TAB 2 inspection header: keep the bilingual title in one stable row
+   and give it enough height so the Arabic/English text never overlaps. */
+.inspection-main-title {
+    min-height: 44px;
+    height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    line-height: 1.2;
+    padding: 9px 12px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.inspection-main-title .inspection-title-en {
+    flex: 1 1 auto;
+    text-align: right;
+    direction: ltr;
+}
+
+.inspection-main-title .inspection-title-ar {
+    flex: 0 0 auto;
+    text-align: left;
+    direction: rtl;
+}
+
+@media (max-width: 700px) {
+    .inspection-main-title {
+        height: auto;
+        min-height: 44px;
+        white-space: normal;
+        flex-wrap: wrap;
+    }
+}
+
 .section-subtitle {
     color: #475569;
     font-size: 12px;
@@ -1700,14 +1737,9 @@ textarea {
 
     <!-- FORM HEADER -->
 
-    <div class="section-title">
-
-        Engine Inspection & Preventive Maintenance
-
-        <span style="float:left;">
-            فحص وصيانة المحرك
-        </span>
-
+    <div class="section-title inspection-main-title" id="inspectionMainTitle">
+        <span class="inspection-title-en">Engine Inspection &amp; Preventive Maintenance</span>
+        <span class="inspection-title-ar">فحص وصيانة المحرك</span>
     </div>
 
 
@@ -1792,17 +1824,6 @@ textarea {
         </tr>
 
     </table>
-
-
-    <!-- =====================================================
-         INSPECTION & PREVENTIVE MAINTENANCE HEADING
-    ====================================================== -->
-
-    <div class="section-title" style="text-align:center;">
-        Engine Inspection &amp; Preventive Maintenance
-        / فحص وصيانة المعدة
-        / Equipment Inspection &amp; Preventive Maintenance
-    </div>
 
 
     <!-- EQUIPMENT-SPECIFIC DYNAMIC INSPECTION LIST -->
@@ -3541,16 +3562,17 @@ function updateEquipmentTypeUI(pm) {
         checklistTable.style.display = config.showLegacyInspection ? "" : "none";
     }
 
-    const formTitle = document.querySelector("#tab-checklist .section-title");
-    if (formTitle && config.showLegacyInspection) {
-        const titleSpan = formTitle.querySelector("span");
-        if (titleSpan) {
-            titleSpan.textContent = "فحص وصيانة المحرك / Engine Inspection & Preventive Maintenance";
-        }
-    } else if (formTitle && !config.showLegacyInspection) {
-        const titleSpan = formTitle.querySelector("span");
-        if (titleSpan) {
-            titleSpan.textContent = "فحص وصيانة المعدة / Equipment Inspection & Preventive Maintenance";
+    const formTitle = document.getElementById("inspectionMainTitle");
+    if (formTitle) {
+        const titleEn = formTitle.querySelector(".inspection-title-en");
+        const titleAr = formTitle.querySelector(".inspection-title-ar");
+
+        if (config.showLegacyInspection) {
+            if (titleEn) titleEn.textContent = "Engine Inspection & Preventive Maintenance";
+            if (titleAr) titleAr.textContent = "فحص وصيانة المحرك";
+        } else {
+            if (titleEn) titleEn.textContent = "Equipment Inspection & Preventive Maintenance";
+            if (titleAr) titleAr.textContent = "فحص وصيانة المعدة";
         }
     }
 
