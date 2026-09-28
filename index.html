@@ -2728,8 +2728,17 @@ function loadCurrentPMAttachments() {
 }
 
 async function loadPMDatabase() {
+    /*
+     * PM JSON arrangement used by the reference application:
+     *   data/<PM_ID>-data.json
+     * Example:
+     *   ?pm=2803  ->  ./data/2803-data.json
+     *
+     * Tab 2 is populated only after this PM record is loaded.
+     */
     try {
         updateQRStatus("", "Loading PM data...");
+
         const identifier = getPMIdentifierFromURL();
         const requestedPM = identifier.pm || identifier.id || identifier.asset;
 
@@ -2744,37 +2753,75 @@ async function loadPMDatabase() {
         }
 
         const pmId = String(requestedPM).trim();
-        const dataURL = "./data/" + encodeURIComponent(pmId) + ".json?v=" + Date.now();
-        currentPMFile = "./data/" + pmId + ".json";
+        const dataURL = "./data/" + encodeURIComponent(pmId) + "-data.json?v=" + Date.now();
+        currentPMFile = "./data/" + pmId + "-data.json";
 
         const response = await fetch(dataURL, { cache: "no-store" });
-        if (!response.ok) throw new Error("HTTP " + response.status + " - " + pmId + ".json");
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status + " - " + pmId + "-data.json");
+        }
 
         const data = await response.json();
         let pmRecord = data;
+
         if (Array.isArray(data)) {
-            if (data.length === 0) throw new Error("The PM JSON file contains no records.");
+            if (data.length === 0) {
+                throw new Error("The PM JSON file contains no records.");
+            }
             pmRecord = data[0];
         }
 
-        const actualPMId = String(pmRecord.pmId ?? pmRecord.PM_ID ?? pmRecord.id ?? pmId).trim();
-        if (!pmRecord.pmId) pmRecord.pmId = actualPMId;
+        if (!pmRecord || typeof pmRecord !== "object" || Array.isArray(pmRecord)) {
+            throw new Error("Invalid PM JSON structure.");
+        }
+
+        const actualPMId = String(
+            pmRecord.pmId ?? pmRecord.PM_ID ?? pmRecord.id ?? pmId
+        ).trim();
+
+        if (!pmRecord.pmId) {
+            pmRecord.pmId = actualPMId;
+        }
 
         pmDatabase = {};
         pmDatabase[actualPMId] = pmRecord;
 
+        currentPM = pmRecord;
+        console.log("PM file loaded:", currentPMFile, pmRecord);
+
+        /*
+         * This is the important Tab 2 step:
+         * populatePM() fills the Tab 2 header fields and then selects
+         * the checklist from equipmentType in the JSON record.
+         */
         populatePM(pmRecord);
 
     } catch (error) {
+        console.error("PM data loading error:", error);
         pmDatabase = {};
+        currentPM = null;
+
         updateQRStatus("error", "PM Data unavailable");
-        const requestedPM = getPMIdentifierFromURL().pm || getPMIdentifierFromURL().id || "---";
+
+        const requestedPM =
+            getPMIdentifierFromURL().pm ||
+            getPMIdentifierFromURL().id ||
+            getPMIdentifierFromURL().asset ||
+            "---";
+
         showDiagnostics("error", "PM Data Error", [
             "Unable to load the PM data file.",
             "Requested PM: " + requestedPM,
+            "Expected file: data/" + requestedPM + "-data.json",
+            "Please check that the file exists.",
             "Error: " + error.message
         ]);
     }
+}
+
+/* Compatibility function used by older parts of the application. */
+function loadPMFromURL() {
+    loadPMDatabase();
 }
 
 /* ============================================================
