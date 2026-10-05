@@ -1,0 +1,3432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Event Tracking System — Full</title>
+
+<!-- Tailwind CDN (quick prototype) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+
+
+<style>
+  /* small extra styles */
+  .tree-node { cursor: pointer; user-select: none; }
+  .toggle-btn { width: 26px; height: 26px; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; }
+  #summaryTooltip { position: absolute; display:none; z-index:60; min-width:220px; }
+  .ft-level textarea { width:100%; min-height:40px; }
+  .rec-table td, .rec-table th { vertical-align: middle; }
+
+    /* Event Tracking */
+    #toolbox {
+      width: 160px;
+      background: #f4f4f4;
+      padding: 10px;
+      border-right: 2px solid #ccc;
+      float: left;
+      height: calc(100vh - 50px);
+      overflow-y: auto;
+    }
+    .tool {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 15px;
+      cursor: grab;
+    }
+    .tool img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 5px;
+    }
+    .tab-box {
+      margin-top: 5px;
+      width: 120px;
+    }
+    .tab-headers {
+      display: flex;
+      justify-content: space-around;
+      background: #ddd;
+      border-radius: 4px 4px 0 0;
+    }
+    .tab-headers div {
+      flex: 1;
+      padding: 2px;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .tab-headers .active {
+      background: #fff;
+      font-weight: bold;
+      border-bottom: 1px solid #ccc;
+    }
+    .tab-content-box {
+      border: 1px solid #ccc;
+      border-top: none;
+      padding: 3px;
+      background: #fff;
+      border-radius: 0 0 4px 4px;
+    }
+    .tab-content-box textarea {
+      width: 100%;
+      height: 40px;
+      font-size: 11px;
+    }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* two equal columns */
+  gap: 10px;  /* small space between two windows in same row */
+}
+
+.why-block {
+  position: relative;
+  background: #f9fafb;
+  border: 1px solid #ddd;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;  /* ✅ let grid define size */
+}
+
+.why-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  line-height: 20px;
+  text-align: center;
+}
+
+.why-label {
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #0c4a6e;
+}
+
+.why-block input,
+.why-block textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 8px;
+  resize: vertical;
+}
+
+/* ✅ Sub-tabs inside Why? blocks */
+.why-tab-box {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.why-tab-headers {
+  display: flex;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.why-tab-headers div {
+  flex: 1;
+  text-align: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  cursor: pointer;
+}
+
+.why-tab-headers div.active {
+  background: #0284c7;
+  color: white;
+}
+
+.why-tab-content-box {
+  width: 100%;
+}
+
+.why-tab-content {
+  display: none;
+  width: 100%;
+}
+
+.why-tab-content.active {
+  display: block;
+}
+
+.why-tab-content textarea {
+  width: 100%;
+  min-height: 90px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px;
+  resize: vertical;
+}
+.header-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* keep title in the middle */
+  padding: 10px 60px;
+  background: #0c4a6e;       /* light blue background */
+  border-bottom: 2px solid #6b7280; /* gray border */
+}
+
+.header-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #0c4a6e;   /* dark blue title */
+  margin: 0;
+  text-align: center;
+}
+
+.header-logo {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 45px;
+  width: auto;
+}
+
+.header-logo.left {
+  left: 15px;  /* stick to left edge */
+}
+
+.header-logo.right {
+  right: 15px; /* stick to right edge */
+}
+
+ /* Right-side panel modal */
+  .modal-bg {
+    position: fixed;
+    top: 0; right: 0;
+    width: 50%;
+    height: 100%;
+    background: white;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+    display: none;
+    flex-direction: column;
+    padding: 20px;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+  .modal h2 { margin-top: 0; }
+  .modal label { display: block; margin-top: 10px; font-weight: 600; }
+  .modal input, .modal textarea, .modal select { width: 100%; padding: 6px; margin-top: 4px; border-radius: 5px; border: 1px solid #ccc; }
+  .modal-footer { margin-top: 15px; text-align: right; }
+  .modal-footer button { margin-left: 5px; padding: 6px 12px; border: none; border-radius: 5px; }
+  .modal-footer .save { background: #10b981; color: white; }
+  .modal-footer .cancel { background: #f3f4f6; }
+  
+  /* Modern table styling */
+  .modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .modern-table thead tr {
+    background-color: #0c4a6e;
+    color: white;
+    text-align: left;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e1e5e9;
+  }
+  
+  .modern-table tbody tr {
+    border-bottom: 1px solid #e1e5e9;
+  }
+  
+  .modern-table tbody tr:nth-of-type(even) {
+    background-color: #f8fafc;
+  }
+  
+  .modern-table tbody tr:last-of-type {
+    border-bottom: 2px solid #0c4a6e;
+  }
+  
+  .modern-table tbody tr:hover {
+    background-color: #f1f5f9;
+  }
+  
+  /* Button styling */
+  .btn-edit {
+    background-color: #3b82f6;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  
+  .btn-delete {
+    background-color: #ef4444;
+    color: white;
+    padding: 6px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    width: 30px;
+    text-align: center;
+  }
+  
+  .btn-add {
+    background-color: #10b981;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    float: right;
+    margin-bottom: 15px;
+  }
+  
+  /* Two column layout for event details */
+  .two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .two-columns p {
+    margin: 8px 0;
+    font-size: 0.9rem;
+  }
+  
+  /* File attachment styles */
+  .file-list {
+    margin-top: 20px;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 15px;
+    background: white;
+  }
+  
+  .file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e1e5e9;
+  }
+  
+  .file-item:last-child {
+    border-bottom: none;
+  }
+  
+  .file-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .btn-update {
+    background-color: #3b82f6;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  
+  .btn-open {
+    background-color: #10b981;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  
+  .file-upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+    background: #f8fafc;
+  }
+
+  /* Improved tree view with indentation */
+  .tree-level-0 { margin-left: 0; }
+  .tree-level-1 { margin-left: 16px; }
+  .tree-level-2 { margin-left: 32px; }
+  .tree-level-3 { margin-left: 48px; }
+  .tree-level-4 { margin-left: 64px; }
+
+  /* Leaf node styling */
+  .leaf-node { background-color: #f8fafc; border: 1px solid #e2e8f0; }
+  .leaf-node:hover { background-color: #e6f6ff; border-color: #0c4a6e; }
+
+  /* Current event highlight */
+  .current-event-highlight {
+    background-color: #f0f9ff !important;
+    border-left: 4px solid #0ea5e9;
+  }
+
+  /* Summary table improvements - FULL WIDTH */
+  #summaryTable {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  #summaryTable th,
+  #summaryTable td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 8px 12px;
+  }
+
+  /* Make specific columns wider for better content display */
+  #summaryTable th:nth-child(1), /* Event ID */
+  #summaryTable td:nth-child(1) {
+    width: 120px;
+  }
+
+  #summaryTable th:nth-child(4), /* Event Name */
+  #summaryTable td:nth-child(4) {
+    width: 200px;
+  }
+
+  #summaryTable th:nth-child(6), /* What Happened */
+  #summaryTable td:nth-child(6) {
+    width: 250px;
+  }
+
+  #summaryTable th:nth-child(9), /* Team Members */
+  #summaryTable td:nth-child(9) {
+    width: 200px;
+  }
+
+  #summaryTable th:nth-child(10), /* State */
+  #summaryTable td:nth-child(10) {
+    width: 120px;
+  }
+
+  /* Summary tooltip for tracking table */
+  #summaryTooltip {
+    position: absolute;
+    display: none;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-width: 300px;
+  }
+
+  /* Team members list styling */
+  .team-member-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.team-member-item.dragging {
+  opacity: 0.5;
+}
+
+.delete-member {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+  .team-member-item:hover {
+    background: #f9fafb;
+  }
+
+  .team-member-item:last-child {
+    border-bottom: none;
+  }
+
+  .delete-member:hover {
+    background: #fef2f2;
+    border-radius: 4px;
+  }
+
+  /* Column search inputs */
+  .column-search {
+    width: 100%;
+    padding: 4px 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .column-search:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+
+  /* Show/Hide checkbox styling */
+  .show-hide-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .show-hide-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  .show-hide-checkbox label {
+    font-weight: 500;
+    color: #0c4a6e;
+    cursor: pointer;
+  }
+
+  /* Clickable row styling */
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .clickable-row:hover {
+    background-color: #f0f9ff !important;
+  }
+
+  /* Status control styling */
+  .status-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .status-control label {
+    font-weight: 600;
+    color: #0c4a6e;
+    min-width: 60px;
+  }
+
+  .status-control select {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .last-updated {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  /* Event Edit Modal styling */
+  .event-edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .event-edit-modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .event-edit-modal h2 {
+    margin-top: 0;
+    color: #0c4a6e;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+  }
+
+  .event-edit-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .event-edit-modal-full {
+    grid-column: 1 / -1;
+  }
+
+  .event-edit-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+  }
+
+  /* CSV Status Styling */
+  .csv-status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+  }
+
+  .csv-status.loading {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+  }
+
+  .csv-status.success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+  }
+
+  .csv-status.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #ef4444;
+  }
+form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button[type="submit"] {
+      background-color: #3498db;
+      color: white;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #2980b9;
+    }
+
+    .file-entry {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .file-name {
+      flex-grow: 1;
+      font-weight: 500;
+    }
+
+    .file-buttons button {
+      margin-left: 8px;
+    }
+
+    .open-btn {
+      background-color: #2ecc71;
+      color: white;
+    }
+
+    .open-btn:hover {
+      background-color: #27ae60;
+    }
+
+    .modify-btn {
+      background-color: #f39c12;
+      color: white;
+    }
+
+    .modify-btn:hover {
+      background-color: #e67e22;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- HEADER -->
+<header class="bg-gradient-to-r from-sky-700 to-sky-500 text-white sticky top-0 z-40">
+<div class="header-bar">
+  <div class="max-w-6xl mx-auto flex items-center gap-4 p-4">
+    <img src="Dragon_Oil.png" alt="Company Logo" class="header-logo left"/>
+    <h3 class="text-lg font-semibold">Event Tracking System</h3>
+ <img id="logo" src="gupco.png" alt="Logo" class="header-logo right"/>
+    </div>
+    <div class="ml-auto flex items-center gap-3">
+      <div id="sessionRole" class="text-sm opacity-90"></div>
+      <button id="adminUploadBtn" class="hidden btn-admin-upload bg-white/10 hover:bg-white/20 text-white rounded px-3 py-1 text-sm">Upload CSV</button>
+      <button id="logoutBtn" class="hidden bg-white/10 hover:bg-white/20 rounded px-3 py-1 text-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTAINER -->
+<div class="max-w-7xl mx-auto p-4">
+
+  <!-- LOGIN -->
+  <div id="loginPage" class="min-h-[60vh] flex items-center justify-center">
+    <div class="bg-white rounded-xl shadow p-6 w-full max-w-md">
+      <h2 class="text-sky-700 text-xl font-bold mb-3">🔐 Sign in</h2>
+      <input id="username" placeholder="username" class="w-full border rounded px-3 py-2 mb-2" />
+      <input id="password" placeholder="password" type="password" class="w-full border rounded px-3 py-2 mb-3" />
+      <div class="flex gap-3">
+        <button class="bg-sky-600 text-white rounded px-3 py-2 flex-1" onclick="handleLogin()">Login</button>
+        <button class="bg-slate-100 rounded px-3 py-2 flex-1" onclick="demoLogin()">Demo</button>
+      </div>
+      <p id="loginError" class="text-sm text-red-600 mt-3"></p>
+      <p class="text-sm text-slate-500 mt-3">Admin credentials: <code>admin</code> / <code>Admin</code></p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="mainPage" class="hidden">
+
+    <!-- Tabs -->
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex gap-2" role="tablist" aria-label="Main Tabs">
+        <button class="tab-btn px-3 py-2 rounded-t bg-white border border-b-0 text-sky-700 font-semibold" onclick="showTab(0)">✏️ Event Editing</button>
+        <button class="tab-btn px-3 py-2 rounded-t bg-slate-100 text-slate-700" onclick="showTab(1)">📋📁 Event Tracking</button>     
+        <button class="tab-btn px-3 py-2 rounded-t bg-slate-100 text-slate-700" onclick="showTab(2)">🔍Investigations</button>
+       <button class="tab-btn px-3 py-2 rounded-t bg-slate-100 text-slate-700" onclick="showTab(3)">📋📎 Attachments</button>
+       <button class="tab-btn px-3 py-2 rounded-t bg-slate-100 text-slate-700" onclick="showTab(4)">📊 Reporting</button>
+      </div>
+    </div>
+
+    <!-- Tab contents -->
+    <div class="mt-3">
+
+      <!-- Tab 0: Event Editing -->
+      <div id="tab0" class="tab-content bg-white p-4 rounded-b-lg shadow">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- LEFT COLUMN: Form Fields -->
+          <div class="space-y-4">
+
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sky-700 font-semibold">Event Date</label>
+                <input id="eventDate" type="date" class="w-full border rounded px-3 py-2"/>
+              </div>
+              <div>
+                <label class="block text-sky-700 font-semibold">Event Name</label>
+                <input id="eventName" type="text" class="w-full border rounded px-3 py-2"/>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-sky-700 font-semibold">Field</label>
+                <select id="fieldSelect" class="w-full border rounded px-2 py-2"></select>
+              </div>
+              <div>
+                <label class="block text-sky-700 font-semibold">P/F</label>
+                <select id="pfSelect" class="w-full border rounded px-2 py-2"></select>
+              </div>
+              <div>
+                <label class="block text-sky-700 font-semibold">System</label>
+                <select id="systemSelect" class="w-full border rounded px-2 py-2"></select>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-sky-700 font-semibold">Package</label>
+                <select id="packageSelect" class="w-full border rounded px-2 py-2"></select>
+              </div>
+              <div>
+                <label class="block text-sky-700 font-semibold">Package-TAG</label>
+                <select id="tagSelect" class="w-full border rounded px-2 py-2"></select>
+              </div>
+              <div>
+                <label class="block text-sky-700 font-semibold">Equipment-TAG</label>
+                <input id="equipmentTag" type="text" readonly class="w-full border rounded px-3 py-2 bg-slate-50"/>
+              </div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sky-700 font-semibold">Production Impact (BPD)</label>
+                <input id="productionImpact" type="number" step="0.01" value="0" class="w-full border rounded px-3 py-2"/>
+              </div>
+              <div>
+                <label class="block text-sky-700 font-semibold">Status</label>
+                <select id="statusSelect" class="w-full border rounded px-2 py-2">
+                  <option>Investigating</option><option>Closed</option><option>Completed</option><option>Canceled</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sky-700 font-semibold">What Happened</label>
+              <textarea id="whatHappened" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div>
+              <label class="block text-sky-700 font-semibold">Immediate Action</label>
+              <textarea id="immediateAction" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+            <div>
+              <label class="block text-sky-700 font-semibold">Immediate Cause</label>
+              <textarea id="immediateCause" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+            </div>
+
+            <!-- team -->
+            <div class="border-t pt-3">
+              <div class="flex gap-3 items-end">
+                <div class="flex-1">
+  <label class="block text-sky-700 font-semibold">👤Employee</label>
+  <select id="employeeSelect" class="w-full border rounded px-2 py-2">
+    <option value="">-- Select --</option> <!-- Empty default option -->
+    <option value="7141">Mohamed Said</option>
+    <option value="7540">Ayman Khoshouey</option>
+    <option value="7542">Hany Ibrahim</option>
+    <option value="7550">Ahmed Shaker</option>
+    <option value="7557">Diaa Abdel Zaher</option>
+    <option value="8320">Wael Abdelkader</option>
+    <option value="8321">Hassan Elsayed</option>
+    <option value="8826">Amr Mostafa</option>
+    <option value="8957">Mostafa Housine</option>
+    <option value="Null">P/F's OIM</option>
+  </select>
+</div>
+        <div class="flex-1">
+                  <label class="block text-sky-700 font-semibold">👷Team Leader</label>
+                  <select id="teamLeaderSelect" class="w-full border rounded px-2 py-2">
+			<option value="">-- Select --</option> <!-- Empty default option -->                    
+			<option value="DRAGON2025">Faisa Omar Saez</option>
+                    <option value="GUPCO1">Osama Kandel</option>
+                    <option value="GUPCO2">Naser Nageh</option>
+                    <option value="Null">P/F's OIM</option>
+                  </select>
+                </div>
+                <div>
+                  <button class="bg-sky-600 text-white px-3 py-2 rounded" onclick="addToTeam()">➕ Add</button>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <label class="block text-sky-700 font-semibold">Team Members (drag to reorder, click X to remove)</label>
+                <div id="teamList" class="border rounded px-2 py-2 max-h-40 overflow-y-auto bg-white">
+                  <!-- Team members will be added here as draggable items -->
+                </div>
+                <p class="text-sm text-slate-500 mt-1">Team shown in Summary as tooltip; full in Tracking table.</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 mt-3">
+              <button class="bg-sky-600 text-white px-4 py-2 rounded" onclick="handleSaveEvent()">💾 Save Event</button>
+              <div class="text-sm text-slate-600">Role: <strong id="roleInfo">User</strong></div>
+<input type="file" id="csvFileInput" accept=".csv">            
+</div>
+                                  
+                        
+          </div> <!-- End of left form column -->
+
+          <!-- RIGHT COLUMN: Tree View -->
+          <div class="space-y-3">
+            <h3 class="text-sky-700 font-semibold">🌳 Equipment Tree</h3>
+            <div id="treeView" class="bg-white rounded p-3 h-[560px] overflow-auto border shadow-sm"></div>
+            <p class="text-sm text-slate-500">Click a leaf (Package-TAG) to populate selects and equip-tag.</p>
+          </div>
+        </div>
+
+        </div>
+
+      <!-- Tab 1: Tracking -->
+      <div id="tab1" class="tab-content hidden bg-white p-4 rounded-b-lg shadow mt-3">
+        <h3 class="text-sky-700 font-semibold mb-3">📋 Event Tracking (All Saved Events)</h3>
+
+        <div class="mb-3 flex gap-3">
+         <button class="bg-slate-100 px-3 py-2 rounded" onclick="clearTrackingFilters()">Clear Filters</button>
+        </div>
+
+        <div class="bg-white rounded shadow overflow-auto">
+          <table id="trackingTable" class="min-w-full text-sm">
+            <thead class="bg-slate-50">
+               <tr>
+                <th class="p-2 text-left">
+                  <div>Event ID</div>
+                  <input type="text" class="column-search" data-column="0" placeholder="Search ID...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>P/F</div>
+                  <input type="text" class="column-search" data-column="1" placeholder="Search P/F...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Event Name</div>
+                  <input type="text" class="column-search" data-column="2" placeholder="Search Name...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Date</div>
+                  <input type="text" class="column-search" data-column="3" placeholder="Search Date...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Package-TAG</div>
+                  <input type="text" class="column-search" data-column="4" placeholder="Search TAG...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Impact</div>
+                  <input type="text" class="column-search" data-column="5" placeholder="Search Impact...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>What Happened</div>
+                  <input type="text" class="column-search" data-column="6" placeholder="Search...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Immediate Action</div>
+                  <input type="text" class="column-search" data-column="7" placeholder="Search...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Status</div>
+                  <input type="text" class="column-search" data-column="8" placeholder="Search Status...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Leader</div>
+                  <input type="text" class="column-search" data-column="9" placeholder="Search Leader...">
+                </th>
+                <th class="p-2 text-left">
+                  <div>Team Members</div>
+                  <input type="text" class="column-search" data-column="10" placeholder="Search Members...">
+                </th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+  <!-- Tab 2: Investigations -->
+<div id="tab2" class="tab-content hidden bg-white p-4 rounded-b-lg shadow mt-3">
+  <h3 class="text-sky-700 font-semibold">🔍 Investigations</h3>
+<button class="bg-red-600 text-white px-3 py-1 rounded" onclick="exportInvestigationsToPDF()">📄 Export PDF</button>
+
+  <!-- Status Control Section -->
+  <div class="status-control">
+    <label>Status:</label>
+    <select id="statusChangeSelect" onchange="updateEventStatus()">
+      <option value="Investigating">Investigating</option>
+      <option value="Closed">Closed</option>
+      <option value="Completed">Completed</option>
+      <option value="Canceled">Canceled</option>
+    </select>
+    <span id="lastStatusUpdate" class="last-updated"></span>
+  </div>
+
+  <!-- Two-column layout: LEFT = Selected Event, RIGHT = Recommendations -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+
+    <!-- LEFT: Selected Event details -->
+    <div class="bg-white rounded p-3 border shadow-sm">
+      <div class="flex justify-between items-center mb-3">
+        <h4 class="font-semibold">Selected Event</h4>
+        <div class="flex gap-2">
+          <button id="editEventBtn" class="bg-sky-600 text-white px-3 py-1 rounded text-sm" onclick="openEventEditModal()">✏️ Edit Event</button>
+        </div>
+      </div>
+      <div id="selectedEventData" class="text-sm text-slate-600 my-2 two-columns">
+        No event selected. Click a row in Tracking.
+      </div>
+    </div>
+
+    <!-- RIGHT: Recommendations -->
+    <div class="bg-white rounded p-3 border shadow-sm">
+      <div class="flex justify-between items-center mb-3">
+        <h4 class="font-semibold">Recommendations</h4>
+        <button class="btn-add" onclick="openRecommendationModal()">➕ Add Recommendation</button>
+      </div>
+      
+      <table class="modern-table" id="recTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Responsibility</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FULL WIDTH: Analysis Sub-Tabs -->
+  <div class="mt-6">
+    <h3 class="text-sky-700 font-semibold mb-2">🧠 Event Analysis</h3>
+    <div class="bg-white rounded p-3 border shadow-sm">
+      
+      <!-- Sub-tab buttons -->
+      <div class="flex gap-2 mb-3">
+        <button id="subBtnWhys" class="px-3 py-1 rounded bg-sky-600 text-white"
+                onclick="showSub('whys')">❓ 5 Whys</button>
+      </div>
+
+      <!-- Sub-tab: 5 Whys -->
+      <div id="sub-whys" class="mt-3">
+        <div id="why-container" class="why-grid"></div>
+        <button class="add-why bg-sky-600 text-white px-3 py-1 rounded mt-3"
+                onclick="addWhy()">Add New Why?</button>
+      </div>
+
+    </div>
+  </div>
+<div class="mt-3 flex gap-2">
+  <button id="saveWhyBtn" class="bg-green-500 text-white px-3 py-1 rounded" onclick="saveWhys()">💾 Save 5 Why’s</button>
+<button class="bg-yellow-600 text-white px-4 py-1 rounded" onclick="editWhys()">✏️ Edit 5 Whys</button>
+  </div>
+
+</div>
+
+<!-- Event Edit Modal -->
+<div class="modal-bg" id="eventEditModal">
+  <div class="modal">
+    <h2>Edit Event Details</h2>
+    
+    <div class="event-edit-modal-grid">
+      <div>
+        <label>Event ID</label>
+        <input type="text" id="editEventId" readonly class="bg-slate-100">
+      </div>
+      <div>
+        <label>Event Date</label>
+        <input type="date" id="editEventDate">
+      </div>
+      <div>
+        <label>Event Name</label>
+        <input type="text" id="editEventName">
+      </div>
+      <div>
+        <label>Field</label>
+        <select id="editFieldSelect">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
+      <div>
+        <label>P/F</label>
+        <select id="editPfSelect">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
+      <div>
+        <label>System</label>
+        <select id="editSystemSelect">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
+      <div>
+        <label>Package</label>
+        <select id="editPackageSelect">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
+      <div>
+        <label>Package-TAG</label>
+        <select id="editTagSelect">
+          <option value="">-- Select --</option>
+        </select>
+      </div>
+      <div>
+        <label>Equipment-TAG</label>
+        <input type="text" id="editEquipmentTag" readonly class="bg-slate-100">
+      </div>
+      <div>
+        <label>Production Impact (BPD)</label>
+        <input type="number" step="1" id="editImpact">
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="editStatusSelect">
+          <option>Investigating</option>
+          <option>Closed</option>
+          <option>Completed</option>
+          <option>Canceled</option>
+        </select>
+      </div>
+      <div>
+        <!-- 👷 Edit Team Section -->
+<div class="team-section">
+  <label>👷 Team Leader</label>
+  <select id="editTeamLeaderSelect">
+    <option value="">-- Select Leader --</option>
+  </select>
+</div>
+
+<div class="team-section">
+  <label>👤 Team Members</label>
+  <div style="display:flex; gap:6px; align-items:center;">
+    <select id="editEmployeeSelect">
+      <option value="">-- Select Employee --</option>
+      <!-- will be populated dynamically -->
+    </select>
+    <button type="button" onclick="addToEditTeam()">Add</button>
+  </div>
+
+  <div id="editTeamList"
+       style="margin-top:8px; border:1px solid #ccc; min-height:40px; padding:6px; border-radius:4px;">
+  </div>
+</div>
+
+    </div>
+	
+           
+
+    <div class="modal">
+      <label>What Happened</label>
+      <textarea id="editWhatHappened" rows="3"></textarea>
+    </div>
+    
+    <div class="modal">
+      <label>Immediate Action</label>
+      <textarea id="editImmediateAction" rows="3"></textarea>
+    </div>
+    
+    <div class="modal">
+      <label>Immediate Cause</label>
+      <textarea id="editImmediateCause" rows="3"></textarea>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel" onclick="closeEventEditModal()">Cancel</button>
+      <button class="save" onclick="saveEventEdit()">Save</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Right-side panel modal -->
+<div class="modal-bg" id="recModal">
+  <div class="modal">
+    <h2 id="modalTitle">Add Recommendation</h2>
+    <label>Description</label>
+    <textarea id="recDesc" rows="3"></textarea>
+    <label>Responsibility</label>
+    <input type="text" id="recResp">
+    <label>Due Date</label>
+    <input type="date" id="recDue">
+    <label>Status</label>
+    <select id="recStatus">
+      <option value="Waiting Approve">Waiting Approve</option>
+      <option value="Approved">Approved</option>
+      <option value="Completed">Completed</option>
+      <option value="Closed">Closed</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+    <div class="modal-footer">
+      <button class="cancel" onclick="closeModal()">Cancel</button>
+      <button class="save" onclick="saveRecommendation()">Save</button>
+    </div>
+  </div>
+</div>
+
+ <!-- Tab 3: Attachments -->
+  <div id="tab3" class="tab-content hidden bg-white p-4 rounded-b-lg shadow mt-3">
+    <h3 class="text-sky-700 font-semibold">📎 Attachments</h3>
+    
+    <form id="uploadForm">
+    <input type="file" id="fileInput" required />
+    <button type="submit">Attach</button>
+  </form>
+
+  <h3>Attached Files</h3>
+  <div id="fileList"></div>
+</div>
+
+  </div>
+
+  <!-- Tab 4: Reporting -->
+  <div id="tab4" class="tab-content hidden bg-white p-4 rounded-b-lg shadow mt-3">
+    <h3 class="text-sky-700 font-semibold mb-3">📊 Reporting</h3>
+    
+    <div class="mb-4 flex gap-3">
+      <button class="bg-sky-600 text-white px-4 py-2 rounded" onclick="exportInvestigationsToExcel()">📥 Export All to Excel</button>
+    </div>
+    
+    <div class="mb-6">
+      <h4 class="font-semibold mb-2">All Events Details</h4>
+      <div class="bg-white rounded shadow overflow-auto">
+        <table class="modern-table" id="reportingEventsTable">
+          <thead>
+            <tr>
+              <th>Event ID</th>
+              <th>Date</th>
+              <th>Event Name</th>
+              <th>Field</th>
+              <th>P/F</th>
+              <th>System</th>
+              <th>Package</th>
+              <th>Package-TAG</th>
+              <th>Impact (BPD)</th>
+              <th>What Happened</th>
+              <th>Immediate Action</th>
+              <th>Immediate Cause</th>
+              <th>Status</th>
+              <th>Team Leader</th>
+              <th>Team Members</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div>
+
+      <h4 class="font-semibold mb-2 hidden">All Investigations Details</h4>
+      <div class="bg-white rounded shadow overflow-auto hidden">
+        <table class="modern-table" id="reportingInvestigationsTable">
+          <thead>
+            <tr>
+              <th>Event ID</th>
+              <th>Recommendation ID</th>
+              <th>Description</th>
+              <th>Responsibility</th>
+              <th>Due Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<!-- summary tooltip -->
+<div id="summaryTooltip" class="bg-white rounded shadow p-3" aria-hidden="true"></div>
+
+<!-- CSV modal -->
+<div id="csvModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-lg w-[720px] max-w-[95%] p-4">
+    <div class="flex justify-between items-start">
+      <div>
+        <h3 class="font-semibold">📥 Upload CSV (Field, P/F, System, Package, Package-TAG)</h3>
+        <p class="text-sm text-slate-500">CSV will be saved to localStorage (csvRaw).</p>
+      </div>
+      <button class="text-slate-600" onclick="closeCsvModal()">✖</button>
+    </div>
+    <div class="mt-3">
+      <input id="csvUploadInput" type="file" accept=".csv" class="">
+      <div class="flex gap-2 mt-3">
+        <button class="bg-sky-600 text-white px-3 py-1 rounded" onclick="uploadCsvFile()">Upload & Save</button>
+        <button id="useSavedCsvBtn" class="bg-slate-100 px-3 py-1 rounded" onclick="useSavedCsv()">Use saved CSV (if any)</button>
+        <button class="bg-white border px-3 py-1 rounded" onclick="skipCsv()">Skip</button>
+      </div>
+      <p id="csvSavedInfo" class="text-sm text-slate-500 mt-2"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* --- Reuse Team Management for Edit Modal --- */
+function addToEditTeam() {
+  const employeeSel = $('editEmployeeSelect');
+  const teamList = $('editTeamList');
+  const text = employeeSel.options[employeeSel.selectedIndex]?.text || employeeSel.value;
+  if (!text) return;
+
+  const existingItems = teamList.querySelectorAll('.team-member-item');
+  for (let item of existingItems) {
+    if (item.querySelector('span')?.textContent === text) return;
+  }
+
+  const memberItem = document.createElement('div');
+  memberItem.className = 'team-member-item';
+  memberItem.draggable = true;
+  memberItem.innerHTML = `
+    <span>${text}</span>
+    <button class="delete-member" onclick="removeTeamMember(this)">X</button>
+  `;
+
+  // Attach existing drag & drop handlers
+  memberItem.addEventListener('dragstart', handleDragStart);
+  memberItem.addEventListener('dragover', handleDragOver);
+  memberItem.addEventListener('drop', handleDrop);
+  memberItem.addEventListener('dragend', handleDragEnd);
+
+  teamList.appendChild(memberItem);
+}
+
+/* --- Load existing team into the edit modal --- */
+function loadEditTeam(members = []) {
+  const teamList = $('editTeamList');
+  teamList.innerHTML = '';
+
+  members.forEach(name => {
+    const div = document.createElement('div');
+    div.className = 'team-member-item';
+    div.draggable = true;
+    div.innerHTML = `
+      <span>${name}</span>
+      <button class="delete-member" onclick="removeTeamMember(this)">X</button>
+    `;
+    div.addEventListener('dragstart', handleDragStart);
+    div.addEventListener('dragover', handleDragOver);
+    div.addEventListener('drop', handleDrop);
+    div.addEventListener('dragend', handleDragEnd);
+    teamList.appendChild(div);
+  });
+}
+
+/* --- Collect current team members --- */
+function getEditTeam() {
+  return Array.from($('editTeamList').querySelectorAll('span')).map(s => s.textContent);
+}
+
+/* ------------------------------
+ Full app script - OPTIMIZED VERSION
+-------------------------------*/
+
+  const $ = id => document.getElementById(id);
+
+// Function to save CSV data to localStorage
+function saveCSVData(csvText) {
+  localStorage.setItem('csvData', csvText);
+  localStorage.setItem('csvLoaded', 'true');
+}
+
+// Function to load CSV data from localStorage
+function loadCSVData() {
+  const csvText = localStorage.getItem('csvData');
+  if (csvText) {
+    parseCSVText(csvText);
+    populateDropdownsFromCsv();
+    buildTreeFromCsv();
+    setupDropdownListeners();
+  }
+}
+
+// Check if CSV data exists on page load
+document.addEventListener('DOMContentLoaded', function() {
+  if (localStorage.getItem('csvLoaded')) {
+    loadCSVData();
+  }
+});
+
+// File input event listener
+document.getElementById('csvFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const csvText = evt.target.result;
+    saveCSVData(csvText);
+    parseCSVText(csvText);
+    populateDropdownsFromCsv();
+    buildTreeFromCsv();
+    setupDropdownListeners();
+  };
+  reader.readAsText(file);
+});
+
+// Optional: Add a button to clear stored data
+function clearStoredData() {
+  localStorage.removeItem('csvData');
+  localStorage.removeItem('csvLoaded');
+  location.reload();
+}
+  /* --- State Management --- */
+  const state = {
+    csvRows: [],
+    eventsData: [],
+    investigations: {},
+    EventId: null,
+    editingRecId: null,
+    recommendations: {},
+    whyCount: 0,
+    attachments: {},
+    currentEventId: null,
+    statusHistory: {}
+  };
+
+  function initializeState() {
+    try { state.eventsData = JSON.parse(localStorage.getItem('eventsData') || '[]'); } catch(e) { state.eventsData = []; }
+    try { state.investigations = JSON.parse(localStorage.getItem('investigations') || '{}'); } catch(e) { state.investigations = {}; }
+    try { state.recommendations = JSON.parse(localStorage.getItem('recs') || '{}'); } catch(e) { state.recommendations = {}; }
+    try { state.attachments = JSON.parse(localStorage.getItem('attachments') || '{}'); } catch(e) { state.attachments = {}; }
+    try { state.statusHistory = JSON.parse(localStorage.getItem('statusHistory') || '{}'); } catch(e) { state.statusHistory = {}; }
+  }
+
+  /* --- Utility Functions --- */
+  function escapeHtml(s) {
+    return (s||'').toString().replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])
+    );
+  }
+
+  function uniq(arr) {
+    return [...new Set(arr.filter(Boolean))];
+  }
+
+  
+ 
+
+  /* --- CSV Processing --- */
+  function splitCSVLine(line){
+    const out = []; let cur = ''; let inQ = false;
+    for(let i=0;i<line.length;i++){
+      const ch = line[i];
+      if(ch === '"'){ inQ = !inQ; continue; }
+      if(ch === ',' && !inQ){ out.push(cur.trim()); cur=''; continue; }
+      cur += ch;
+    }
+    if(cur !== '') out.push(cur.trim());
+    return out;
+  }
+  function parseCSVText(raw){
+    state.csvRows = [];
+    if(!raw) return;
+    const lines = raw.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    if(lines.length < 2) return;
+    const headers = lines[0].split(',').map(h=>h.trim());
+
+    const find = (names) => {
+      for(const n of names){
+        const idx = headers.findIndex(h => h.toLowerCase() === n.toLowerCase());
+        if(idx >= 0) return idx;
+      }
+      return -1;
+    };
+
+    const idxField = find(['Field','field']);
+    const idxPF = find(['P/F','PF','P_F','P-F']);
+    const idxSystem = find(['System','system']);
+    const idxPackage = find(['Package','package']);
+    const idxTag = find(['Package-TAG','PackageTag','Package_Tag','Tag','package-tag','PACKAGETAG']);
+
+    for(let i=1;i<lines.length;i++){
+      const cols = splitCSVLine(lines[i]);
+      const r = {
+        Field: idxField >= 0 ? (cols[idxField]||'').trim() : '',
+        PF: idxPF >= 0 ? (cols[idxPF]||'').trim() : '',
+        System: idxSystem >= 0 ? (cols[idxSystem]||'').trim() : '',
+        Package: idxPackage >= 0 ? (cols[idxPackage]||'').trim() : '',
+        Tag: idxTag >= 0 ? (cols[idxTag]||'').trim() : ''
+      };
+      if(!r.Field && !r.Tag) continue;
+      state.csvRows.push(r);
+    }
+  }
+function fillSelect(id, arr){
+  const sel = $(id);
+  if(!sel) return;
+  
+  const currentValue = sel.value; // Remember current selection
+  
+  sel.innerHTML = '<option value="">-- Select --</option>';
+  uniq(arr).forEach(v => { 
+    const o = document.createElement('option'); 
+    o.value = v; 
+    o.textContent = v; 
+    sel.appendChild(o); 
+  });
+  
+  // Restore selection if it still exists
+  if (currentValue && arr.includes(currentValue)) {
+    sel.value = currentValue;
+  }
+}
+
+  /* --- Dropdown & tree --- */
+  function populateDropdownsFromCsv(){
+    fillSelect('fieldSelect', uniq(state.csvRows.map(r=>r.Field)));
+    fillSelect('pfSelect', []);
+    fillSelect('systemSelect', []);
+    fillSelect('packageSelect', []);
+    fillSelect('tagSelect', []);
+    $('equipmentTag').value = '';
+  }
+
+  function setupDropdownListeners() {
+    $('fieldSelect')?.addEventListener('change', triggerDropdownCascade);
+    $('pfSelect')?.addEventListener('change', triggerDropdownCascade);
+    $('systemSelect')?.addEventListener('change', triggerDropdownCascade);
+    $('packageSelect')?.addEventListener('change', triggerDropdownCascade);
+    $('tagSelect')?.addEventListener('change', () => {
+      $('equipmentTag').value = $('tagSelect').value || '';
+      highlightTreeLeaf($('tagSelect').value);
+    });
+  }
+
+  function triggerDropdownCascade(){
+  const f = $('fieldSelect').value || '';
+  const p = $('pfSelect').value || '';
+  const s = $('systemSelect').value || '';
+  const pkg = $('packageSelect').value || '';
+
+  const filtered = state.csvRows.filter(r =>
+    (!f || r.Field === f) &&
+    (!p || r.PF === p) &&
+    (!s || r.System === s) &&
+    (!pkg || r.Package === pkg)
+  );
+
+  // Only update dropdowns that should change based on current selection
+  if (!p) fillSelect('pfSelect', uniq(filtered.map(r=>r.PF)));
+  if (!s) fillSelect('systemSelect', uniq(filtered.map(r=>r.System)));
+  if (!pkg) fillSelect('packageSelect', uniq(filtered.map(r=>r.Package)));
+  
+  fillSelect('tagSelect', uniq(filtered.map(r=>r.Tag)));
+
+  $('equipmentTag').value = $('tagSelect').value || '';
+  highlightTreeLeaf($('tagSelect').value);
+}
+
+  /* --- Tree View --- (unchanged) */
+  function buildHierarchy(rows){
+    const tree = {};
+    rows.forEach(r => {
+      const f = r.Field || '(no Field)';
+      const p = r.PF || '(no PF)';
+      const s = r.System || '(no System)';
+      const pkg = r.Package || '(no Package)';
+      const t = r.Tag || '';
+      tree[f] = tree[f] || {};
+      tree[f][p] = tree[f][p] || {};
+      tree[f][p][s] = tree[f][p][s] || {};
+      tree[f][p][s][pkg] = tree[f][p][s][pkg] || new Set();
+      if(t) tree[f][p][s][pkg].add(t);
+    });
+    return tree;
+  }
+
+  function buildTreeFromCsv(){
+    const root = $('treeView'); root.innerHTML = '';
+    if(!state.csvRows.length){
+      root.innerHTML = '<div class="text-sm text-slate-500 p-4 text-center">No data available.</div>';
+      return;
+    }
+    const tree = buildHierarchy(state.csvRows);
+
+    function createNode(label, children = [], values = {}, isLeaf = false) {
+      const li = document.createElement('li');
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 p-1 rounded tree-node hover:bg-slate-50';
+      const btn = document.createElement('button');
+      btn.className = 'toggle-btn text-slate-500 bg-slate-100 hover:bg-slate-200';
+      btn.type = 'button';
+      btn.textContent = children.length ? '▶' : '•';
+      btn.style.width = '24px';
+      btn.style.height = '24px';
+      const lbl = document.createElement('div');
+      lbl.textContent = label;
+      lbl.className = 'flex-1 text-sm';
+
+      row.appendChild(btn);
+      row.appendChild(lbl);
+      li.appendChild(row);
+
+      if (children.length) {
+        const ul = document.createElement('ul');
+        ul.style.display = 'none';
+        ul.className = 'ml-4 border-l border-slate-200 pl-2';
+        children.forEach(c => ul.appendChild(c));
+        li.appendChild(ul);
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          ul.style.display = ul.style.display === 'none' ? 'block' : 'none';
+          btn.textContent = btn.textContent === '▶' ? '▼' : '▶';
+        });
+        lbl.addEventListener('click', () => btn.click());
+      } else {
+        row.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (values.Field) $('fieldSelect').value = values.Field;
+          if (values.PF) $('pfSelect').value = values.PF;
+          if (values.System) $('systemSelect').value = values.System;
+          if (values.Package) $('packageSelect').value = values.Package;
+          if (values.Tag) {
+            $('tagSelect').value = values.Tag;
+            $('equipmentTag').value = values.Tag;
+          }
+          triggerDropdownCascade();
+          highlightTreeLeaf(values.Tag);
+        });
+        row.classList.add('leaf-node');
+        lbl.classList.add('text-sky-600','font-medium');
+      }
+      return li;
+    }
+
+    const rootUL = document.createElement('ul');
+    rootUL.className = 'space-y-1';
+    Object.keys(tree).sort().forEach(field => {
+      const pfNodes = Object.entries(tree[field]).sort().map(([pf, sysObj]) => {
+        const sysNodes = Object.entries(sysObj).sort().map(([system, pkgObj]) => {
+          const pkgNodes = Object.entries(pkgObj).sort().map(([pkg, tagsSet]) => {
+            const tagNodes = Array.from(tagsSet).sort().map(tag =>
+              createNode(tag, [], {
+                Field: field,
+                PF: pf,
+                System: system,
+                Package: pkg,
+                Tag: tag
+              }, true)
+            );
+            return createNode(pkg, tagNodes, { Field: field, PF: pf, System: system, Package: pkg });
+          });
+          return createNode(system, pkgNodes, { Field: field, PF: pf, System: system });
+        });
+        return createNode(pf, sysNodes, { Field: field, PF: pf });
+      });
+      rootUL.appendChild(createNode(field, pfNodes, { Field: field }));
+    });
+    root.appendChild(rootUL);
+  }
+
+  function highlightTreeLeaf(tag){
+    document.querySelectorAll('#treeView .tree-node').forEach(n => n.style.background = '');
+    if (!tag) return;
+    const nodes = Array.from(document.querySelectorAll('#treeView .tree-node'));
+    for (const n of nodes) {
+      const txt = n.textContent.trim().replace(/^[▶▼•]\s*/,'').trim();
+      if (txt === tag) {
+        n.style.background = '#e6f6ff';
+        let p = n.parentElement;
+        while(p && p.id !== 'treeView') {
+          if(p.tagName.toLowerCase() === 'ul') p.style.display = 'block';
+          p = p.parentElement;
+        }
+        n.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        break;
+      }
+    }
+  }
+
+
+/* --- Auto Load CSV File --- */
+function autoLoadCSV() {
+  // Show loading status
+  showCSVStatus('loading', 'Loading CSV data from server...');
+  
+  // Try to fetch and load data.csv from the same directory
+  fetch('data.csv')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('CSV file not found');
+      }
+      return response.text();
+    })
+    .then(csvText => {
+      // Parse and load the CSV data
+      parseCSVText(csvText);
+      populateDropdownsFromCsv();
+      buildTreeFromCsv();
+      
+      // Save to localStorage for future sessions
+      localStorage.setItem('csvRaw', csvText);
+      
+      showCSVStatus('success', 'CSV data loaded successfully from data.csv');
+      console.log('CSV data loaded automatically from data.csv');
+    })
+    .catch(error => {
+      console.log('Could not auto-load data.csv:', error.message);
+      // If auto-load fails, check if we have saved CSV data
+      const savedCSV = localStorage.getItem('csvRaw');
+      if (savedCSV) {
+        parseCSVText(savedCSV);
+        populateDropdownsFromCsv();
+        buildTreeFromCsv();
+        showCSVStatus('success', 'Loaded CSV data from browser storage');
+        console.log('Loaded CSV data from localStorage');
+      } else {
+        showCSVStatus('error', 'No CSV data available. Please upload CSV file.');
+        console.log('No CSV data available. Please upload CSV file.');
+      }
+    });
+}
+
+/* --- Show CSV Status --- */
+function showCSVStatus(type, message) {
+  // Remove existing status
+  const existingStatus = document.getElementById('csvStatus');
+  if (existingStatus) {
+    existingStatus.remove();
+  }
+  
+  // Create new status element
+  const statusDiv = document.createElement('div');
+  statusDiv.id = 'csvStatus';
+  statusDiv.className = `csv-status ${type}`;
+  statusDiv.textContent = message;
+  
+  // Insert after the CSV load button
+  const csvButton = document.querySelector('.show-hide-checkbox button');
+  if (csvButton) {
+    csvButton.parentNode.appendChild(statusDiv);
+  }
+}
+/* --- Team Management with Drag & Drop --- */
+function addToTeam(){
+  const employeeSel = $('employeeSelect');
+  const teamList = $('teamList');
+  const text = employeeSel.options[employeeSel.selectedIndex]?.text || employeeSel.value;
+  if(!text) return;
+
+  const existingItems = teamList.querySelectorAll('.team-member-item');
+  for (let item of existingItems) {
+    if (item.querySelector('span')?.textContent === text) return;
+  }
+
+  const memberItem = document.createElement('div');
+  memberItem.className = 'team-member-item';
+  memberItem.draggable = true; // Enable dragging
+
+  memberItem.innerHTML = `
+    <span>${text}</span>
+    <button class="delete-member" onclick="removeTeamMember(this)">X</button>
+  `;
+
+  // Drag & drop events
+  memberItem.addEventListener('dragstart', handleDragStart);
+  memberItem.addEventListener('dragover', handleDragOver);
+  memberItem.addEventListener('drop', handleDrop);
+  memberItem.addEventListener('dragend', handleDragEnd);
+
+  teamList.appendChild(memberItem);
+  }
+
+function removeTeamMember(button) {
+  const memberItem = button.closest('.team-member-item');
+  memberItem.remove();
+  }
+
+function clearTeamList() {
+  const teamList = $('teamList');
+  teamList.innerHTML = '';
+ }
+
+/* --- Drag & Drop Handlers --- */
+let dragSrcEl = null;
+
+function handleDragStart(e) {
+  dragSrcEl = this;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+  this.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  return false;
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  if (dragSrcEl !== this) {
+    dragSrcEl.innerHTML = this.innerHTML;
+    this.innerHTML = e.dataTransfer.getData('text/html');
+
+    // Reattach event listeners after DOM swap
+    reattachDragEvents(dragSrcEl);
+    reattachDragEvents(this);
+
+    }
+  return false;
+}
+
+function handleDragEnd() {
+  const items = document.querySelectorAll('.team-member-item');
+  items.forEach(item => item.classList.remove('dragging'));
+}
+
+function reattachDragEvents(el) {
+  el.removeEventListener('dragstart', handleDragStart);
+  el.removeEventListener('dragover', handleDragOver);
+  el.removeEventListener('drop', handleDrop);
+  el.removeEventListener('dragend', handleDragEnd);
+
+  el.addEventListener('dragstart', handleDragStart);
+  el.addEventListener('dragover', handleDragOver);
+  el.addEventListener('drop', handleDrop);
+  el.addEventListener('dragend', handleDragEnd);
+}
+
+/* --- ID Generators --- */
+function getPeriodKey(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  return `${yyyy}${mm}`;
+}
+
+function nextEventSerial(){
+  const periodKey = getPeriodKey();
+  const counters = JSON.parse(localStorage.getItem('eventCountersByPeriod') || '{}');
+  if(!counters[periodKey]) counters[periodKey] = 0;
+  const seq = counters[periodKey]++;
+  localStorage.setItem('eventCountersByPeriod', JSON.stringify(counters));
+  const mm = periodKey.slice(4,6);
+  const yy = String(periodKey.slice(2,4));
+  return `100${seq}${mm}${yy}`;
+}
+
+function getNextRecId(eventId){
+  const recCounters = JSON.parse(localStorage.getItem('recCountersPerEvent') || '{}');
+  if(!recCounters[eventId]) recCounters[eventId] = 0;
+  recCounters[eventId] += 1;
+  localStorage.setItem('recCountersPerEvent', JSON.stringify(recCounters));
+  return `${eventId}${String(recCounters[eventId]).padStart(2,'0')}`;
+}
+
+/* --- Event Management --- */
+function handleSaveEvent(){
+  const name = $('eventName').value.trim();
+  const field = $('fieldSelect').value;
+  const tag = $('tagSelect').value;
+  
+  if(!name){ alert('Please enter Event Name'); return; }
+  if(!field){ alert('Please select Field'); return; }
+  if(!tag){ alert('Please select Package-TAG (click a leaf node in the tree view)'); return; }
+
+  const id = nextEventSerial();
+  
+  const teamMembers = Array.from($('teamList').querySelectorAll('.team-member-item'))
+    .map(item => item.querySelector('span').textContent);
+
+  const ev = {
+    EventID: id,
+    EventName: name,
+    Field: field,
+    PF: $('pfSelect').value || '',
+    System: $('systemSelect').value || '',
+    Package: $('packageSelect').value || '',
+    Tag: tag,
+    EquipmentTag: $('equipmentTag').value || '',
+    Date: $('eventDate').value || new Date().toISOString().slice(0,10),
+    Impact: parseFloat($('productionImpact').value) || 0,
+    What: $('whatHappened').value.trim(),
+    Action: $('immediateAction').value.trim(),
+    Cause: $('immediateCause').value.trim(),
+    Status: $('statusSelect').value,
+    CancelReason: '',
+    TeamLeader: $('teamLeaderSelect').options[$('teamLeaderSelect').selectedIndex]?.text || $('teamLeaderSelect').value || '',
+    TeamMembers: teamMembers
+  };
+
+  state.eventsData.unshift(ev);
+  
+  try { 
+    localStorage.setItem('eventsData', JSON.stringify(state.eventsData)); 
+  } catch(e){ 
+    alert('Error saving event data');
+    return;
+  }
+
+  // Update BOTH tables - FIXED
+  prependTrackingRow(ev);
+  clearEventForm();
+  
+  alert(`Event ${id} saved successfully!`);
+}
+
+function clearEventForm() {
+  $('eventName').value = '';
+  $('whatHappened').value = '';
+  $('immediateAction').value = '';
+  $('immediateCause').value = '';
+  $('productionImpact').value = 0;
+  clearTeamList();
+  $('employeeSelect').value = '';
+  $('teamLeaderSelect').value ='';
+
+  $('statusSelect').value = 'Investigating';
+// Reset dropdown selections (keep options)
+  $('fieldSelect').value = '';
+  $('pfSelect').value = '';
+  $('systemSelect').value = '';
+  $('packageSelect').value = '';
+  $('tagSelect').value = '';
+  $('equipmentTag').value = '';
+// ✅ Collapse all tree nodes
+  collapseAllTreeNodes();
+  }
+
+function collapseAllTreeNodes() {
+  const treeRoot = $('treeView');
+  const toggleButtons = treeRoot.querySelectorAll('.toggle-btn');
+
+  toggleButtons.forEach(btn => {
+    const li = btn.closest('li');
+    const nestedUl = li.querySelector('ul');
+
+    if (nestedUl && nestedUl.style.display !== 'none') {
+      nestedUl.style.display = 'none';
+      btn.textContent = '▶';
+    }
+  });
+}
+
+
+function prependTrackingRow(ev){
+  const tbody = $('trackingTable').querySelector('tbody');
+  const tr = document.createElement('tr');
+  tr.dataset.eventId = ev.EventID;
+  
+  tr.innerHTML = `
+    <td class="p-2">${escapeHtml(ev.EventID)}</td>  
+    <td class="p-2">${escapeHtml(ev.PF)}</td>
+    <td class="p-2">${escapeHtml(ev.EventName)}</td>   
+    <td class="p-2">${escapeHtml(ev.Date)}</td>
+    <td class="p-2">${escapeHtml(ev.Tag)}</td>
+    <td class="p-2">${escapeHtml(ev.Impact)}</td>
+    <td class="p-2">${escapeHtml(ev.What)}</td>   
+    <td class="p-2">${escapeHtml(ev.Action)}</td>
+    <td class="p-2">${escapeHtml(ev.Status)}</td>
+    <td class="p-2">${escapeHtml(ev.TeamLeader)}</td>
+    <td class="p-2">${escapeHtml((ev.TeamMembers||[]).join(', '))}</td>
+  `;
+  
+  tr.addEventListener('click', ()=> openInvestigationForEvent(ev.EventID));
+  tbody.prepend(tr);
+}
+
+function renderTrackingTable() {
+  const tbody = document.querySelector('#trackingTable tbody');
+  tbody.innerHTML = '';  // Clear existing rows
+
+  state.eventsData.forEach(ev => {
+    const tr = document.createElement('tr');
+    tr.dataset.eventId = ev.EventID;
+
+    tr.innerHTML = `
+      <td class="p-2">${escapeHtml(ev.EventID)}</td>  
+      <td class="p-2">${escapeHtml(ev.PF)}</td>
+      <td class="p-2">${escapeHtml(ev.EventName)}</td>   
+      <td class="p-2">${escapeHtml(ev.Date)}</td>
+      <td class="p-2">${escapeHtml(ev.Tag)}</td>
+      <td class="p-2">${escapeHtml(ev.Impact)}</td>
+      <td class="p-2">${escapeHtml(ev.What)}</td>   
+      <td class="p-2">${escapeHtml(ev.Action)}</td>
+      <td class="p-2">${escapeHtml(ev.Status)}</td>
+      <td class="p-2">${escapeHtml(ev.TeamLeader)}</td>
+      <td class="p-2">${escapeHtml((ev.TeamMembers||[]).join(', '))}</td>
+    `;
+
+    tr.addEventListener('click', () => openInvestigationForEvent(ev.EventID));
+    tbody.appendChild(tr);  // Use appendChild for natural order (oldest on top)
+  });
+}
+
+/* --- Search and Filter --- */
+// Add keypress listener to all column search inputs
+document.querySelectorAll('#trackingTable .column-search').forEach(input => {
+  input.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      applyMultiColumnSearch();
+    }
+  });
+});
+
+function applyMultiColumnSearch() {
+  const tbody = document.querySelector('#trackingTable tbody');
+  const rows = tbody.querySelectorAll('tr');
+
+  // Gather search terms for all columns
+  const filters = Array.from(document.querySelectorAll('#trackingTable .column-search')).map(input =>
+    input.value.trim().toLowerCase()
+  );
+
+  rows.forEach(row => {
+    // For each row, check every column's cell against the corresponding filter
+    const cells = row.cells;
+    let rowMatches = true;
+
+    for (let col = 0; col < filters.length; col++) {
+      const filterText = filters[col];
+      if (filterText === '') continue; // empty filter = skip
+
+      const cellText = cells[col]?.textContent.toLowerCase() || '';
+
+      if (!cellText.includes(filterText)) {
+        rowMatches = false;
+        break; // no need to check further columns
+      }
+    }
+
+    row.style.display = rowMatches ? '' : 'none';
+  });
+}
+
+
+function clearTrackingFilters(){ 
+  $('searchTracking').value = ''; 
+  applyTrackingFilter(); 
+}
+
+/* --- Investigations --- */
+function openInvestigationForEvent(eventId) {
+  state.EventId = eventId;
+  showTab(2); // Investigations tab
+
+  const ev = state.eventsData.find(x => x.EventID === eventId);
+  const container = $('selectedEventData');
+  container.innerHTML = '';
+  if (!ev) {
+    container.textContent = 'Event not found';
+    return;
+  }
+
+  const leftCol = document.createElement('div');
+  const rightCol = document.createElement('div');
+
+  const fieldsLeft = [
+    ['Event ID', ev.EventID],
+    ['Event Name', ev.EventName],
+    ['Field', ev.Field],
+    ['P/F', ev.PF],
+    ['System', ev.System],
+    ['Package', ev.Package],
+    ['Package-TAG', ev.Tag],
+    ['Equipment-TAG', ev.EquipmentTag]
+  ];
+
+  const fieldsRight = [
+    ['Date', ev.Date],
+    ['Status', ev.Status],
+    ['Impact', ev.Impact],
+    ['Team Leader', ev.TeamLeader],
+    ['Team Members', (ev.TeamMembers || []).join(', ')],
+    ['What Happened', ev.What],
+    ['Immediate Action', ev.Action],
+    ['Immediate Cause', ev.Cause]
+  ];
+
+  fieldsLeft.forEach(([k, v]) => {
+    const p = document.createElement('p');
+    p.className = 'text-sm';
+    p.innerHTML = `<strong>${k}:</strong> ${escapeHtml(v)}`;
+    leftCol.appendChild(p);
+  });
+
+  fieldsRight.forEach(([k, v]) => {
+    const p = document.createElement('p');
+    p.className = 'text-sm';
+    p.innerHTML = `<strong>${k}:</strong> ${escapeHtml(v)}`;
+    rightCol.appendChild(p);
+  });
+
+  container.appendChild(leftCol);
+  container.appendChild(rightCol);
+// ✅ Clear old data
+  // ✅ Clear the why container and reset count
+  document.getElementById('why-container').innerHTML = '';
+  state.whyCount = 0;
+//$('recContainer').innerHTML = '';
+document.querySelector('#recTable tbody').innerHTML = '';
+ 
+// ✅ Show Why? and Recommendations (pass current event's data)
+state.whys = ev.whys || [];
+state.recs = ev.recs || [];
+
+editWhys(state.whys);
+
+renderRecs(state.recs);
+
+
+  // ✅ Update status control UI (dropdown, etc.)
+  updateStatusControl(ev);
+  
+}
+
+function renderWhys(whys) {
+  const container = $('whyContainer');
+  container.innerHTML = ''; // ✅ Fully clear container
+
+
+  whys.forEach((why, index) => {
+    const block = document.createElement('div');
+    block.className = 'why-block';
+    block.innerHTML = `
+      <button class="why-close" onclick="this.parentElement.remove()">×</button>
+      <div class="why-label">Why? ${index + 1}</div>
+      <textarea>${why.text || ''}</textarea>
+
+      <div class="why-tab-box">
+        <div class="why-tab-headers">
+          <div class="active" onclick="activateWhyTab(this, ${index}, 0)">Explanation</div>
+          <div onclick="activateWhyTab(this, ${index}, 1)">Evidence</div>
+        </div>
+        <div class="why-tab-content-box">
+          <div class="why-tab-content active"><textarea>${why.explanation || ''}</textarea></div>
+          <div class="why-tab-content"><textarea>${why.evidence || ''}</textarea></div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(block);
+  });
+}
+
+function renderRecs(recs) {
+  const container = $('recContainer'); // div for recommendation table
+  container.innerHTML = '';
+
+  if (!recs.length) {
+    container.innerHTML = '<p>No recommendations available.</p>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'modern-table rec-table';
+
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr>
+      <th>#</th>
+      <th>Description</th>
+      <th>Owner</th>
+      <th>Deadline</th>
+      <th>Status</th>
+    </tr>
+  `;
+
+  const tbody = document.createElement('tbody');
+  recs.forEach((rec, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${escapeHtml(rec.description)}</td>
+      <td>${escapeHtml(rec.owner)}</td>
+      <td>${escapeHtml(rec.deadline)}</td>
+      <td>${escapeHtml(rec.status)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+
+function updateStatusControl(ev) {
+  const statusSelect = $('statusChangeSelect');
+  const lastUpdateSpan = $('lastStatusUpdate');
+  
+  // Set current status
+  statusSelect.value = ev.Status || 'Initiate';
+  
+  // Get last status update info
+  const eventHistory = state.statusHistory[ev.EventID] || [];
+  const lastUpdate = eventHistory[eventHistory.length - 1];
+  
+  if (lastUpdate) {
+    const currentUser = localStorage.getItem('username') || 'Unknown User';
+    lastUpdateSpan.textContent = `Last updated by ${lastUpdate.user} on ${lastUpdate.timestamp}`;
+  } else {
+    lastUpdateSpan.textContent = 'No status changes recorded';
+  }
+}
+
+function updateEventStatus() {
+  if (!state.EventId) {
+    alert('No event selected');
+    return;
+  }
+  
+  const newStatus = $('statusChangeSelect').value;
+  const currentUser = localStorage.getItem('username') || 'Unknown User';
+  const timestamp = new Date().toLocaleString();
+  
+  // Update event status
+  const eventIndex = state.eventsData.findIndex(x => x.EventID === state.EventId);
+  if (eventIndex !== -1) {
+    state.eventsData[eventIndex].Status = newStatus;
+    
+    // Save to localStorage
+    localStorage.setItem('eventsData', JSON.stringify(state.eventsData));
+    
+    // Update status history
+    if (!state.statusHistory[state.EventId]) {
+      state.statusHistory[state.EventId] = [];
+    }
+    state.statusHistory[state.EventId].push({
+      user: currentUser,
+      status: newStatus,
+      timestamp: timestamp
+    });
+    localStorage.setItem('statusHistory', JSON.stringify(state.statusHistory));
+    
+    // Update last updated info
+    $('lastStatusUpdate').textContent = `Last updated by ${currentUser} on ${timestamp}`;
+    
+    // Refresh the selected event display
+    const ev = state.eventsData[eventIndex];
+    openInvestigationForEvent(state.EventId);
+    
+    alert(`Event status updated to: ${newStatus}`);
+  }
+}
+
+/* --- Event Edit Modal Functions --- */
+function openEventEditModal() {
+  if (!state.EventId) {
+    alert('No event selected');
+    return;
+  }
+  
+  const ev = state.eventsData.find(x => x.EventID === state.EventId);
+  if (!ev) {
+    alert('Event not found');
+    return;
+  }
+  
+  // Populate modal fields with correct property names
+  $('editEventId').value = ev.EventID;
+  $('editEventName').value = ev.EventName || '';
+  $('editEventDate').value = ev.Date || '';
+  $('editImpact').value = ev.Impact || '';
+  $('editStatusSelect').value = ev.Status || 'Investigating';
+
+  // Fill dropdowns
+  fillSelect('editFieldSelect', uniq(state.csvRows.map(r => r.Field)));
+  fillSelect('editPfSelect', uniq(state.csvRows.map(r => r.PF)));
+  fillSelect('editSystemSelect', uniq(state.csvRows.map(r => r.System)));
+  fillSelect('editPackageSelect', uniq(state.csvRows.map(r => r.Package)));
+  fillSelect('editTagSelect', uniq(state.csvRows.map(r => r.Tag)));
+
+  // Select existing values if any
+  $('editFieldSelect').value = ev.Field || '';
+  $('editPfSelect').value = ev.PF || '';
+  $('editSystemSelect').value = ev.System || '';
+  $('editPackageSelect').value = ev.Package || '';
+  $('editTagSelect').value = ev.Tag || '';
+  $('editEquipmentTag').value = ev.EquipmentTag || '';
+
+  // Text areas
+  $('editWhatHappened').value = ev.What || '';
+  $('editImmediateAction').value = ev.Action || '';
+  $('editImmediateCause').value = ev.Cause || '';
+
+  // Team data
+  populateEditEmployeeLists(ev.TeamLeader, ev.TeamMembers || []);
+
+  $('eventEditModal').style.display = 'flex';
+}
+
+/* Helper to populate team dropdowns */
+function populateEditEmployeeLists(currentLeader, teamMembers = []) {
+  // Populate team leader dropdown
+  const leaderSelect = $('editTeamLeaderSelect');
+  leaderSelect.innerHTML = '<option value="">-- Select Leader --</option>';
+  
+  // Add team leader options (same as in your main form)
+  const leaderOptions = [
+    {value: 'DRAGON2025', text: 'Faisa Omar Saez'},
+    {value: 'GUPCO1', text: 'Osama Kandel'},
+    {value: 'GUPCO2', text: 'Naser Nageh'},
+    {value: 'Null', text: 'P/F\'s OIM'}
+  ];
+  
+  leaderOptions.forEach(opt => {
+    const option = document.createElement('option');
+    option.value = opt.value;
+    option.textContent = opt.text;
+    leaderSelect.appendChild(option);
+  });
+  
+  if (currentLeader) {
+    // Try to find matching option
+    const matchingOption = Array.from(leaderSelect.options).find(opt => 
+      opt.text === currentLeader || opt.value === currentLeader
+    );
+    if (matchingOption) leaderSelect.value = matchingOption.value;
+  }
+
+  // Populate employee dropdown
+  const employeeSelect = $('editEmployeeSelect');
+  employeeSelect.innerHTML = '<option value="">-- Select Employee --</option>';
+  
+  // Add employee options (same as in your main form)
+  const employeeOptions = [
+    {value: '7141', text: 'Mohamed Said'},
+    {value: '7540', text: 'Ayman Khoshouey'},
+    {value: '7542', text: 'Hany Ibrahim'},
+    {value: '7550', text: 'Ahmed Shaker'},
+    {value: '7557', text: 'Diaa Abdel Zaher'},
+    {value: '8320', text: 'Wael Abdelkader'},
+    {value: '8321', text: 'Hassan Elsayed'},
+    {value: '8826', text: 'Amr Mostafa'},
+    {value: '8957', text: 'Mostafa Housine'},
+    {value: 'Null', text: 'P/F\'s OIM'}
+  ];
+  
+  employeeOptions.forEach(opt => {
+    const option = document.createElement('option');
+    option.value = opt.value;
+    option.textContent = opt.text;
+    employeeSelect.appendChild(option);
+  });
+
+  // Load existing team into the draggable list
+  loadEditTeam(teamMembers);
+}
+/* Example employee list generator */
+function getAllEmployees() {
+  // In real app, you might pull from state or CSV
+  return [];
+}
+
+function closeEventEditModal() {
+  $('eventEditModal').style.display = 'none';
+}
+
+function saveEventEdit() {
+  const id = $('editEventId').value;
+  const idx = state.eventsData.findIndex(e => e.EventID === id);
+  if (idx === -1) return alert('Event not found!');
+
+  const updatedEvent = {
+    ...state.eventsData[idx],
+    EventName: $('editEventName').value,
+    Date: $('editEventDate').value,
+    Impact: parseFloat($('editImpact').value) || 0,
+    Status: $('editStatusSelect').value,
+    Field: $('editFieldSelect').value,
+    PF: $('editPfSelect').value,
+    System: $('editSystemSelect').value,
+    Package: $('editPackageSelect').value,
+    Tag: $('editTagSelect').value,
+    EquipmentTag: $('editEquipmentTag').value,
+    TeamLeader: $('editTeamLeaderSelect').options[$('editTeamLeaderSelect').selectedIndex]?.text || $('editTeamLeaderSelect').value || '',
+    TeamMembers: getEditTeam(),
+    What: $('editWhatHappened').value,
+    Action: $('editImmediateAction').value,
+    Cause: $('editImmediateCause').value
+  };
+
+  state.eventsData[idx] = updatedEvent;
+  localStorage.setItem('eventsData', JSON.stringify(state.eventsData));
+
+  closeEventEditModal();
+  
+  // Refresh the tracking table and investigation view
+  renderTrackingTable();
+  if (state.EventId === id) {
+    openInvestigationForEvent(id);
+  }
+  
+  alert('✅ Event updated successfully!');
+}
+
+/* --- Recommendations --- */
+function renderRecs() {
+  const tbody = document.querySelector('#recTable tbody');
+  tbody.innerHTML = '';
+  
+  const recs = state.recommendations[state.EventId] || [];
+  
+  if (recs.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="6" class="text-center p-4 text-slate-500">No recommendations yet. Click "Add Recommendation" to create one.</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+  
+  recs.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="p-2">${escapeHtml(r.id)}</td>
+      <td class="p-2">${escapeHtml(r.description)}</td>
+      <td class="p-2">${escapeHtml(r.responsibility)}</td>
+      <td class="p-2">${escapeHtml(r.dueDate)}</td>
+      <td class="p-2">${escapeHtml(r.status)}</td>
+      <td class="p-2">
+        <button class="btn-edit mr-2" onclick="openRecommendationModal(${JSON.stringify(r).replace(/"/g, '&quot;')})">Edit</button>
+        <button class="btn-delete" onclick="deleteRecommendation('${r.id}')">X</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function deleteRecommendation(recId) {
+  if (!confirm('Are you sure you want to delete this recommendation?')) {
+    return;
+  }
+  
+  if (state.recommendations[state.EventId]) {
+    state.recommendations[state.EventId] = state.recommendations[state.EventId].filter(r => r.id !== recId);
+    localStorage.setItem('recs', JSON.stringify(state.recommendations));
+    renderRecs();
+  }
+}
+
+/* --- Recommendation Modal Functions --- */
+function openRecommendationModal(rec = null) {
+  if (!state.EventId) {
+    alert('Select an event first by clicking on it in the Tracking tab');
+    return;
+  }
+  
+  state.editingRecId = rec ? rec.id : null;
+  $('modalTitle').textContent = rec ? 'Edit Recommendation' : 'Add Recommendation';
+  $('recDesc').value = rec ? rec.description : '';
+  $('recResp').value = rec ? rec.responsibility : '';
+  $('recDue').value = rec ? rec.dueDate : '';
+  $('recStatus').value = rec ? rec.status : 'Waiting Approve';
+  
+  // Show the modal - using the correct modal ID
+  $('recModal').style.display = 'flex';
+}
+
+function closeModal() { 
+  $('recModal').style.display = 'none'; 
+}
+
+function saveRecommendation() {
+  const desc = $('recDesc').value.trim();
+  const resp = $('recResp').value.trim();
+  const due = $('recDue').value;
+  const status = $('recStatus').value;
+  
+  if (!desc) {
+    alert('Please enter a recommendation description');
+    return;
+  }
+  
+  if (!resp) {
+    alert('Please enter responsibility');
+    return;
+  }
+  
+  if (!state.recommendations[state.EventId]) {
+    state.recommendations[state.EventId] = [];
+  }
+  
+  if (state.editingRecId) {
+    // Editing existing recommendation
+    const rec = state.recommendations[state.EventId].find(r => r.id === state.editingRecId);
+    if (rec) {
+      rec.description = desc;
+      rec.responsibility = resp;
+      rec.dueDate = due;
+      rec.status = status;
+    }
+  } else {
+    // Adding new recommendation
+    const id = getNextRecId(state.EventId);
+    state.recommendations[state.EventId].push({
+      id,
+      description: desc,
+      responsibility: resp,
+      dueDate: due,
+      status: status
+    });
+  }
+  
+  localStorage.setItem('recs', JSON.stringify(state.recommendations));
+  closeModal();
+  renderRecs(); // Refresh the recommendations table
+  
+  // Clear editing state
+  state.editingRecId = null;
+}
+
+
+/* --- 5 Whys --- */
+function addWhy() {
+  if (state.whyCount >= 6) {
+    alert("Maximum 6 Whys reached!");
+    return;
+  }
+  state.whyCount++;
+  const block = document.createElement('div');
+  block.className = 'why-block';
+  block.style.marginLeft = (state.whyCount - 1) * 15 + "px";
+
+  block.innerHTML = `
+    <button class="why-close" onclick="removeWhy(this)">×</button>
+    <div class="why-label">Why ${state.whyCount}?</div>
+    <input type="text" placeholder="Enter Why statement..."/>
+    <div class="why-tab-box">
+      <div class="why-tab-headers">
+        <div class="active" onclick="switchWhyTab(this)">Desc</div>
+        <div onclick="switchWhyTab(this)">Evidence</div>
+      </div>
+      <div class="why-tab-content-box">
+        <div class="why-tab-content active">
+          <textarea placeholder="Description..."></textarea>
+        </div>
+        <div class="why-tab-content">
+          <textarea placeholder="Evidence..."></textarea>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('why-container').appendChild(block);
+  renumberWhys();
+}
+
+function saveWhys() {
+  const eventId = state.EventId;
+  if (!eventId) {
+    alert("No Event selected.");
+    return;
+  }
+
+  const blocks = document.querySelectorAll('#why-container .why-block');
+  const whys = [];
+
+  blocks.forEach((block, index) => {
+    const number = index + 1;
+    const input = block.querySelector('input')?.value.trim() || '';
+    const description = block.querySelectorAll('textarea')[0]?.value.trim() || '';
+    const evidence = block.querySelectorAll('textarea')[1]?.value.trim() || '';
+
+    if (input || description || evidence) {
+      whys.push({
+        number,
+        question: input,
+        description,
+        evidence
+      });
+    }
+  });
+
+  if (whys.length === 0) {
+    alert("Please enter at least one Why before saving.");
+    return;
+  }
+
+  if (!state.investigations[eventId]) {
+    state.investigations[eventId] = {};
+  }
+
+  // Save whys under the event
+  state.investigations[eventId].whys = whys;
+  localStorage.setItem('investigations', JSON.stringify(state.investigations));
+  
+  alert("5 Why's saved successfully.");
+}
+
+function loadWhysForEvent(eventId) {
+  const container = document.getElementById('why-container');
+  container.innerHTML = '';
+  state.whyCount = 0;
+
+  const whys = (state.investigations[eventId]?.whys) || [];
+  whys.forEach(w => {
+    state.whyCount++;
+    const block = document.createElement('div');
+    block.className = 'why-block';
+    block.style.marginLeft = (state.whyCount - 1) * 15 + "px";
+
+    block.innerHTML = `
+      <button class="why-close" onclick="removeWhy(this)">×</button>
+      <div class="why-label">Why ${state.whyCount}?</div>
+      <input type="text" value="${escapeHtml(w.question)}" placeholder="Enter Why statement..."/>
+      <div class="why-tab-box">
+        <div class="why-tab-headers">
+          <div class="active" onclick="switchWhyTab(this)">Desc</div>
+          <div onclick="switchWhyTab(this)">Evidence</div>
+        </div>
+        <div class="why-tab-content-box">
+          <div class="why-tab-content active">
+            <textarea placeholder="Description...">${escapeHtml(w.description)}</textarea>
+          </div>
+          <div class="why-tab-content">
+            <textarea placeholder="Evidence...">${escapeHtml(w.evidence)}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function editWhys() {
+  const eventId = state.EventId;
+  if (!eventId || !state.investigations[eventId]?.whys) {
+    alert("No saved 5 Why’s found for this event.");
+    return;
+  }
+
+  clearWhys();
+
+  const savedWhys = state.investigations[eventId].whys || [];
+  state.whyCount = 0;
+
+  savedWhys.forEach((why, i) => {
+    state.whyCount++;
+    const block = document.createElement('div');
+    block.className = 'why-block';
+    block.style.marginLeft = (state.whyCount - 1) * 15 + "px";
+
+    block.innerHTML = `
+      <button class="why-close" onclick="removeWhy(this)">×</button>
+      <div class="why-label">Why ${state.whyCount}?</div>
+      <input type="text" value="${escapeHtml(why.question)}" placeholder="Enter Why statement..."/>
+      <div class="why-tab-box">
+        <div class="why-tab-headers">
+          <div class="active" onclick="switchWhyTab(this)">Desc</div>
+          <div onclick="switchWhyTab(this)">Evidence</div>
+        </div>
+        <div class="why-tab-content-box">
+          <div class="why-tab-content active">
+            <textarea placeholder="Description...">${escapeHtml(why.description)}</textarea>
+          </div>
+          <div class="why-tab-content">
+            <textarea placeholder="Evidence...">${escapeHtml(why.evidence)}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('why-container').appendChild(block);
+  });
+
+  renumberWhys();
+}
+
+function clearWhys() {
+  document.getElementById('why-container').innerHTML = '';
+  state.whyCount = 0;
+}
+
+
+function switchWhyTab(el) {
+  const headers = el.parentElement.querySelectorAll('div');
+  headers.forEach(h => h.classList.remove('active'));
+  el.classList.add('active');
+
+  const box = el.parentElement.nextElementSibling;
+  const contents = box.querySelectorAll('.why-tab-content');
+  contents.forEach(c => c.classList.remove('active'));
+  contents[[...headers].indexOf(el)].classList.add('active');
+}
+
+function removeWhy(btn) {
+  const block = btn.closest('.why-block');
+  block.remove();
+  renumberWhys();
+}
+
+function renumberWhys() {
+  const blocks = document.querySelectorAll('#why-container .why-block');
+  blocks.forEach((block, index) => {
+    const label = block.querySelector('.why-label');
+    label.textContent = `Why ${index + 1}?`;
+    block.style.marginLeft = index * 15 + "px";
+  });
+  state.whyCount = blocks.length;
+}
+
+function clearWhys() {
+  document.getElementById('why-container').innerHTML = '';
+  state.whyCount = 0;
+}
+
+/* --- CSV Export --- */
+function saveEventsToCSV() {
+  if (state.eventsData.length === 0) {
+    alert('No events to export');
+    return;
+  }
+  
+  const headers = Object.keys(state.eventsData[0]);
+  const csvRows = [headers.join(',')];
+  
+  state.eventsData.forEach(event => {
+    const row = headers.map(header => {
+      const value = event[header] || '';
+      return value.includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
+    });
+    csvRows.push(row.join(','));
+  });
+  
+  const csvContent = csvRows.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'Event_Details.csv');
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  alert('Events exported to Event_Details.csv');
+}
+
+function saveInvestigationsToCSV() {
+  const investigationsData = [];
+  
+  Object.keys(state.recommendations).forEach(eventId => {
+    const eventRecs = state.recommendations[eventId] || [];
+    eventRecs.forEach(rec => {
+      investigationsData.push({
+        EventID: eventId,
+        Type: 'Recommendation',
+        ID: rec.id,
+        Description: rec.description,
+        Responsibility: rec.responsibility,
+        DueDate: rec.dueDate,
+        Status: rec.status,
+        CreatedDate: new Date().toISOString().split('T')[0]
+      });
+    });
+  });
+  
+  if (investigationsData.length === 0) {
+    alert('No investigations data to export');
+    return;
+  }
+  
+  const headers = ['EventID', 'Type', 'ID', 'Description', 'Responsibility', 'DueDate', 'Status', 'CreatedDate'];
+  const csvRows = [headers.join(',')];
+  
+  investigationsData.forEach(item => {
+    const row = headers.map(header => {
+      const value = item[header] || '';
+      return value.includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
+    });
+    csvRows.push(row.join(','));
+  });
+  
+  const csvContent = csvRows.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'Investigations_Data.csv');
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  alert('Investigations exported to Investigations_Data.csv');
+}
+
+/* --- Reporting Tab Functions --- */
+function exportEventsToCSV() {
+  saveEventsToCSV();
+}
+
+function exportInvestigationsToCSV() {
+  saveInvestigationsToCSV();
+}
+
+function renderReportingTables() {
+  renderEventsReportingTable();
+  renderInvestigationsReportingTable();
+}
+
+function renderEventsReportingTable() {
+  const tbody = document.querySelector('#reportingEventsTable tbody');
+  tbody.innerHTML = '';
+  
+  state.eventsData.forEach(ev => {
+    const tr = document.createElement('tr');
+    tr.className = 'clickable-row';
+    tr.dataset.eventId = ev.EventID;
+    tr.innerHTML = `
+      <td>${escapeHtml(ev.EventID)}</td>
+      <td>${escapeHtml(ev.Date)}</td>
+      <td>${escapeHtml(ev.EventName)}</td>
+      <td>${escapeHtml(ev.Field)}</td>
+      <td>${escapeHtml(ev.PF)}</td>
+      <td>${escapeHtml(ev.System)}</td>
+      <td>${escapeHtml(ev.Package)}</td>
+      <td>${escapeHtml(ev.Tag)}</td>
+      <td>${escapeHtml(ev.Impact)}</td>
+      <td>${escapeHtml(ev.What)}</td>
+      <td>${escapeHtml(ev.Action)}</td>
+      <td>${escapeHtml(ev.Cause)}</td>
+      <td>${escapeHtml(ev.Status)}</td>
+      <td>${escapeHtml(ev.TeamLeader)}</td>
+      <td>${escapeHtml((ev.TeamMembers||[]).join(', '))}</td>
+    `;
+    
+    // Add click event to open investigations for this event
+    tr.addEventListener('click', () => {
+      openInvestigationForEvent(ev.EventID);
+    });
+    
+    tbody.appendChild(tr);
+  });
+}
+
+function renderInvestigationsReportingTable() {
+  const table = document.getElementById('reportingInvestigationsTable');
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+
+  // Clear existing
+  tbody.innerHTML = '';
+  thead.innerHTML = '';
+
+  // === Build Headers ===
+  const headRow = document.createElement('tr');
+
+  // Basic columns
+  const baseHeaders = ['Event ID', 'Recommendation ID', 'Description', 'Responsibility', 'Due Date', 'Status'];
+  baseHeaders.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    headRow.appendChild(th);
+  });
+
+  // Determine max 5Why's across all investigations
+  let maxWhys = 0;
+  Object.values(state.investigations).forEach(inv => {
+    if (inv.whys?.length > maxWhys) maxWhys = inv.whys.length;
+  });
+
+  // Add Why headers dynamically (up to 6)
+  for (let i = 1; i <= Math.min(6, maxWhys); i++) {
+    ['Why Title', 'Desc', 'Evidence'].forEach(part => {
+      const th = document.createElement('th');
+      th.textContent = `Why?#${i} ${part}`;
+      headRow.appendChild(th);
+    });
+  }
+
+  thead.appendChild(headRow);
+
+  // === Fill Rows ===
+  const allEventIds = uniq([
+    ...Object.keys(state.recommendations || {}),
+    ...Object.keys(state.investigations || {})
+  ]);
+
+  allEventIds.forEach(eventId => {
+    const recs = state.recommendations[eventId] || [];
+    const whys = state.investigations[eventId]?.whys || [];
+
+    if (recs.length === 0) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(eventId)}</td>
+        <td colspan="5" class="italic text-slate-500">No recommendations</td>
+      `;
+      fillWhyColumns(tr, whys, maxWhys);
+      tbody.appendChild(tr);
+    } else {
+      recs.forEach(rec => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(eventId)}</td>
+          <td>${escapeHtml(rec.id)}</td>
+          <td>${escapeHtml(rec.description)}</td>
+          <td>${escapeHtml(rec.responsibility)}</td>
+          <td>${escapeHtml(rec.dueDate)}</td>
+          <td>${escapeHtml(rec.status)}</td>
+        `;
+        fillWhyColumns(tr, whys, maxWhys);
+        tbody.appendChild(tr);
+      });
+    }
+  });
+
+  function fillWhyColumns(tr, whys, max) {
+    for (let i = 0; i < max; i++) {
+      const why = whys[i] || {};
+      const q = escapeHtml(why.question || '');
+      const d = escapeHtml(why.description || '');
+      const e = escapeHtml(why.evidence || '');
+      tr.innerHTML += `<td>${q}</td><td>${d}</td><td>${e}</td>`;
+    }
+  }
+}
+
+
+
+function exportInvestigationsToExcel() {
+  const table = document.getElementById('reportingInvestigationsTable');
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.table_to_sheet(table);
+  XLSX.utils.book_append_sheet(wb, ws, "Investigations");
+  XLSX.writeFile(wb, "All_Investigations_Details.xlsx");
+}
+
+/* --- Login/Logout --- */
+function demoLogin(){ 
+  $('username').value = 'demo'; 
+  $('password').value = 'x'; 
+  handleLogin(); 
+}
+
+function handleLogin(){
+  const u = ($('username').value || '').trim();
+  const p = ($('password').value || '');
+  if(!u){ 
+    $('loginError').textContent = 'Type username'; 
+    return; 
+  }
+  if(u === 'admin' && p === 'Admin'){
+    localStorage.setItem('role','Admin'); 
+    localStorage.setItem('loggedIn','true'); 
+    afterLogin('Admin'); 
+    return;
+  }
+  localStorage.setItem('role','User'); 
+  localStorage.setItem('loggedIn','true'); 
+  loadFixedData();
+  renderTrackingTable();
+  afterLogin('User');
+ 
+}
+
+function afterLogin(role){
+  $('loginPage').classList.add('hidden'); 
+  $('mainPage').classList.remove('hidden');
+  $('roleInfo').textContent = role; 
+  $('sessionRole').textContent = role === 'Admin' ? 'Admin' : '';
+  $('logoutBtn').classList.remove('hidden');
+  
+  // First try to auto-load CSV from server
+  autoLoadCSV();
+  
+  // Then check localStorage as fallback
+  const raw = localStorage.getItem('csvRaw'); 
+  if(raw){ 
+    parseCSVText(raw); 
+    populateDropdownsFromCsv(); 
+    buildTreeFromCsv(); 
+    renderTrackingTable();
+
+  const container = $('selectedEventData');
+  container.innerHTML = '';
+   showTab(0); // Investigations tab  
+  }
+  
+  const trackingTbody = $('trackingTable').querySelector('tbody');
+  const summaryTbody = $('#currentEventBody');
+  const noEventDiv = $('#noCurrentEvent');
+    
+  if (state.eventsData.length > 0) {
+    noEventDiv.style.display = 'none';
+    state.eventsData.slice().reverse().forEach(ev => { 
+      prependTrackingRow(ev);
+      if (ev === state.eventsData[0]) {
+        prependSummaryRow(ev);
+      }
+    });
+  } else {
+    noEventDiv.style.display = 'block';
+  }
+  
+  if(!$('eventDate').value) $('eventDate').value = new Date().toISOString().slice(0,10);
+  setupFormChangeListeners();
+    
+}
+
+function logout() {
+  localStorage.removeItem('loggedIn');
+  localStorage.removeItem('role');
+  $('loginPage').classList.remove('hidden');
+  $('mainPage').classList.add('hidden');
+  $('username').value = '';
+  $('password').value = '';
+// ✅ Clear old data
+  // ✅ Clear the why container and reset count
+  document.getElementById('why-container').innerHTML = '';
+  state.whyCount = 0;
+//$('recContainer').innerHTML = '';
+document.querySelector('#recTable tbody').innerHTML = '';
+const container = $('selectedEventData');
+  container.innerHTML = '';
+   showTab(0); // Investigations tab 
+}
+
+/* --- UI Management --- */
+function setupFormChangeListeners() {
+  const formElements = [
+    'eventDate', 'eventName', 'fieldSelect', 'pfSelect', 'systemSelect', 
+    'packageSelect', 'tagSelect', 'productionImpact', 'statusSelect', 
+    'whatHappened', 'immediateAction', 'immediateCause'
+  ];
+  
+  formElements.forEach(id => {
+    const element = $(id);
+    if (element) {
+      element.addEventListener('change', updateCurrentEventSummary);
+      element.addEventListener('input', updateCurrentEventSummary);
+    }
+  });
+
+  // Add Enter key support for search
+  $('searchTracking')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      applyTrackingFilter();
+    }
+  });
+
+  // Add cascade listeners
+  ['fieldSelect','pfSelect','systemSelect','packageSelect'].forEach(id=>{
+    const el = $(id);
+    if(el) el.addEventListener('change', triggerDropdownCascade);
+  });
+}
+
+function showTab(i){
+  document.querySelectorAll('.tab-btn').forEach((b, idx) => {
+    if(idx === i) { 
+      b.classList.add('bg-white', 'border', 'border-b-0', 'text-sky-700'); 
+      b.classList.remove('bg-slate-100', 'text-slate-700'); 
+    }
+    else { 
+      b.classList.remove('bg-white', 'border', 'border-b-0', 'text-sky-700'); 
+      b.classList.add('bg-slate-100', 'text-slate-700'); 
+    }
+  });
+  
+  document.querySelectorAll('.tab-content').forEach((c, idx) => {
+    c.classList.toggle('hidden', idx !== i);
+  });
+  
+  // If showing reporting tab, render the tables
+  if (i === 4) {
+    renderReportingTables();
+  }
+}
+
+function showSub(name) {
+  document.querySelectorAll('[id^="sub-"]').forEach(tab => tab.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('bg-sky-600', 'text-white');
+    btn.classList.add('bg-slate-100');
+  });
+  
+  const activeContent = document.getElementById(`sub-${name}`);
+  const activeBtn = document.getElementById(`subBtn${name.charAt(0).toUpperCase() + name.slice(1)}`);
+  
+  if (activeContent && activeBtn) {
+    activeContent.classList.remove('hidden');
+    activeBtn.classList.remove('bg-slate-100');
+    activeBtn.classList.add('bg-sky-600', 'text-white');
+  }
+}
+
+/* --- CSV Modal --- */
+function openCsvModal(){ 
+  $('csvModal').classList.remove('hidden'); 
+  const raw = localStorage.getItem('csvRaw'); 
+  $('csvSavedInfo').textContent = raw ? 'Saved CSV found in localStorage.' : 'No saved CSV found.'; 
+  $('useSavedCsvBtn').disabled = !raw; 
+}
+
+function closeCsvModal(){ $('csvModal').classList.add('hidden'); }
+
+function uploadCsvFile(){
+  const f = $('csvUploadInput').files?.[0];
+  if(!f){ alert('Choose a CSV file'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const raw = e.target.result;
+    try { localStorage.setItem('csvRaw', raw); } catch(err){ console.warn('localStorage error', err); }
+    parseCSVText(raw);
+    populateDropdownsFromCsv();
+    buildTreeFromCsv();
+    closeCsvModal();
+    alert('CSV uploaded and saved.');
+  };
+  reader.readAsText(f);
+}
+
+function useSavedCsv(){
+  const raw = localStorage.getItem('csvRaw');
+  if(!raw){ alert('No saved CSV'); return; }
+  parseCSVText(raw);
+  populateDropdownsFromCsv();
+  buildTreeFromCsv();
+  closeCsvModal();
+}
+
+function skipCsv(){ closeCsvModal(); }
+    const attachedFiles = [];
+
+    document.getElementById('uploadForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+
+      if (!file) return;
+
+      const fileURL = URL.createObjectURL(file);
+      attachedFiles.push({ name: file.name, url: fileURL });
+
+      fileInput.value = ''; // Clear input
+      renderFileList();
+    });
+
+    function renderFileList() {
+      const fileList = document.getElementById('fileList');
+      fileList.innerHTML = '';
+
+      attachedFiles.forEach((file, index) => {
+        const div = document.createElement('div');
+        div.className = 'file-entry';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'file-name';
+        nameSpan.textContent = file.name;
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'file-buttons';
+
+        const openBtn = document.createElement('button');
+        openBtn.className = 'open-btn';
+        openBtn.textContent = 'Open';
+        openBtn.onclick = () => window.open(file.url, '_blank');
+
+        const modifyBtn = document.createElement('button');
+        modifyBtn.className = 'modify-btn';
+        modifyBtn.textContent = 'Modify';
+        modifyBtn.onclick = () => alert(`Modify ${file.name} (not implemented)`);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = () => {
+          attachedFiles.splice(index, 1);
+          renderFileList();
+        };
+
+        btnGroup.appendChild(openBtn);
+        btnGroup.appendChild(modifyBtn);
+        btnGroup.appendChild(deleteBtn);
+
+        div.appendChild(nameSpan);
+        div.appendChild(btnGroup);
+        fileList.appendChild(div);
+      });
+    }   
+/* --- Startup --- */
+document.addEventListener('DOMContentLoaded', () => {
+  initializeState();
+  $('loginPage').classList.remove('hidden'); 
+  $('mainPage').classList.add('hidden');
+  
+  try { 
+    const raw = localStorage.getItem('csvRaw'); 
+    if(raw){ 
+      parseCSVText(raw); 
+    } 
+  } catch(e){}
+  
+  if (localStorage.getItem('loggedIn') === 'true') {
+    const role = localStorage.getItem('role') || 'User';
+    afterLogin(role);
+  }
+
+  // Add admin upload button handler
+  const adminUploadBtn = $('adminUploadBtn');
+  if (adminUploadBtn) {
+    adminUploadBtn.onclick = openCsvModal;
+  }
+});
+
+async function exportInvestigationsToPDF() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) {
+    alert("jsPDF library not loaded. Please wait for it to load or refresh the page.");
+    return;
+  }
+
+  if (!state.EventId) {
+    alert("No event selected! Please select an event first.");
+    return;
+  }
+
+  const ev = state.eventsData.find(x => x.EventID === state.EventId);
+  if (!ev) {
+    alert("Event not found!");
+    return;
+  }
+
+  try {
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 40;
+    const lineHeight = 16;
+    let y = 40;
+
+    // --- Header ---
+    doc.setFontSize(20);
+    doc.setTextColor(40, 102, 158);
+    doc.setFont(undefined, 'bold');
+    doc.text("Event Investigation Report", pageWidth / 2, y, { align: "center" });
+    y += 40;
+
+    // --- Event Details Section ---
+    doc.setFontSize(14);
+    doc.setTextColor(40, 102, 158);
+    doc.text("Event Details", margin, y);
+    y += 25;
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont(undefined, 'normal');
+
+    const eventDetails = [
+      ["Event ID:", ev.EventID],
+      ["Event Name:", ev.EventName],
+      ["Date:", ev.Date],
+      ["Field:", ev.Field],
+      ["P/F:", ev.PF],
+      ["System:", ev.System],
+      ["Package:", ev.Package],
+      ["Package-TAG:", ev.Tag],
+      ["Equipment-TAG:", ev.EquipmentTag],
+      ["Impact (BPD):", ev.Impact],
+      ["Status:", ev.Status],
+      ["Team Leader:", ev.TeamLeader]
+    ];
+
+    // Left column
+    let leftY = y;
+    eventDetails.slice(0, 6).forEach(([key, val]) => {
+      doc.setFont(undefined, 'bold');
+      doc.text(key, margin, leftY);
+      doc.setFont(undefined, 'normal');
+      doc.text(String(val || "-"), margin + 80, leftY);
+      leftY += lineHeight;
+    });
+
+    // Right column
+    let rightY = y;
+    eventDetails.slice(6).forEach(([key, val]) => {
+      doc.setFont(undefined, 'bold');
+      doc.text(key, margin + 250, rightY);
+      doc.setFont(undefined, 'normal');
+      doc.text(String(val || "-"), margin + 330, rightY);
+      rightY += lineHeight;
+    });
+
+    y = Math.max(leftY, rightY) + 20;
+
+    // --- Team Members ---
+    if (ev.TeamMembers && ev.TeamMembers.length > 0) {
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.text("Team Members:", margin, y);
+      doc.setFont(undefined, 'normal');
+      y += lineHeight;
+      
+      ev.TeamMembers.forEach(member => {
+        doc.text("• " + member, margin + 10, y);
+        y += lineHeight;
+      });
+      y += 10;
+    }
+
+    // --- What Happened ---
+    if (ev.What) {
+      y = addSectionWithWrappedText(doc, "What Happened", ev.What, margin, y, pageWidth - margin * 2);
+    }
+
+    // --- Immediate Action ---
+    if (ev.Action) {
+      y = addSectionWithWrappedText(doc, "Immediate Action", ev.Action, margin, y, pageWidth - margin * 2);
+    }
+
+    // --- Immediate Cause ---
+    if (ev.Cause) {
+      y = addSectionWithWrappedText(doc, "Immediate Cause", ev.Cause, margin, y, pageWidth - margin * 2);
+    }
+
+    // --- 5 Whys Analysis ---
+    const whys = state.investigations[state.EventId]?.whys || [];
+    if (whys.length > 0) {
+      y = checkPageBreak(doc, y, 100);
+      
+      doc.setFontSize(14);
+      doc.setTextColor(40, 102, 158);
+      doc.setFont(undefined, 'bold');
+      doc.text("5 Whys Analysis", margin, y);
+      y += 25;
+
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+
+      whys.forEach((why, index) => {
+        y = checkPageBreak(doc, y, 60);
+        
+        doc.setFont(undefined, 'bold');
+        doc.text(`Why ${index + 1}: ${why.question || "-"}`, margin, y);
+        y += lineHeight;
+
+        doc.setFont(undefined, 'normal');
+        if (why.description) {
+          y = addWrappedText(doc, `Description: ${why.description}`, margin + 10, y, pageWidth - margin * 2 - 10);
+        }
+        if (why.evidence) {
+          y = addWrappedText(doc, `Evidence: ${why.evidence}`, margin + 10, y, pageWidth - margin * 2 - 10);
+        }
+        y += 10;
+      });
+    }
+
+    // --- Recommendations ---
+    const recs = state.recommendations[state.EventId] || [];
+    if (recs.length > 0) {
+      y = checkPageBreak(doc, y, 100);
+      
+      doc.setFontSize(14);
+      doc.setTextColor(40, 102, 158);
+      doc.setFont(undefined, 'bold');
+      doc.text("Recommendations", margin, y);
+      y += 25;
+
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+
+      recs.forEach((rec, index) => {
+        y = checkPageBreak(doc, y, 80);
+        
+        doc.setFont(undefined, 'bold');
+        doc.text(`Recommendation ${index + 1}:`, margin, y);
+        y += lineHeight;
+
+        doc.setFont(undefined, 'normal');
+        y = addWrappedText(doc, `Description: ${rec.description}`, margin + 10, y, pageWidth - margin * 2 - 10);
+        y = addWrappedText(doc, `Responsibility: ${rec.responsibility}`, margin + 10, y, pageWidth - margin * 2 - 10);
+        y = addWrappedText(doc, `Due Date: ${rec.dueDate}`, margin + 10, y, pageWidth - margin * 2 - 10);
+        y = addWrappedText(doc, `Status: ${rec.status}`, margin + 10, y, pageWidth - margin * 2 - 10);
+        y += 10;
+      });
+    }
+
+    // --- Footer ---
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(128, 128, 128);
+      doc.text(`Page ${i} of ${totalPages}`, pageWidth - 40, doc.internal.pageSize.getHeight() - 20);
+      doc.text(`Generated on ${new Date().toLocaleDateString()}`, margin, doc.internal.pageSize.getHeight() - 20);
+    }
+
+    // --- Save the PDF ---
+    doc.save(`Event_${ev.EventID}_Investigation_Report.pdf`);
+
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    alert('Error generating PDF: ' + error.message);
+  }
+}
+
+// Helper function to add wrapped text with page breaks
+function addWrappedText(doc, text, x, y, maxWidth) {
+  const lines = doc.splitTextToSize(text, maxWidth);
+  for (const line of lines) {
+    y = checkPageBreak(doc, y, 12);
+    doc.text(line, x, y);
+    y += 12;
+  }
+  return y;
+}
+
+// Helper function to add section with title and wrapped content
+function addSectionWithWrappedText(doc, title, content, margin, y, maxWidth) {
+  y = checkPageBreak(doc, y, 40);
+  
+  doc.setFontSize(12);
+  doc.setTextColor(40, 102, 158);
+  doc.setFont(undefined, 'bold');
+  doc.text(title + ":", margin, y);
+  y += 20;
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, 'normal');
+  y = addWrappedText(doc, content, margin, y, maxWidth);
+  
+  return y + 15;
+}
+
+// Helper function to check for page breaks
+function checkPageBreak(doc, currentY, requiredSpace) {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  if (currentY + requiredSpace > pageHeight - 40) {
+    doc.addPage();
+    return 40;
+  }
+  return currentY;
+}
+
+</script>
+</body>
+</html>
