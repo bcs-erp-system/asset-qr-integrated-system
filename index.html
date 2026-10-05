@@ -818,7 +818,8 @@ textarea {
         border: 1px solid #000;
     }
 }
-\n/* ================================
+
+/* ================================
    PRINT
 ================================ */
 
@@ -2817,24 +2818,6 @@ textarea {
    PM DATA
    ============================================================= */
 
-/*
- * New data arrangement:
- *
- *   data/
- *     2803-data.json
- *     2804-data.json
- *     2805-data.json
- *     ...
- *
- * Each PM has its own JSON file:
- *
- *   [pmid]-data.json
- *
- * Example:
- *   ?pm=2803
- *   -> ./data/2803-data.json
- */
-
 let pmDatabase = {};
 let currentPMFile = "";
 
@@ -3148,22 +3131,6 @@ const EQUIPMENT_FORM_CONFIG = {
     }
 };
 
-/*
- * GAS ENGINE is the reference checklist already present in Form 440-1-G.
- * The standard templates below use the same maintenance philosophy:
- * inspection/cleaning -> lubrication -> mechanical condition ->
- * process/electrical readings -> safety -> leakage -> final functional test.
- *
- * Each item is:
- *   [ "English / Arabic", "unit or reading hint" ]
- *
- * Canonical equipment types from the PM JSON are: GAS ENGINE, DIESEL ENGINE,
- * ELECTRIC MOTOR, PUMP, GAS COMPRESSOR, AIR COMPRESSOR, GENERATOR.
- *
- * IMPORTANT: Checklists are application-controlled and are defined only in
- * EQUIPMENT_CHECKLIST_TEMPLATES below. The PM JSON may provide equipment data,
- * but inspectionChecklist / inspectionChecks / checklist are intentionally ignored.
- */
 const EQUIPMENT_CHECKLIST_TEMPLATES = {
     "GAS ENGINE": [
         ["Change Oil & Clean Crank Case & Oil Cooler / تغيير الزيت وتنظيف الكارتيرة ومبرد الزيت", ""],
@@ -3389,8 +3356,6 @@ function getEquipmentFormConfig(equipmentType) {
 }
 
 function getEquipmentChecklist(equipmentType) {
-    // The checklist is always selected from the application code.
-    // PM JSON checklist fields are intentionally ignored.
     const type = normalizeEquipmentType(equipmentType);
     return EQUIPMENT_CHECKLIST_TEMPLATES[type] || [];
 }
@@ -3570,1262 +3535,441 @@ function updateEquipmentTypeUI(pm) {
 
     const tabChecklistTitle = document.getElementById("tabChecklistTitle");
     if (tabChecklistTitle) {
-        const selectedEquipmentType = normalizeEquipmentType(pm.equipmentType || "Equipment");
-
-        const arabicEquipmentTitle = {
-            "GAS ENGINE": "فحص وصيانة المحرك",
-            "DIESEL ENGINE": "فحص وصيانة المحرك",
-            "ELECTRIC MOTOR": "فحص وصيانة المحرك الكهربائي",
-            "PUMP": "فحص وصيانة الطلمبة",
-            "GAS COMPRESSOR": "فحص وصيانة ضاغط الغاز",
-            "AIR COMPRESSOR": "فحص وصيانة ضاغط الهواء",
-            "GENERATOR": "فحص وصيانة المولد"
-        };
-
-        tabChecklistTitle.textContent =
-            selectedEquipmentType + " Inspection & P M / " +
-            (arabicEquipmentTitle[selectedEquipmentType] || "فحص وصيانة المعدة");
+        tabChecklistTitle.textContent = config.checklistTitle;
     }
 
-    const technicalCard = findNearestEquipmentCard("ratedPowerInput");
+    const techCard = findNearestEquipmentCard("ratedPowerInput");
     const meterCard = findNearestEquipmentCard("currentHourMeterInput");
-    setDisplay(technicalCard, config.showLegacyTechnical);
-    setDisplay(meterCard, config.showLegacyMeter);
+    const gasEngineTitle = document.getElementById("gasEngineChecklistTitle");
+    const gasEngineTable = gasEngineTitle ? gasEngineTitle.nextElementSibling : null;
 
-    const technicalTitle = document.getElementById("technicalSpecificationsTitle");
-    const meterTitle = document.getElementById("meterOperatingTitle");
-    if (technicalTitle) technicalTitle.textContent = config.technicalTitle;
-    if (meterTitle) meterTitle.textContent = config.meterTitle;
-
-    const checklistTable = document.querySelector("#tab-checklist > #printable-form > .inspection-table");
-    if (checklistTable) {
-        checklistTable.style.display = config.showLegacyInspection ? "" : "none";
+    if (techCard) {
+        setDisplay(techCard, config.showLegacyTechnical, "block");
+    }
+    if (meterCard) {
+        setDisplay(meterCard, config.showLegacyMeter, "block");
     }
 
-    const formTitle = document.getElementById("inspectionMainTitle");
-    if (formTitle) {
-        const titleEn = formTitle.querySelector(".inspection-title-en");
-        const titleAr = formTitle.querySelector(".inspection-title-ar");
-
-        if (config.showLegacyInspection) {
-            if (titleEn) titleEn.textContent = "Engine Inspection & Preventive Maintenance";
-            if (titleAr) titleAr.textContent = "فحص وصيانة المحرك";
-        } else {
-            if (titleEn) titleEn.textContent = "Equipment Inspection & Preventive Maintenance";
-            if (titleAr) titleAr.textContent = "فحص وصيانة المعدة";
-        }
+    if (gasEngineTitle) {
+        setDisplay(gasEngineTitle, config.showLegacyInspection);
+    }
+    if (gasEngineTable && gasEngineTable.classList.contains("inspection-table")) {
+        setDisplay(gasEngineTable, config.showLegacyInspection);
     }
 
     renderDynamicEquipmentParameters(pm, equipmentType);
     renderDynamicInspection(pm, equipmentType);
 }
 
-function populatePM(pm) {
-
+function populatePMData(pm, sourceText = "Loaded PM") {
     currentPM = pm;
 
-    /* Header */
-    setValue("assetTag", pm.assetTag);
-    setValue("assetDescription", pm.asset);
-    setValue("assetLocation", pm.assetLocation);
-    setValue("assetStatus", pm.status);
-    setValue("equipmentTypeInput", pm.equipmentType);
+    setValue("assetTag", pm.assetTag || pm.assetNum);
+    setValue("assetStatus", pm.status || "OPERATIONAL");
+    setValue("assetDescription", pm.assetDescription || pm.description);
+    setValue("assetLocation", pm.assetLocation || pm.location);
 
-    /* PM */
     setValue("pmIdInput", pm.pmId);
     setValue("failureClassInput", pm.failureClass);
     setValue("responsibilityInput", pm.responsibility);
-    setValue("glAccountInput", pm.glAccount);
     setValue("jobPlanInput", pm.jobPlan);
     setValue("frequencyInput", pm.frequency);
+    setValue("glAccountInput", pm.glAccount);
 
-    /* Equipment */
     setValue("manufacturerInput", pm.manufacturer);
     setValue("modelInput", pm.model);
-    setValue("serialInput", pm.serial);
+    setValue("serialInput", pm.serialNum);
     setValue("installationDateInput", pm.installationDate);
-    setValue("criticalityInput", pm.criticality);
+    setValue("criticalityInput", pm.criticality || "HIGH");
 
-    /* New JSON arrangement: equipment parameters are nested. */
-    const equipmentParameters = pm.engineParameters || pm.equipmentParameters || pm.technicalParameters || {};
-    const technical = {...pm, ...equipmentParameters};
+    setValue("ratedPowerInput", pm.ratedPower);
+    setValue("speedInput", pm.operatingSpeed);
+    setValue("fuelInput", pm.fuelType);
+    setValue("oilCapacityInput", pm.lubeOilCapacity);
+    setValue("coolingCapacityInput", pm.coolingCapacity);
 
-    /* Technical */
-    setValue("ratedPowerInput", technical.ratedPower);
-    setValue("speedInput", technical.operatingSpeed);
-    setValue("fuelInput", technical.fuelType);
-    setValue("oilCapacityInput", technical.lubeOilCapacity);
-    setValue("coolingCapacityInput", technical.coolingCapacity);
+    setValue("currentHourMeterInput", pm.currentHourMeter);
+    setValue("lastOverhaulInput", pm.lastOverhaulMeter);
+    setValue("avgHoursInput", pm.avgHoursPerDay);
+    setValue("targetOilTempInput", pm.targetOilTemp);
+    setValue("targetOilPressInput", pm.targetOilPress);
 
-    /* Meter */
-    setValue("currentHourMeterInput", technical.currentHourMeter);
-    setValue("lastOverhaulInput", technical.lastOverhaulMeter);
-    setValue("avgHoursInput", technical.avgRunningHours);
-    setValue("targetOilTempInput", technical.targetOilTemp);
-    setValue("targetOilPressInput", technical.targetOilPress);
-
-    /* PM Summary */
-    setValue("pmFrequencySummaryInput", pm.pmFrequencySummary);
+    setValue("pmFrequencySummaryInput", pm.pmFrequencySummary || pm.frequency);
     setValue("lastPMDateInput", pm.lastPMDate);
-    setValue("nextPMDateInput", pm.nextPMDueDate);
+    setValue("nextPMDateInput", pm.nextPMDue);
     setValue("assignedGroupInput", pm.assignedGroup);
-    setValue("workOrderInput", pm.workOrder);
+    setValue("workOrderInput", pm.workOrderRef);
+
     setValue("assetNotes", pm.notes);
+    setValue("assetInspector", pm.inspector);
+    setValue("assetSupervisor", pm.supervisor);
 
-    /* Inspection */
-    setValue("locInput", pm.assetLocation);
-    setValue("unitInput", pm.assetTag);
-    setValue("serialInspectionInput", pm.serial);
-    setValue("hourMeterInput", technical.currentHourMeter);
+    setValue("locInput", pm.assetLocation || pm.location);
+    setValue("dateInput", pm.inspectionDate || new Date().toISOString().split("T")[0]);
+    setValue("unitInput", pm.unitNo || pm.assetTag || pm.assetNum);
+    setValue("serialInspectionInput", pm.serialNum);
+    setValue("hourMeterInput", pm.currentHourMeter);
     setValue("inspectionPMId", pm.pmId);
+    setValue("inspectionInspector", pm.inspector);
 
-    const footerPMId = document.getElementById("footerPMId");
-    if (footerPMId) footerPMId.textContent = pm.pmId || "";
+    setText("footerPMId", pm.pmId || "---");
+    setText("pmSource", "Source: " + sourceText);
 
-    const pmSource = document.getElementById("pmSource");
-    if (pmSource) {
-        pmSource.textContent = "Loaded from PM ID: " + (pm.pmId || "---") + " | Equipment: " + (pm.equipmentType || "---");
-    }
-
-    /* equipmentType controls the equipment-specific portions of both tabs. */
+    renderMaterials(pm.materials || []);
     updateEquipmentTypeUI(pm);
-
-    renderMaterials(pm.materials);
-    loadPMAttachments(pm.pmId);
-
-    updateQRStatus("loaded", "PM " + pm.pmId + " loaded from URL");
+    updateQRStatus("loaded", `Loaded PM ${pm.pmId}`);
 
     showDiagnostics(
         "success",
         "PM Data Loaded Successfully",
         [
-            "PM ID: " + pm.pmId,
-            "Equipment Type: " + (pm.equipmentType || "Not specified"),
-            "Asset: " + pm.asset,
-            "Location: " + pm.assetLocation,
-            "Job Plan: " + pm.jobPlan,
-            "Frequency: " + pm.frequency
+            `PM ID: ${pm.pmId || "N/A"}`,
+            `Equipment: ${pm.equipmentType || "N/A"}`,
+            `Asset: ${pm.assetDescription || "N/A"} (${pm.assetTag || pm.assetNum || "N/A"})`,
+            `Location: ${pm.assetLocation || pm.location || "N/A"}`,
+            `Source: ${sourceText}`
         ],
         pm.pmId
     );
+
+    loadSavedExecutionLocally(pm.pmId);
 }
-
-/* ============================================================
-   SET VALUE
-============================================================ */
-
-function setValue(id, value) {
-
-    const element =
-        document.getElementById(id);
-
-    if (!element) {
-        return;
-    }
-
-    element.value =
-        value ?? "";
-}
-
-
-/* ============================================================
-   RENDER MATERIALS
-============================================================ */
 
 function renderMaterials(materials) {
+    const tbody = document.getElementById("materialsBody");
+    const totalEl = document.getElementById("materialsTotal");
 
-    const body =
-        document.getElementById("materialsBody");
+    if (!tbody) return;
 
-    const total =
-        document.getElementById("materialsTotal");
-
-    body.innerHTML = "";
+    tbody.innerHTML = "";
 
     if (!materials || materials.length === 0) {
-
-        body.innerHTML =
-            `<tr>
-                <td colspan="6">
-                    No PM materials defined.
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align:center; color:#64748b; padding:12px;">
+                    No required materials listed for this PM.
                 </td>
             </tr>`;
-
-        total.textContent =
-            "No materials.";
-
+        if (totalEl) totalEl.textContent = "Total Items: 0";
         return;
     }
 
-
-    let totalQuantity = 0;
-
-
-    materials.forEach((item, index) => {
-
-        totalQuantity +=
-            Number(item.quantity) || 0;
-
-        const row =
-            document.createElement("tr");
-
+    materials.forEach((mat, idx) => {
+        const row = document.createElement("tr");
         row.innerHTML = `
-
-            <td>
-                ${index + 1}
-            </td>
-
-            <td>
-                ${escapeHTML(item.quantity)}
-            </td>
-
-            <td>
-                ${escapeHTML(item.unit)}
-            </td>
-
-            <td>
-                ${escapeHTML(item.itemNo)}
-            </td>
-
-            <td>
-                ${escapeHTML(item.description)}
-            </td>
-
-            <td dir="rtl">
-                ${escapeHTML(item.descriptionAr)}
-            </td>
-
+            <td>${idx + 1}</td>
+            <td>${escapeHTML(mat.quantity ?? mat.qty ?? "")}</td>
+            <td>${escapeHTML(mat.unit ?? "")}</td>
+            <td>${escapeHTML(mat.itemNo ?? mat.itemNum ?? "")}</td>
+            <td>${escapeHTML(mat.descEn ?? mat.descriptionEn ?? mat.description ?? "")}</td>
+            <td>${escapeHTML(mat.descAr ?? mat.descriptionAr ?? "")}</td>
         `;
-
-        body.appendChild(row);
-
+        tbody.appendChild(row);
     });
 
+    if (totalEl) {
+        totalEl.textContent = `Total Items: ${materials.length}`;
+    }
+}
 
-    total.textContent =
-        "Total material lines: " +
-        materials.length +
-        " | Total quantity: " +
-        totalQuantity;
+function setValue(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val ?? "";
+}
 
+function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val ?? "";
 }
 
 /* ============================================================
-   ATTACHMENTS
-   Lists files from attachments/<pmId>/ and opens each file
-   in a new browser tab.
-   ============================================================ */
-
-/*
- * Optional configuration for custom-domain deployments:
- *
- * window.EAM_GITHUB_REPOSITORY = "OWNER/REPOSITORY";
- *
- * When the application is hosted directly on GitHub Pages,
- * the repository is inferred from the github.io URL.
- */
-const ATTACHMENTS_FOLDER = "attachments";
-
-function getGitHubRepository() {
-    if (window.EAM_GITHUB_REPOSITORY) {
-        return String(window.EAM_GITHUB_REPOSITORY).trim();
-    }
-
-    const host = window.location.hostname;
-    const pathParts = window.location.pathname
-        .split("/")
-        .filter(Boolean);
-
-    if (!host.endsWith(".github.io")) {
-        return null;
-    }
-
-    const owner = host.split(".")[0];
-
-    /*
-     * User/organization Pages:
-     *   https://owner.github.io/
-     * normally maps to owner/owner.github.io
-     *
-     * Project Pages:
-     *   https://owner.github.io/repository/
-     * maps to owner/repository
-     */
-    const repo = pathParts.length > 0
-        ? pathParts[0]
-        : owner + ".github.io";
-
-    return owner + "/" + repo;
-}
-
-function getAttachmentURL(pmId, fileName) {
-    return (
-        "./" +
-        ATTACHMENTS_FOLDER +
-        "/" +
-        encodeURIComponent(String(pmId)) +
-        "/" +
-        encodeURIComponent(String(fileName))
-    );
-}
-
-function renderAttachmentsMessage(message) {
-    const list = document.getElementById("attachmentsList");
-
-    if (!list) {
-        return;
-    }
-
-    list.innerHTML = `
-        <li class="attachments-empty">
-            ${escapeHTML(message)}
-        </li>
-    `;
-}
-
-function renderAttachments(files, pmId) {
-    const list = document.getElementById("attachmentsList");
-    const status = document.getElementById("attachmentsStatus");
-
-    if (!list || !status) {
-        return;
-    }
-
-    list.innerHTML = "";
-
-    if (!files || files.length === 0) {
-        status.textContent = "0 files";
-        renderAttachmentsMessage(
-            "No attachment files found for PM " + pmId + "."
-        );
-        return;
-    }
-
-    const sortedFiles = [...files].sort((a, b) =>
-        String(a.name).localeCompare(
-            String(b.name),
-            undefined,
-            {
-                numeric: true,
-                sensitivity: "base"
-            }
-        )
-    );
-
-    sortedFiles.forEach(file => {
-        const li = document.createElement("li");
-
-        const link = document.createElement("a");
-        link.className = "attachment-link";
-        link.href = file.url || getAttachmentURL(pmId, file.name);
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.title = "Open " + file.name + " in a new page";
-
-        const icon = document.createElement("span");
-        icon.className = "attachment-icon";
-        icon.textContent = "📎";
-
-        const name = document.createElement("span");
-        name.textContent = file.name;
-
-        link.appendChild(icon);
-        link.appendChild(name);
-        li.appendChild(link);
-        list.appendChild(li);
-    });
-
-    status.textContent =
-        sortedFiles.length +
-        (sortedFiles.length === 1 ? " file" : " files");
-}
-
-async function fetchAttachmentsFromGitHub(pmId) {
-    const repository = getGitHubRepository();
-
-    if (!repository || !repository.includes("/")) {
-        throw new Error(
-            "GitHub repository could not be determined."
-        );
-    }
-
-    const apiURL =
-        "https://api.github.com/repos/" +
-        repository +
-        "/contents/" +
-        ATTACHMENTS_FOLDER +
-        "/" +
-        encodeURIComponent(String(pmId));
-
-    const response = await fetch(apiURL, {
-        headers: {
-            "Accept": "application/vnd.github+json"
-        },
-        cache: "no-store"
-    });
-
-    if (!response.ok) {
-        throw new Error(
-            "GitHub API HTTP " + response.status
-        );
-    }
-
-    const entries = await response.json();
-
-    if (!Array.isArray(entries)) {
-        throw new Error(
-            "The attachment path is not a directory."
-        );
-    }
-
-    return entries
-        .filter(entry => entry.type === "file")
-        .map(entry => ({
-            name: entry.name,
-            /*
-             * Use the actual GitHub Pages file URL instead of
-             * the API download URL, so the file opens on the
-             * same deployed application when possible.
-             */
-            url: getAttachmentURL(pmId, entry.name)
-        }));
-}
-
-async function fetchAttachmentsFromManifest(pmId) {
-    const manifestURL =
-        "./" +
-        ATTACHMENTS_FOLDER +
-        "/" +
-        encodeURIComponent(String(pmId)) +
-        "/index.json?v=" +
-        Date.now();
-
-    const response = await fetch(manifestURL, {
-        cache: "no-store"
-    });
-
-    if (!response.ok) {
-        throw new Error(
-            "Attachment manifest HTTP " + response.status
-        );
-    }
-
-    const data = await response.json();
-
-    /*
-     * Supported formats:
-     *   ["file1.pdf", "file2.jpg"]
-     * or
-     *   { "files": ["file1.pdf", "file2.jpg"] }
-     */
-    const names = Array.isArray(data)
-        ? data
-        : Array.isArray(data.files)
-            ? data.files
-            : [];
-
-    return names
-        .filter(name =>
-            typeof name === "string" &&
-            name.trim() !== ""
-        )
-        .map(name => ({
-            name: name,
-            url: getAttachmentURL(pmId, name)
-        }));
-}
-
-async function loadPMAttachments(pmId) {
-    const status =
-        document.getElementById("attachmentsStatus");
-
-    const source =
-        document.getElementById("attachmentsPMSource");
-
-    if (!pmId) {
-        if (source) {
-            source.textContent = "PM ID: ---";
-        }
-
-        if (status) {
-            status.textContent = "No PM selected";
-        }
-
-        renderAttachmentsMessage(
-            "No PM ID is currently loaded."
-        );
-
-        return;
-    }
-
-    if (source) {
-        source.textContent = "PM ID: " + pmId;
-    }
-
-    if (status) {
-        status.textContent = "Loading...";
-    }
-
-    renderAttachmentsMessage(
-        "Loading attachments for PM " + pmId + "..."
-    );
-
-    try {
-        /*
-         * Preferred method for GitHub Pages:
-         * query the repository contents directly.
-         */
-        const files =
-            await fetchAttachmentsFromGitHub(pmId);
-
-        renderAttachments(files, pmId);
-
-    } catch (githubError) {
-
-        console.warn(
-            "GitHub attachment listing failed:",
-            githubError
-        );
-
-        try {
-            /*
-             * Fallback for custom domains or repositories
-             * where the GitHub API cannot be used.
-             */
-            const files =
-                await fetchAttachmentsFromManifest(pmId);
-
-            renderAttachments(files, pmId);
-
-        } catch (manifestError) {
-
-            console.error(
-                "Attachment manifest loading failed:",
-                manifestError
-            );
-
-            if (status) {
-                status.textContent = "Unable to list files";
-            }
-
-            renderAttachmentsMessage(
-                "No attachment listing is available for PM " +
-                pmId +
-                ". Add attachments/" +
-                pmId +
-                "/index.json or configure EAM_GITHUB_REPOSITORY."
-            );
-        }
-    }
-}
-
-function loadCurrentPMAttachments() {
-    const pmId =
-        currentPM?.pmId ||
-        document.getElementById("pmIdInput")?.value ||
-        document.getElementById("inspectionPMId")?.value ||
-        "";
-
-    loadPMAttachments(pmId);
-}
-async function loadPMDatabase() {
-
-    /*
-     * The application now loads only the JSON file belonging
-     * to the PM ID supplied in the URL.
-     *
-     * Example:
-     *   index.html?pm=2803
-     *   -> data/2803-data.json
-     */
-
-    try {
-
-        updateQRStatus(
-            "",
-            "Loading PM data..."
-        );
-
-        const identifier =
-            getPMIdentifierFromURL();
-
-        const requestedPM =
-            identifier.pm ||
-            identifier.id ||
-            identifier.asset;
-
-        if (!requestedPM) {
-
-            updateQRStatus(
-                "warning",
-                "No PM ID in URL"
-            );
-
-            showDiagnostics(
-                "info",
-                "Application Ready",
-                [
-                    "No PM parameter was supplied.",
-                    "Use ?pm=2803 to load PM 2803.",
-                    "Example: ?pm=2803"
-                ]
-            );
-
-            return;
-        }
-
-        /*
-         * For the new arrangement, the PM identifier is the
-         * filename prefix:
-         *
-         *   2803 -> 2803-data.json
-         *
-         * encodeURIComponent prevents special characters from
-         * being interpreted as part of the path.
-         */
-        const pmId =
-            String(requestedPM).trim();
-
-        const dataURL =
-            "./data/" +
-            encodeURIComponent(pmId) +
-            "-data.json?v=" +
-            Date.now();
-
-        currentPMFile =
-            "./data/" +
-            pmId +
-            "-data.json";
-
-        const response =
-            await fetch(
-                dataURL,
-                {
-                    cache: "no-store"
-                }
-            );
-
-        if (!response.ok) {
-
-            throw new Error(
-                "HTTP " +
-                response.status +
-                " - " +
-                pmId +
-                "-data.json"
-            );
-        }
-
-        const data =
-            await response.json();
-
-        /*
-         * Supported file formats:
-         *   { "2803": { ...PM record... } }
-         *   { "pmId": "2803", ...PM record... }
-         *   [ { ...PM record... } ]
-         */
-        let pmRecord = data;
-
-        if (Array.isArray(data)) {
-            if (data.length === 0) {
-                throw new Error("The PM JSON file contains no records.");
-            }
-            pmRecord = data[0];
-        }
-
-        if (!pmRecord || typeof pmRecord !== "object" || Array.isArray(pmRecord)) {
-            throw new Error("Invalid PM JSON structure.");
-        }
-
-        /* Unwrap the PM-ID object used by 2803-data.json. */
-        const requestedKey = String(pmId).trim();
-
-        if (
-            pmRecord[requestedKey] &&
-            typeof pmRecord[requestedKey] === "object" &&
-            !Array.isArray(pmRecord[requestedKey])
-        ) {
-            pmRecord = pmRecord[requestedKey];
-        } else {
-            const rootKeys = Object.keys(pmRecord);
-            if (
-                rootKeys.length === 1 &&
-                pmRecord[rootKeys[0]] &&
-                typeof pmRecord[rootKeys[0]] === "object" &&
-                !Array.isArray(pmRecord[rootKeys[0]]) &&
-                (pmRecord[rootKeys[0]].pmId || pmRecord[rootKeys[0]].PM_ID)
-            ) {
-                pmRecord = pmRecord[rootKeys[0]];
-            }
-        }
-
-        if (!pmRecord || typeof pmRecord !== "object" || Array.isArray(pmRecord)) {
-            throw new Error("Invalid PM record after JSON wrapper processing.");
-        }
-
-        /*
-         * Keep the existing application architecture working:
-         * pmDatabase contains the currently loaded PM only.
-         */
-        const actualPMId =
-            String(
-                pmRecord.pmId ??
-                pmRecord.PM_ID ??
-                pmRecord.id ??
-                pmId
-            ).trim();
-
-        if (!pmRecord.pmId) {
-            pmRecord.pmId = actualPMId;
-        }
-
-        pmDatabase = {};
-        pmDatabase[actualPMId] = pmRecord;
-
-        console.log(
-            "PM file loaded:",
-            currentPMFile,
-            pmRecord
-        );
-
-        /*
-         * Populate the form directly from the selected file.
-         */
-        populatePM(pmRecord);
-
-    } catch (error) {
-
-        console.error(
-            "PM data loading error:",
-            error
-        );
-
-        pmDatabase = {};
-
-        updateQRStatus(
-            "error",
-            "PM Data unavailable"
-        );
-
-        const requestedPM =
-            getPMIdentifierFromURL().pm ||
-            getPMIdentifierFromURL().id ||
-            getPMIdentifierFromURL().asset ||
-            "---";
-
-        showDiagnostics(
-            "error",
-            "PM Data Error",
-            [
-                "Unable to load the PM data file.",
-                "Requested PM: " + requestedPM,
-                "Expected file: data/" +
-                    requestedPM +
-                    "-data.json",
-                "Please check that the file exists.",
-                "Error: " + error.message
-            ]
-        );
-    }
-}
-
-/* ============================================================
-   LOAD PM FROM URL
+   ATTACHMENTS SYSTEM
 ============================================================ */
 
-function loadPMFromURL() {
+async function loadCurrentPMAttachments() {
+    const pmId = document.getElementById("pmIdInput")?.value || currentPM?.pmId;
+    const listEl = document.getElementById("attachmentsList");
+    const statusEl = document.getElementById("attachmentsStatus");
+    const sourceEl = document.getElementById("attachmentsPMSource");
 
-    /*
-     * Kept as a public compatibility function because other parts
-     * of the application may call loadPMFromURL().
-     *
-     * The actual loading is now performed by loadPMDatabase(),
-     * which fetches [pmid]-data.json directly.
-     */
-    loadPMDatabase();
+    if (sourceEl) {
+        sourceEl.textContent = "PM ID: " + (pmId || "---");
+    }
+
+    if (!pmId) {
+        if (statusEl) statusEl.textContent = "No PM selected";
+        if (listEl) {
+            listEl.innerHTML = `<li class="attachments-empty">Select or load a PM record to view attachments.</li>`;
+        }
+        return;
+    }
+
+    if (statusEl) statusEl.textContent = "Checking attachments...";
+
+    const extensions = ["pdf", "jpg", "jpeg", "png", "doc", "docx", "xls", "xlsx", "zip"];
+    const possibleFiles = [
+        `manual.pdf`,
+        `drawing.pdf`,
+        `datasheet.pdf`,
+        `spec.pdf`,
+        `checklist.pdf`,
+        `image.jpg`,
+        `photo.jpg`,
+        `${pmId}.pdf`,
+        `${pmId}-manual.pdf`,
+        `${pmId}-spec.pdf`
+    ];
+
+    const folderPath = `./attachments/${pmId}/`;
+    let foundFiles = [];
+
+    if (currentPM && Array.isArray(currentPM.attachments)) {
+        foundFiles = currentPM.attachments.map(f => typeof f === 'string' ? { name: f, path: folderPath + f } : f);
+    }
+
+    if (foundFiles.length === 0) {
+        const checkPromises = possibleFiles.map(async (filename) => {
+            const filePath = folderPath + filename;
+            try {
+                const res = await fetch(filePath, { method: "HEAD" });
+                if (res.ok) {
+                    return { name: filename, path: filePath };
+                }
+            } catch (e) {
+                // Ignore errors
+            }
+            return null;
+        });
+
+        const results = await Promise.all(checkPromises);
+        foundFiles = results.filter(f => f !== null);
+    }
+
+    if (foundFiles.length > 0) {
+        if (statusEl) statusEl.textContent = `${foundFiles.length} file(s) found`;
+        if (listEl) {
+            listEl.innerHTML = foundFiles.map(f => `
+                <li>
+                    <a href="${escapeHTML(f.path)}" target="_blank" class="attachment-link">
+                        <span class="attachment-icon">📎</span>
+                        <span>${escapeHTML(f.name)}</span>
+                    </a>
+                </li>
+            `).join("");
+        }
+    } else {
+        if (statusEl) statusEl.textContent = "No files found";
+        if (listEl) {
+            listEl.innerHTML = `
+                <li class="attachments-empty">
+                    No attachment files found in <code>attachments/${escapeHTML(pmId)}/</code> folder.
+                </li>`;
+        }
+    }
 }
 
 /* ============================================================
-   PRINT ACTIVE TAB
+   LOCAL STORAGE EXECUTION SAVE / LOAD
+============================================================ */
+
+function getExecutionStorageKey(pmId) {
+    return `eam_execution_${pmId}`;
+}
+
+function saveExecutionLocally() {
+    const pmId = document.getElementById("pmIdInput")?.value;
+    if (!pmId) {
+        alert("No active PM ID to save execution data for.");
+        return;
+    }
+
+    const executionData = {
+        savedAt: new Date().toISOString(),
+        pmId: pmId,
+        fields: {}
+    };
+
+    const container = document.getElementById("tab-checklist");
+    if (container) {
+        const inputs = container.querySelectorAll("input, select, textarea");
+        inputs.forEach(input => {
+            if (input.id) {
+                if (input.type === "checkbox") {
+                    executionData.fields[input.id] = input.checked;
+                } else {
+                    executionData.fields[input.id] = input.value;
+                }
+            }
+        });
+    }
+
+    try {
+        localStorage.setItem(getExecutionStorageKey(pmId), JSON.stringify(executionData));
+        alert(`Inspection execution saved locally for PM ${pmId}!`);
+    } catch (e) {
+        alert("Failed to save execution locally: " + e.message);
+    }
+}
+
+function loadSavedExecutionLocally(pmId) {
+    if (!pmId) return;
+    const raw = localStorage.getItem(getExecutionStorageKey(pmId));
+    if (!raw) return;
+
+    try {
+        const data = JSON.parse(raw);
+        if (data && data.fields) {
+            Object.entries(data.fields).forEach(([id, val]) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.type === "checkbox") {
+                        el.checked = Boolean(val);
+                    } else {
+                        el.value = val;
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Error loading saved execution:", e);
+    }
+}
+
+function clearExecutionForm() {
+    if (!confirm("Are you sure you want to clear the execution inputs for this tab?")) {
+        return;
+    }
+
+    const container = document.getElementById("tab-checklist");
+    if (container) {
+        const inputs = container.querySelectorAll("input, select, textarea");
+        inputs.forEach(input => {
+            if (input.type === "checkbox") {
+                input.checked = false;
+            } else if (!input.readOnly && input.id !== "dateInput") {
+                input.value = "";
+            }
+        });
+    }
+
+    const pmId = document.getElementById("pmIdInput")?.value;
+    if (pmId) {
+        localStorage.removeItem(getExecutionStorageKey(pmId));
+    }
+}
+
+/* ============================================================
+   PRINT AND PDF
 ============================================================ */
 
 function printActiveTab() {
     window.print();
 }
 
-
-/* ============================================================
-   SAVE ASSET TAB PDF
-============================================================ */
-
 function saveAssetPDF() {
-
-    const element =
-        document.getElementById("asset-form");
-
-    if (!element) {
-        return;
-    }
-
-    const pmId =
-        document.getElementById("pmIdInput").value ||
-        "Unknown";
-
-    const asset =
-        document.getElementById("assetTag").value ||
-        "Asset";
-
-    const fileName =
-        `EAM_Asset_PM_${pmId}_${sanitizeFileName(asset)}.pdf`;
-
+    const element = document.getElementById("asset-form");
+    const pmId = document.getElementById("pmIdInput")?.value || "Asset";
     const opt = {
-        margin: 5,
-        filename: fileName,
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2,
-            useCORS: true
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait"
-        }
+        margin: [5, 5, 5, 5],
+        filename: `Asset_MasterData_${pmId}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save();
-
+    if (window.html2pdf) {
+        html2pdf().set(opt).from(element).save();
+    } else {
+        window.print();
+    }
 }
-
-
-/* ============================================================
-   SAVE INSPECTION PDF
-============================================================ */
 
 function saveInspectionPDF() {
-
-    const element =
-        document.getElementById("printable-form");
-
-    if (!element) {
-        return;
-    }
-
-    const unitNo =
-        document.getElementById("unitInput").value ||
-        "Unspecified";
-
-    const dateVal =
-        document.getElementById("dateInput").value ||
-        getToday();
-
-    const pmId =
-        document.getElementById("inspectionPMId").value ||
-        "Unknown";
-
-    const fileName =
-        `Equipment_Inspection_PM_${pmId}_${sanitizeFileName(unitNo)}_${dateVal}.pdf`;
-
-    const actions =
-        element.querySelector(".actions");
-
-    if (actions) {
-        actions.style.display = "none";
-    }
-
+    const element = document.getElementById("printable-form");
+    const pmId = document.getElementById("inspectionPMId")?.value || "Inspection";
     const opt = {
-        margin: 5,
-        filename: fileName,
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2,
-            useCORS: true
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait"
-        }
+        margin: [5, 5, 5, 5],
+        filename: `Inspection_Checklist_${pmId}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .then(() => {
-            if (actions) {
-                actions.style.display = "flex";
-            }
-        })
-        .catch(error => {
-            if (actions) {
-                actions.style.display = "flex";
-            }
-            showDiagnostics(
-                "error",
-                "PDF Generation Error",
-                [error.message]
-            );
-        });
-
+    if (window.html2pdf) {
+        html2pdf().set(opt).from(element).save();
+    } else {
+        window.print();
+    }
 }
-
-
-/* ============================================================
-   EMAIL
-============================================================ */
 
 function sendFormViaEmail() {
+    const pmId = document.getElementById("inspectionPMId")?.value || "N/A";
+    const unit = document.getElementById("unitInput")?.value || "N/A";
+    const fileName = `Inspection_Checklist_${pmId}.pdf`;
 
-    const element =
-        document.getElementById("printable-form");
+    document.getElementById("modalFileName").textContent = fileName;
+    document.getElementById("mailModal").style.display = "flex";
 
-    const actionsDiv =
-        element.querySelector(".actions");
+    saveInspectionPDF();
 
-    if (actionsDiv) {
-        actionsDiv.style.display = "none";
-    }
-
-    const unitNo =
-        document.getElementById("unitInput").value ||
-        "Unspecified";
-
-    const dateVal =
-        document.getElementById("dateInput").value ||
-        getToday();
-
-    const locVal =
-        document.getElementById("locInput").value ||
-        "N/A";
-
-    const pmId =
-        document.getElementById("inspectionPMId").value ||
-        "Unknown";
-
-    const fileName =
-        `Equipment_Inspection_PM_${pmId}_${sanitizeFileName(unitNo)}_${dateVal}.pdf`;
-
-    document.getElementById("modalFileName")
-        .textContent =
-        fileName;
-
-    const opt = {
-        margin: 5,
-        filename: fileName,
-        image: {
-            type: "jpeg",
-            quality: 0.98
-        },
-        html2canvas: {
-            scale: 2
-        },
-        jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait"
-        }
-    };
-
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .then(() => {
-
-            if (actionsDiv) {
-                actionsDiv.style.display = "flex";
-            }
-
-            const subject =
-                encodeURIComponent(
-                    `Equipment Inspection Checklist - PM ${pmId} - Unit: ${unitNo}`
-                );
-
-            const body =
-                encodeURIComponent(
-                    `Dear Team,\n\n` +
-                    `Please find attached the Equipment Inspection & Preventive Maintenance Checklist.\n\n` +
-                    `Details:\n` +
-                    `- PM ID: ${pmId}\n` +
-                    `- Location: ${locVal}\n` +
-                    `- Unit No: ${unitNo}\n` +
-                    `- Date: ${dateVal}\n\n` +
-                    `Best regards,`
-                );
-
-            window.location.href =
-                `mailto:?subject=${subject}&body=${body}`;
-
-            document.getElementById("modalFileName")
-                .textContent = fileName;
-
-            document.getElementById("mailModal")
-                .style.display =
-                "flex";
-
-        })
-        .catch(error => {
-
-            if (actionsDiv) {
-                actionsDiv.style.display = "flex";
-            }
-
-            showDiagnostics(
-                "error",
-                "PDF Generation Error",
-                [error.message]
-            );
-
-        });
-
+    const subject = encodeURIComponent(`Inspection Report - PM ${pmId} - Unit ${unit}`);
+    const body = encodeURIComponent(`Hello,\n\nPlease find attached the inspection report for PM ${pmId} (Unit: ${unit}).\n\nRegards,\nEAM System`);
+    
+    setTimeout(() => {
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }, 1500);
 }
-
-
-/* ============================================================
-   CLOSE MODAL
-============================================================ */
 
 function closeModal() {
-    document.getElementById("mailModal")
-        .style.display =
-        "none";
+    document.getElementById("mailModal").style.display = "none";
 }
 
-
 /* ============================================================
-   SAVE EXECUTION LOCALLY
+   DATA LOADING & INITIALIZATION
 ============================================================ */
 
-function saveExecutionLocally() {
-
-    const pmId =
-        document.getElementById("inspectionPMId").value ||
-        "Unknown";
-
-    const execution = {
-        pmId: pmId,
-        timestamp: new Date().toISOString(),
-        location: getValue("locInput"),
-        unitNo: getValue("unitInput"),
-        serial: getValue("serialInspectionInput"),
-        hourMeter: getValue("hourMeterInput"),
-        date: getValue("dateInput"),
-        inspector: getValue("inspectionInspector"),
-        departmentHead: getValue("departmentHead"),
-        equipmentType: getValue("equipmentTypeInput"),
-        checklist: collectChecklistData()
-    };
-
-    const key = "eam_pm_execution";
-    const existing = JSON.parse(localStorage.getItem(key) || "[]");
-    existing.push(execution);
-    localStorage.setItem(key, JSON.stringify(existing));
-
-    showDiagnostics(
-        "success",
-        "PM Execution Saved Locally",
-        [
-            "PM ID: " + pmId,
-            "Unit: " + execution.unitNo,
-            "Date: " + execution.date,
-            "Stored in browser localStorage."
-        ]
-    );
-
-}
-
-
-/* ============================================================
-   COLLECT CHECKLIST
-============================================================ */
-
-function collectChecklistData() {
-    const data = [];
-
-    /* GAS ENGINE uses the original Form 440-1-G fields. */
-    for (let i = 1; i <= 27; i++) {
-        const checkbox = document.getElementById("check" + i);
-        const result = document.getElementById("result" + i);
-
-        if (checkbox || result) {
-            data.push({
-                type: "legacy",
-                item: i,
-                completed: checkbox ? checkbox.checked : false,
-                result: result ? result.value : ""
-            });
+async function fetchPMData(pmId) {
+    const filePath = `./data/${pmId}-data.json`;
+    try {
+        const response = await fetch(filePath);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const data = await response.json();
+        pmDatabase[pmId] = data;
+        return data;
+    } catch (e) {
+        console.warn(`Could not load ${filePath}:`, e);
+        return null;
     }
-
-    /* All other equipment types use the generated checklist. */
-    document
-        .querySelectorAll("#dynamicInspectionBody tr")
-        .forEach((row, index) => {
-            const checkbox = row.querySelector('input[type="checkbox"]');
-            const result = row.querySelector('input[type="text"]');
-
-            if (checkbox || result) {
-                data.push({
-                    type: "equipment-specific",
-                    item: index + 1,
-                    completed: checkbox ? checkbox.checked : false,
-                    result: result ? result.value : "",
-                    unit: result ? (result.dataset.unit || "") : "",
-                    equipmentType: checkbox ? (checkbox.dataset.equipmentType || "") : ""
-                });
-            }
-        });
-
-    return data;
 }
 
+async function init() {
+    const identifier = getPMIdentifierFromURL();
+    const targetPMId = identifier.pm || identifier.id || "2803";
 
-/* ============================================================
-   CLEAR EXECUTION
-============================================================ */
+    updateQRStatus("loading", `Loading PM ${targetPMId}...`);
 
-function clearExecutionForm() {
-    const confirmed =
-        confirm(
-            "Clear inspection execution data?\n\n" +
-            "Asset and PM master data will not be deleted."
+    let pmData = await fetchPMData(targetPMId);
+
+    if (pmData) {
+        populatePMData(pmData, `./data/${targetPMId}-data.json`);
+    } else {
+        updateQRStatus("error", `Failed to load PM ${targetPMId}`);
+        showDiagnostics(
+            "error",
+            "PM Data Load Error",
+            [
+                `Failed to fetch JSON data for PM ID: ${targetPMId}`,
+                `Expected file path: ./data/${targetPMId}-data.json`,
+                `Please verify the URL parameter "?pm=${targetPMId}" and file presence.`
+            ]
         );
-
-    if (!confirmed) {
-        return;
-    }
-
-    /* Clear legacy GAS ENGINE checklist fields. */
-    for (let i = 1; i <= 27; i++) {
-        const checkbox = document.getElementById("check" + i);
-        if (checkbox) checkbox.checked = false;
-
-        const result = document.getElementById("result" + i);
-        if (result) result.value = "";
-    }
-
-    /* Clear special GAS ENGINE readings. */
-    const fields = [
-        "inspectionInspector",
-        "departmentHead",
-        "crankcasePressure",
-        "timingResult",
-        "oilPressReading",
-        "waterTempReading",
-        "tachReading",
-        "oilTempReading"
-    ];
-
-    fields.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.value = "";
-    });
-
-    /* Clear cylinder readings in the GAS ENGINE compression row. */
-    document.querySelectorAll(".cylinder-grid input").forEach(input => {
-        input.value = "";
-    });
-
-    /* Clear every equipment-specific generated checklist. */
-    document.querySelectorAll("#dynamicInspectionBody input").forEach(input => {
-        if (input.type === "checkbox") {
-            input.checked = false;
-        } else {
-            input.value = "";
-        }
-    });
-
-    showDiagnostics(
-        "info",
-        "Execution Form Cleared",
-        [
-            "PM master data remains loaded.",
-            "All checklist execution fields for the selected equipment type have been cleared."
-        ]
-    );
-}
-
-
-/* ============================================================
-   GET VALUE
-============================================================ */
-
-function getValue(id) {
-    const element = document.getElementById(id);
-    return element ? element.value : "";
-}
-
-
-/* ============================================================
-   TODAY
-============================================================ */
-
-function getToday() {
-    return new Date()
-        .toISOString()
-        .split("T")[0];
-}
-
-
-/* ============================================================
-   FILE NAME SANITIZER
-============================================================ */
-
-function sanitizeFileName(value) {
-    return String(value)
-        .replace(/[<>:"/\\|?*]+/g, "_")
-        .replace(/\s+/g, "_");
-}
-
-
-/* ============================================================
-   AUTO DATE
-============================================================ */
-
-function initializeDate() {
-    const dateInput = document.getElementById("dateInput");
-    if (dateInput && !dateInput.value) {
-        dateInput.value = getToday();
     }
 }
 
-
-/* ============================================================
-   WINDOW CLICK MODAL CLOSE
-============================================================ */
-
-window.addEventListener(
-    "click",
-    function(event) {
-        const modal = document.getElementById("mailModal");
-        if (event.target === modal) {
-            closeModal();
-        }
-    }
-);
-
-
-/* ============================================================
-   INITIALIZATION
-============================================================ */
-
-document.addEventListener("DOMContentLoaded", function() {
-    initializeDate();
-    loadPMDatabase();
-});
+window.addEventListener("DOMContentLoaded", init);
 
 </script>
-
 </body>
 </html>
