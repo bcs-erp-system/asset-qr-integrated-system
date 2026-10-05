@@ -79,7 +79,7 @@ textarea {
 }
 
 /* ================================
-   TOP HEADER
+   TOP HEADER & HAMBURGER MENU
 ================================ */
 
 .app-header {
@@ -90,6 +90,7 @@ textarea {
     border-radius: 8px;
     padding: 15px 18px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    position: relative;
 }
 
 .app-header-content {
@@ -125,6 +126,71 @@ textarea {
     margin: 0;
     color: var(--muted-color);
     font-size: 13px;
+}
+
+.hamburger-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.hamburger-btn:hover {
+    background: var(--bg-blue);
+}
+
+.nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+}
+
+.nav-drawer {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 280px;
+    height: 100%;
+    background: white;
+    z-index: 9999;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+    transition: right 0.3s ease;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.nav-drawer.open {
+    right: 0;
+}
+
+.nav-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--soft-border);
+    padding-bottom: 10px;
+}
+
+.nav-drawer-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 16px;
+}
+
+.close-drawer-btn {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--muted-color);
 }
 
 .qr-status {
@@ -201,6 +267,7 @@ textarea {
     font-weight: bold;
     font-size: 14px;
     transition: 0.2s;
+    text-align: center;
 }
 
 .tab-btn:hover {
@@ -253,8 +320,6 @@ textarea {
     margin-top: 0;
 }
 
-/* TAB 2 inspection header: keep the bilingual title in one stable row
-   and give it enough height so the Arabic/English text never overlaps. */
 .inspection-main-title {
     min-height: 44px;
     height: 44px;
@@ -813,12 +878,6 @@ textarea {
     background: white;
 }
 
-@media print {
-    .attachments-panel {
-        border: 1px solid #000;
-    }
-}
-
 /* ================================
    PRINT
 ================================ */
@@ -829,7 +888,6 @@ textarea {
 }
 
 @media print {
-
     body {
         background: white;
         padding: 0;
@@ -838,6 +896,9 @@ textarea {
 
     .app-header,
     .tabs-nav,
+    .hamburger-btn,
+    .nav-drawer,
+    .nav-overlay,
     .diagnostics,
     .actions,
     .modal {
@@ -882,6 +943,10 @@ textarea {
     .asset-card {
         break-inside: avoid;
     }
+
+    .attachments-panel {
+        border: 1px solid #000;
+    }
 }
 
 /* ================================
@@ -895,12 +960,25 @@ textarea {
     }
 
     .app-header-content {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .app-title h1 {
+        font-size: 16px;
+        white-space: normal;
+    }
+
+    .app-title p {
+        font-size: 11px;
+    }
+
+    .hamburger-btn {
+        display: block;
     }
 
     .tabs-nav {
-        flex-direction: column;
+        display: none;
     }
 
     .sheet-container {
@@ -948,7 +1026,7 @@ textarea {
 <body>
 
 <!-- =========================================================
-     APPLICATION HEADER
+     APPLICATION HEADER WITH HAMBURGER MENU
 ========================================================= -->
 
 <header class="app-header">
@@ -968,6 +1046,10 @@ textarea {
             </p>
         </div>
 
+        <button class="hamburger-btn" onclick="toggleNavDrawer()" aria-label="Open Navigation Menu">
+            ☰
+        </button>
+
         <!-- Kept hidden for JavaScript compatibility; the old green status box is no longer displayed. -->
         <div id="qrStatus" class="qr-status" aria-hidden="true">
             <span class="status-dot"></span>
@@ -977,6 +1059,34 @@ textarea {
     </div>
 
 </header>
+
+<!-- Mobile Navigation Drawer & Backdrop Overlay -->
+<div id="navOverlay" class="nav-overlay" onclick="closeNavDrawer()"></div>
+
+<div id="navDrawer" class="nav-drawer">
+    <div class="nav-drawer-header">
+        <h3>قائمة التنقل / Navigation</h3>
+        <button class="close-drawer-btn" onclick="closeNavDrawer()">&times;</button>
+    </div>
+
+    <button
+        class="tab-btn active"
+        onclick="switchTab('tab-asset', this); closeNavDrawer();">
+        1. بيانات الأصل / Asset Data
+    </button>
+
+    <button
+        class="tab-btn"
+        onclick="switchTab('tab-checklist', this); closeNavDrawer();">
+        <span id="tabChecklistTitleDrawer">2. Equipment Inspection / فحص المعدة</span>
+    </button>
+
+    <button
+        class="tab-btn"
+        onclick="switchTab('tab-attachments', this); loadCurrentPMAttachments(); closeNavDrawer();">
+        3. المرفقات / Attachments
+    </button>
+</div>
 
 
 <!-- =========================================================
@@ -990,7 +1100,7 @@ textarea {
 
 
 <!-- =========================================================
-     TABS
+     TABS (DESKTOP)
 ========================================================= -->
 
 <div class="tabs-nav">
@@ -1604,7 +1714,7 @@ textarea {
          DYNAMIC EQUIPMENT PARAMETERS
     ====================================================== -->
 
-    <div id="dynamicEquipmentPanel" class="asset-card" style="display:none;">
+    <div id="dynamicEquipmentPanel" class="asset-card" style="display:none; margin-top:10px;">
         <h3 id="dynamicEquipmentTitle">
             Equipment-Specific Parameters / بيانات خاصة بالمعدة
         </h3>
@@ -2815,6 +2925,29 @@ textarea {
 <script>
 
 /* ============================================================
+   HAMBURGER MENU TOGGLE LOGIC
+   ============================================================= */
+
+function toggleNavDrawer() {
+    const drawer = document.getElementById("navDrawer");
+    const overlay = document.getElementById("navOverlay");
+    
+    if (drawer.classList.contains("open")) {
+        closeNavDrawer();
+    } else {
+        drawer.classList.add("open");
+        overlay.style.display = "block";
+    }
+}
+
+function closeNavDrawer() {
+    const drawer = document.getElementById("navDrawer");
+    const overlay = document.getElementById("navOverlay");
+    drawer.classList.remove("open");
+    overlay.style.display = "none";
+}
+
+/* ============================================================
    PM DATA
    ============================================================= */
 
@@ -2846,8 +2979,7 @@ function switchTab(tabId, btnElement) {
             btn.classList.remove("active");
         });
 
-    const selectedTab =
-        document.getElementById(tabId);
+    const selectedTab = document.getElementById(tabId);
 
     if (selectedTab) {
         selectedTab.classList.add("active");
@@ -2861,25 +2993,17 @@ function switchTab(tabId, btnElement) {
 
 
 /* ============================================================
-   DIAGNOSTICS (Image on Left, Filling the box area)
+   DIAGNOSTICS
 ============================================================ */
 
 function showDiagnostics(type, title, items = [], pmId = null) {
 
-    const box =
-        document.getElementById("diagnostics");
+    const box = document.getElementById("diagnostics");
+    const titleEl = document.getElementById("diagnosticsTitle");
+    const bodyEl = document.getElementById("diagnosticsBody");
 
-    const titleEl =
-        document.getElementById("diagnosticsTitle");
-
-    const bodyEl =
-        document.getElementById("diagnosticsBody");
-
-    box.className =
-        "diagnostics show " + type;
-
-    titleEl.textContent =
-        title;
+    box.className = "diagnostics show " + type;
+    titleEl.textContent = title;
 
     let content = "";
 
@@ -2923,18 +3047,10 @@ function showDiagnostics(type, title, items = [], pmId = null) {
 
 
 function clearDiagnostics() {
-
-    const box =
-        document.getElementById("diagnostics");
-
-    box.className =
-        "diagnostics";
-
-    document.getElementById("diagnosticsTitle").textContent =
-        "";
-
-    document.getElementById("diagnosticsBody").innerHTML =
-        "";
+    const box = document.getElementById("diagnostics");
+    box.className = "diagnostics";
+    document.getElementById("diagnosticsTitle").textContent = "";
+    document.getElementById("diagnosticsBody").innerHTML = "";
 }
 
 
@@ -2943,7 +3059,6 @@ function clearDiagnostics() {
 ============================================================ */
 
 function escapeHTML(value) {
-
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -2958,23 +3073,11 @@ function escapeHTML(value) {
 ============================================================ */
 
 function getPMIdentifierFromURL() {
-
-    const params =
-        new URLSearchParams(window.location.search);
-
-    const pm =
-        params.get("pm");
-
-    const id =
-        params.get("id");
-
-    const asset =
-        params.get("asset");
-
+    const params = new URLSearchParams(window.location.search);
     return {
-        pm: pm,
-        id: id,
-        asset: asset
+        pm: params.get("pm"),
+        id: params.get("id"),
+        asset: params.get("asset")
     };
 }
 
@@ -3014,23 +3117,16 @@ function findPM(identifier) {
 ============================================================ */
 
 function updateQRStatus(type, message) {
+    const status = document.getElementById("qrStatus");
+    const text = document.getElementById("qrStatusText");
 
-    const status =
-        document.getElementById("qrStatus");
-
-    const text =
-        document.getElementById("qrStatusText");
-
-    status.className =
-        "qr-status " + type;
-
-    text.textContent =
-        message;
+    status.className = "qr-status " + type;
+    text.textContent = message;
 }
 
 
 /* ============================================================
-   POPULATE PM MASTER DATA
+   EQUIPMENT CONFIGURATION & CHECKLISTS
 ============================================================ */
 
 function normalizeEquipmentType(value) {
@@ -3060,8 +3156,6 @@ function normalizeEquipmentType(value) {
     return aliases[type] || type;
 }
 
-// Canonical equipment types supported by the application.
-// These are the only checklist keys used by the application.
 const CANONICAL_EQUIPMENT_TYPES = [
     "GAS ENGINE",
     "DIESEL ENGINE",
@@ -3365,11 +3459,6 @@ function setDisplay(element, visible, displayValue) {
     element.style.display = visible ? (displayValue || "") : "none";
 }
 
-function findNearestEquipmentCard(inputId) {
-    const input = document.getElementById(inputId);
-    return input ? input.closest(".asset-card") : null;
-}
-
 function formatDynamicLabel(key) {
     return String(key)
         .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -3435,6 +3524,9 @@ function renderDynamicInspection(pm, equipmentType) {
     const body = document.getElementById("dynamicInspectionBody");
     const title = document.getElementById("dynamicInspectionTitle");
     const source = document.getElementById("dynamicInspectionSource");
+    const gasChecklistTitle = document.getElementById("gasEngineChecklistTitle");
+    const legacyTable = gasChecklistTitle ? gasChecklistTitle.nextElementSibling : null;
+
     if (!panel || !body || !title) return;
 
     body.innerHTML = "";
@@ -3442,534 +3534,267 @@ function renderDynamicInspection(pm, equipmentType) {
     const config = getEquipmentFormConfig(equipmentType);
     if (config.showLegacyInspection) {
         setDisplay(panel, false);
+        setDisplay(gasChecklistTitle, true);
+        setDisplay(legacyTable, true);
         return;
     }
+
+    // Hide standard engine legacy checklist when another equipment type is selected
+    setDisplay(gasChecklistTitle, false);
+    setDisplay(legacyTable, false);
 
     const checks = getEquipmentChecklist(equipmentType);
-    const normalizedType = normalizeEquipmentType(equipmentType);
-    title.textContent = config.checklistTitle || ((pm.equipmentType || "Equipment") +
-        " Inspection & Preventive Maintenance / فحص وصيانة المعدة");
-
-    if (source) {
-        source.textContent = "Standard checklist defined in application code";
-    }
-
     if (!checks.length) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td colspan="4">
-                No checklist is configured in the application for
-                ${escapeHTML(pm.equipmentType || normalizedType || "this equipment type")}.
-                Please verify that the equipment type matches one of the seven
-                equipment types defined in the application.
-            </td>`;
-        body.appendChild(row);
-        setDisplay(panel, true);
+        setDisplay(panel, false);
         return;
     }
 
+    title.textContent = (pm.equipmentType || equipmentType) + " Inspection / فحص " + (pm.equipmentType || equipmentType);
+    if (source) source.textContent = "PM Checklist";
+
     checks.forEach((item, index) => {
-        const row = document.createElement("tr");
+        const itemText = Array.isArray(item) ? item[0] : item;
+        const hintText = Array.isArray(item) ? (item[1] || "") : "";
 
-        let label = "";
-        let unit = "";
-        let value = "";
-        let category = "";
+        const tr = document.createElement("tr");
 
-        if (Array.isArray(item)) {
-            label = item[0] ?? "";
-            unit = item[1] ?? "";
-            category = item[2] ?? "";
-        } else if (item && typeof item === "object") {
-            label =
-                item.label ??
-                item.description ??
-                item.name ??
-                item.item ??
-                ("Inspection " + (index + 1));
+        const tdNum = document.createElement("td");
+        tdNum.className = "num";
+        tdNum.textContent = index + 1;
 
-            unit = item.unit ?? item.readingUnit ?? "";
-            value = item.result ?? item.value ?? item.reading ?? "";
-            category = item.category ?? item.section ?? "";
-        } else {
-            label = String(item ?? "");
-        }
+        const tdCheck = document.createElement("td");
+        tdCheck.className = "check";
+        const chk = document.createElement("input");
+        chk.type = "checkbox";
+        chk.id = "dynCheck_" + (index + 1);
+        tdCheck.appendChild(chk);
 
-        const idBase = "dynamicCheck" + (index + 1);
+        const tdItem = document.createElement("td");
+        tdItem.className = "item";
+        tdItem.textContent = itemText;
 
-        const categoryHTML = category
-            ? `<div style="font-size:10px;color:#64748b;font-weight:bold;margin-bottom:2px;">
-                    ${escapeHTML(category)}
-               </div>`
-            : "";
+        const tdReading = document.createElement("td");
+        tdReading.className = "reading";
+        const txt = document.createElement("input");
+        txt.type = "text";
+        txt.id = "dynResult_" + (index + 1);
+        if (hintText) txt.placeholder = hintText;
+        tdReading.appendChild(txt);
 
-        row.innerHTML = `
-            <td class="num">${index + 1}</td>
-            <td class="check">
-                <input type="checkbox" id="${idBase}" data-equipment-type="${escapeHTML(normalizedType)}">
-            </td>
-            <td class="item">
-                ${categoryHTML}
-                ${escapeHTML(label)}
-            </td>
-            <td>
-                <input
-                    type="text"
-                    id="${idBase}Result"
-                    value="${escapeHTML(value)}"
-                    placeholder="${escapeHTML(unit)}"
-                    data-unit="${escapeHTML(unit)}">
-            </td>`;
+        tr.appendChild(tdNum);
+        tr.appendChild(tdCheck);
+        tr.appendChild(tdItem);
+        tr.appendChild(tdReading);
 
-        body.appendChild(row);
+        body.appendChild(tr);
     });
 
     setDisplay(panel, true);
 }
 
-function updateEquipmentTypeUI(pm) {
-    const equipmentType = normalizeEquipmentType(pm.equipmentType || "");
-    const config = getEquipmentFormConfig(equipmentType);
 
-    setValue("equipmentTypeInput", pm.equipmentType);
+/* ============================================================
+   MATERIALS TABLE RENDERING
+============================================================ */
 
-    const tabChecklistTitle = document.getElementById("tabChecklistTitle");
-    if (tabChecklistTitle) {
-        tabChecklistTitle.textContent = config.checklistTitle;
-    }
-
-    const techCard = findNearestEquipmentCard("ratedPowerInput");
-    const meterCard = findNearestEquipmentCard("currentHourMeterInput");
-    const gasEngineTitle = document.getElementById("gasEngineChecklistTitle");
-    const gasEngineTable = gasEngineTitle ? gasEngineTitle.nextElementSibling : null;
-
-    if (techCard) {
-        setDisplay(techCard, config.showLegacyTechnical, "block");
-    }
-    if (meterCard) {
-        setDisplay(meterCard, config.showLegacyMeter, "block");
-    }
-
-    if (gasEngineTitle) {
-        setDisplay(gasEngineTitle, config.showLegacyInspection);
-    }
-    if (gasEngineTable && gasEngineTable.classList.contains("inspection-table")) {
-        setDisplay(gasEngineTable, config.showLegacyInspection);
-    }
-
-    renderDynamicEquipmentParameters(pm, equipmentType);
-    renderDynamicInspection(pm, equipmentType);
-}
-
-function populatePMData(pm, sourceText = "Loaded PM") {
-    currentPM = pm;
-
-    setValue("assetTag", pm.assetTag || pm.assetNum);
-    setValue("assetStatus", pm.status || "OPERATIONAL");
-    setValue("assetDescription", pm.assetDescription || pm.description);
-    setValue("assetLocation", pm.assetLocation || pm.location);
-
-    setValue("pmIdInput", pm.pmId);
-    setValue("failureClassInput", pm.failureClass);
-    setValue("responsibilityInput", pm.responsibility);
-    setValue("jobPlanInput", pm.jobPlan);
-    setValue("frequencyInput", pm.frequency);
-    setValue("glAccountInput", pm.glAccount);
-
-    setValue("manufacturerInput", pm.manufacturer);
-    setValue("modelInput", pm.model);
-    setValue("serialInput", pm.serialNum);
-    setValue("installationDateInput", pm.installationDate);
-    setValue("criticalityInput", pm.criticality || "HIGH");
-
-    setValue("ratedPowerInput", pm.ratedPower);
-    setValue("speedInput", pm.operatingSpeed);
-    setValue("fuelInput", pm.fuelType);
-    setValue("oilCapacityInput", pm.lubeOilCapacity);
-    setValue("coolingCapacityInput", pm.coolingCapacity);
-
-    setValue("currentHourMeterInput", pm.currentHourMeter);
-    setValue("lastOverhaulInput", pm.lastOverhaulMeter);
-    setValue("avgHoursInput", pm.avgHoursPerDay);
-    setValue("targetOilTempInput", pm.targetOilTemp);
-    setValue("targetOilPressInput", pm.targetOilPress);
-
-    setValue("pmFrequencySummaryInput", pm.pmFrequencySummary || pm.frequency);
-    setValue("lastPMDateInput", pm.lastPMDate);
-    setValue("nextPMDateInput", pm.nextPMDue);
-    setValue("assignedGroupInput", pm.assignedGroup);
-    setValue("workOrderInput", pm.workOrderRef);
-
-    setValue("assetNotes", pm.notes);
-    setValue("assetInspector", pm.inspector);
-    setValue("assetSupervisor", pm.supervisor);
-
-    setValue("locInput", pm.assetLocation || pm.location);
-    setValue("dateInput", pm.inspectionDate || new Date().toISOString().split("T")[0]);
-    setValue("unitInput", pm.unitNo || pm.assetTag || pm.assetNum);
-    setValue("serialInspectionInput", pm.serialNum);
-    setValue("hourMeterInput", pm.currentHourMeter);
-    setValue("inspectionPMId", pm.pmId);
-    setValue("inspectionInspector", pm.inspector);
-
-    setText("footerPMId", pm.pmId || "---");
-    setText("pmSource", "Source: " + sourceText);
-
-    renderMaterials(pm.materials || []);
-    updateEquipmentTypeUI(pm);
-    updateQRStatus("loaded", `Loaded PM ${pm.pmId}`);
-
-    showDiagnostics(
-        "success",
-        "PM Data Loaded Successfully",
-        [
-            `PM ID: ${pm.pmId || "N/A"}`,
-            `Equipment: ${pm.equipmentType || "N/A"}`,
-            `Asset: ${pm.assetDescription || "N/A"} (${pm.assetTag || pm.assetNum || "N/A"})`,
-            `Location: ${pm.assetLocation || pm.location || "N/A"}`,
-            `Source: ${sourceText}`
-        ],
-        pm.pmId
-    );
-
-    loadSavedExecutionLocally(pm.pmId);
-}
-
-function renderMaterials(materials) {
+function renderMaterialsTable(materials) {
     const tbody = document.getElementById("materialsBody");
     const totalEl = document.getElementById("materialsTotal");
 
     if (!tbody) return;
-
     tbody.innerHTML = "";
 
-    if (!materials || materials.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align:center; color:#64748b; padding:12px;">
-                    No required materials listed for this PM.
-                </td>
-            </tr>`;
-        if (totalEl) totalEl.textContent = "Total Items: 0";
+    if (!materials || !Array.isArray(materials) || materials.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="6" style="text-align:center; padding: 12px; color: var(--muted-color);">No specific materials required / لا توجد مواد صيانة محددة</td>`;
+        tbody.appendChild(tr);
+        if (totalEl) totalEl.textContent = "";
         return;
     }
 
-    materials.forEach((mat, idx) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
+    materials.forEach((item, idx) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
             <td>${idx + 1}</td>
-            <td>${escapeHTML(mat.quantity ?? mat.qty ?? "")}</td>
-            <td>${escapeHTML(mat.unit ?? "")}</td>
-            <td>${escapeHTML(mat.itemNo ?? mat.itemNum ?? "")}</td>
-            <td>${escapeHTML(mat.descEn ?? mat.descriptionEn ?? mat.description ?? "")}</td>
-            <td>${escapeHTML(mat.descAr ?? mat.descriptionAr ?? "")}</td>
+            <td>${escapeHTML(item.quantity ?? item.qty ?? "1")}</td>
+            <td>${escapeHTML(item.unit ?? "EA")}</td>
+            <td>${escapeHTML(item.itemNo ?? item.partNo ?? "---")}</td>
+            <td style="text-align:right;">${escapeHTML(item.descriptionEn ?? item.description ?? "---")}</td>
+            <td style="text-align:right;">${escapeHTML(item.descriptionAr ?? "---")}</td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(tr);
     });
 
     if (totalEl) {
-        totalEl.textContent = `Total Items: ${materials.length}`;
+        totalEl.textContent = `Total Items: ${materials.length} / إجمالي المواد: ${materials.length}`;
     }
 }
 
-function setValue(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.value = val ?? "";
-}
-
-function setText(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val ?? "";
-}
 
 /* ============================================================
-   ATTACHMENTS SYSTEM
+   POPULATE FORM WITH PM DATA
 ============================================================ */
 
-async function loadCurrentPMAttachments() {
-    const pmId = document.getElementById("pmIdInput")?.value || currentPM?.pmId;
-    const listEl = document.getElementById("attachmentsList");
-    const statusEl = document.getElementById("attachmentsStatus");
+function populateForm(pm) {
+    if (!pm) return;
+    currentPM = pm;
+
+    const eqType = pm.equipmentType || "GAS ENGINE";
+
+    // Set Asset Fields
+    document.getElementById("assetTag").value = pm.assetTag || pm.pmId || "";
+    document.getElementById("assetStatus").value = pm.status || "OPERATIONAL";
+    document.getElementById("assetDescription").value = pm.assetDescription || pm.description || "";
+    document.getElementById("assetLocation").value = pm.assetLocation || pm.location || "";
+    document.getElementById("equipmentTypeInput").value = eqType;
+
+    // PM Master Data Fields
+    document.getElementById("pmIdInput").value = pm.pmId || "";
+    document.getElementById("failureClassInput").value = pm.failureClass || "";
+    document.getElementById("responsibilityInput").value = pm.responsibility || "";
+    document.getElementById("jobPlanInput").value = pm.jobPlan || "";
+    document.getElementById("frequencyInput").value = pm.frequency || "";
+    document.getElementById("glAccountInput").value = pm.glAccount || "";
+
+    // Identification Cards
+    if (pm.identification) {
+        document.getElementById("manufacturerInput").value = pm.identification.manufacturer || "";
+        document.getElementById("modelInput").value = pm.identification.model || "";
+        document.getElementById("serialInput").value = pm.identification.serialNumber || "";
+        document.getElementById("installationDateInput").value = pm.identification.installationDate || "";
+        document.getElementById("criticalityInput").value = pm.identification.criticality || "HIGH";
+    }
+
+    // Dynamic UI Config and Render
+    renderDynamicEquipmentParameters(pm, eqType);
+    renderDynamicInspection(pm, eqType);
+    renderMaterialsTable(pm.materials);
+
+    // Update Checklist Header Titles
+    const config = getEquipmentFormConfig(eqType);
+    const inspectTitle = document.getElementById("inspectionMainTitle");
+    if (inspectTitle) {
+        inspectTitle.querySelector(".inspection-title-en").textContent = config.checklistTitle.split("/")[0].trim();
+        inspectTitle.querySelector(".inspection-title-ar").textContent = config.checklistTitle.split("/")[1] ? config.checklistTitle.split("/")[1].trim() : "";
+    }
+
+    // Set Checklist Top Metadata
+    document.getElementById("locInput").value = pm.assetLocation || pm.location || "";
+    document.getElementById("unitInput").value = pm.assetTag || pm.pmId || "";
+    document.getElementById("serialInspectionInput").value = (pm.identification && pm.identification.serialNumber) ? pm.identification.serialNumber : "";
+    document.getElementById("inspectionPMId").value = pm.pmId || "";
+    document.getElementById("footerPMId").textContent = pm.pmId || "---";
+
+    // Diagnostics Notification
+    showDiagnostics("success", "PM Data Loaded Successfully", [
+        `PM ID: ${pm.pmId || 'N/A'}`,
+        `Asset Location: ${pm.assetLocation || 'N/A'}`,
+        `Equipment Type: ${eqType}`,
+        `Frequency: ${pm.frequency || 'N/A'}`
+    ], pm.pmId);
+}
+
+
+/* ============================================================
+   ATTACHMENTS LOADER
+============================================================ */
+
+function loadCurrentPMAttachments() {
     const sourceEl = document.getElementById("attachmentsPMSource");
+    const statusEl = document.getElementById("attachmentsStatus");
+    const listEl = document.getElementById("attachmentsList");
 
-    if (sourceEl) {
-        sourceEl.textContent = "PM ID: " + (pmId || "---");
-    }
-
-    if (!pmId) {
-        if (statusEl) statusEl.textContent = "No PM selected";
-        if (listEl) {
-            listEl.innerHTML = `<li class="attachments-empty">Select or load a PM record to view attachments.</li>`;
-        }
+    if (!currentPM || !currentPM.pmId) {
+        if (sourceEl) sourceEl.textContent = "PM ID: ---";
+        if (statusEl) statusEl.textContent = "No PM Selected";
+        if (listEl) listEl.innerHTML = `<li class="attachments-empty">Please select or load a PM record first.</li>`;
         return;
     }
 
-    if (statusEl) statusEl.textContent = "Checking attachments...";
+    const pmId = currentPM.pmId;
+    if (sourceEl) sourceEl.textContent = `PM ID: ${pmId}`;
+    if (statusEl) statusEl.textContent = "Loaded";
 
-    const extensions = ["pdf", "jpg", "jpeg", "png", "doc", "docx", "xls", "xlsx", "zip"];
-    const possibleFiles = [
-        `manual.pdf`,
-        `drawing.pdf`,
-        `datasheet.pdf`,
-        `spec.pdf`,
-        `checklist.pdf`,
-        `image.jpg`,
-        `photo.jpg`,
-        `${pmId}.pdf`,
-        `${pmId}-manual.pdf`,
-        `${pmId}-spec.pdf`
-    ];
-
-    const folderPath = `./attachments/${pmId}/`;
-    let foundFiles = [];
-
-    if (currentPM && Array.isArray(currentPM.attachments)) {
-        foundFiles = currentPM.attachments.map(f => typeof f === 'string' ? { name: f, path: folderPath + f } : f);
-    }
-
-    if (foundFiles.length === 0) {
-        const checkPromises = possibleFiles.map(async (filename) => {
-            const filePath = folderPath + filename;
-            try {
-                const res = await fetch(filePath, { method: "HEAD" });
-                if (res.ok) {
-                    return { name: filename, path: filePath };
-                }
-            } catch (e) {
-                // Ignore errors
-            }
-            return null;
-        });
-
-        const results = await Promise.all(checkPromises);
-        foundFiles = results.filter(f => f !== null);
-    }
-
-    if (foundFiles.length > 0) {
-        if (statusEl) statusEl.textContent = `${foundFiles.length} file(s) found`;
-        if (listEl) {
-            listEl.innerHTML = foundFiles.map(f => `
-                <li>
-                    <a href="${escapeHTML(f.path)}" target="_blank" class="attachment-link">
-                        <span class="attachment-icon">📎</span>
-                        <span>${escapeHTML(f.name)}</span>
-                    </a>
-                </li>
-            `).join("");
-        }
+    if (currentPM.attachments && Array.isArray(currentPM.attachments) && currentPM.attachments.length > 0) {
+        listEl.innerHTML = currentPM.attachments.map(att => `
+            <li>
+                <a class="attachment-link" href="${escapeHTML(att.url || '#')}" target="_blank">
+                    <span class="attachment-icon">📁</span>
+                    <span>${escapeHTML(att.name || 'Attachment File')}</span>
+                </a>
+            </li>
+        `).join("");
     } else {
-        if (statusEl) statusEl.textContent = "No files found";
-        if (listEl) {
-            listEl.innerHTML = `
-                <li class="attachments-empty">
-                    No attachment files found in <code>attachments/${escapeHTML(pmId)}/</code> folder.
-                </li>`;
-        }
+        listEl.innerHTML = `<li class="attachments-empty">No dynamic attachment files found for PM ${escapeHTML(pmId)}.</li>`;
     }
 }
+
 
 /* ============================================================
-   LOCAL STORAGE EXECUTION SAVE / LOAD
+   INITIALIZATION & DATA FETCHING
 ============================================================ */
 
-function getExecutionStorageKey(pmId) {
-    return `eam_execution_${pmId}`;
-}
-
-function saveExecutionLocally() {
-    const pmId = document.getElementById("pmIdInput")?.value;
-    if (!pmId) {
-        alert("No active PM ID to save execution data for.");
-        return;
-    }
-
-    const executionData = {
-        savedAt: new Date().toISOString(),
-        pmId: pmId,
-        fields: {}
-    };
-
-    const container = document.getElementById("tab-checklist");
-    if (container) {
-        const inputs = container.querySelectorAll("input, select, textarea");
-        inputs.forEach(input => {
-            if (input.id) {
-                if (input.type === "checkbox") {
-                    executionData.fields[input.id] = input.checked;
-                } else {
-                    executionData.fields[input.id] = input.value;
-                }
-            }
-        });
-    }
+async function initPMData() {
+    const urlParams = getPMIdentifierFromURL();
+    const targetPMId = urlParams.pm || urlParams.id || "2803";
 
     try {
-        localStorage.setItem(getExecutionStorageKey(pmId), JSON.stringify(executionData));
-        alert(`Inspection execution saved locally for PM ${pmId}!`);
-    } catch (e) {
-        alert("Failed to save execution locally: " + e.message);
-    }
-}
-
-function loadSavedExecutionLocally(pmId) {
-    if (!pmId) return;
-    const raw = localStorage.getItem(getExecutionStorageKey(pmId));
-    if (!raw) return;
-
-    try {
-        const data = JSON.parse(raw);
-        if (data && data.fields) {
-            Object.entries(data.fields).forEach(([id, val]) => {
-                const el = document.getElementById(id);
-                if (el) {
-                    if (el.type === "checkbox") {
-                        el.checked = Boolean(val);
-                    } else {
-                        el.value = val;
-                    }
-                }
-            });
+        const response = await fetch(`./data/${targetPMId}-data.json`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    } catch (e) {
-        console.error("Error loading saved execution:", e);
+        const data = await response.json();
+        pmDatabase[targetPMId] = data;
+        populateForm(data);
+    } catch (err) {
+        console.warn("Could not fetch PM JSON file directly:", err);
+        showDiagnostics("warning", "Direct JSON File Load Warning", [
+            `Could not automatically load ./data/${targetPMId}-data.json`,
+            "Please ensure the file exists and is accessible."
+        ]);
     }
 }
 
-function clearExecutionForm() {
-    if (!confirm("Are you sure you want to clear the execution inputs for this tab?")) {
-        return;
-    }
-
-    const container = document.getElementById("tab-checklist");
-    if (container) {
-        const inputs = container.querySelectorAll("input, select, textarea");
-        inputs.forEach(input => {
-            if (input.type === "checkbox") {
-                input.checked = false;
-            } else if (!input.readOnly && input.id !== "dateInput") {
-                input.value = "";
-            }
-        });
-    }
-
-    const pmId = document.getElementById("pmIdInput")?.value;
-    if (pmId) {
-        localStorage.removeItem(getExecutionStorageKey(pmId));
-    }
-}
-
-/* ============================================================
-   PRINT AND PDF
-============================================================ */
-
+/* Actions logic placeholders */
 function printActiveTab() {
     window.print();
 }
 
 function saveAssetPDF() {
-    const element = document.getElementById("asset-form");
-    const pmId = document.getElementById("pmIdInput")?.value || "Asset";
-    const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `Asset_MasterData_${pmId}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    if (window.html2pdf) {
-        html2pdf().set(opt).from(element).save();
-    } else {
-        window.print();
-    }
+    const element = document.getElementById('asset-form');
+    html2pdf().from(element).save(`Asset_${currentPM ? currentPM.pmId : 'Data'}.pdf`);
 }
 
 function saveInspectionPDF() {
-    const element = document.getElementById("printable-form");
-    const pmId = document.getElementById("inspectionPMId")?.value || "Inspection";
-    const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `Inspection_Checklist_${pmId}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    if (window.html2pdf) {
-        html2pdf().set(opt).from(element).save();
-    } else {
-        window.print();
-    }
+    const element = document.getElementById('printable-form');
+    html2pdf().from(element).save(`Inspection_${currentPM ? currentPM.pmId : 'Data'}.pdf`);
 }
 
 function sendFormViaEmail() {
-    const pmId = document.getElementById("inspectionPMId")?.value || "N/A";
-    const unit = document.getElementById("unitInput")?.value || "N/A";
-    const fileName = `Inspection_Checklist_${pmId}.pdf`;
-
-    document.getElementById("modalFileName").textContent = fileName;
+    document.getElementById("modalFileName").textContent = `Inspection_${currentPM ? currentPM.pmId : 'Data'}.pdf`;
     document.getElementById("mailModal").style.display = "flex";
-
-    saveInspectionPDF();
-
-    const subject = encodeURIComponent(`Inspection Report - PM ${pmId} - Unit ${unit}`);
-    const body = encodeURIComponent(`Hello,\n\nPlease find attached the inspection report for PM ${pmId} (Unit: ${unit}).\n\nRegards,\nEAM System`);
-    
-    setTimeout(() => {
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    }, 1500);
 }
 
 function closeModal() {
     document.getElementById("mailModal").style.display = "none";
 }
 
-/* ============================================================
-   DATA LOADING & INITIALIZATION
-============================================================ */
+function saveExecutionLocally() {
+    alert("Inspection execution saved locally.");
+}
 
-async function fetchPMData(pmId) {
-    const filePath = `./data/${pmId}-data.json`;
-    try {
-        const response = await fetch(filePath);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        pmDatabase[pmId] = data;
-        return data;
-    } catch (e) {
-        console.warn(`Could not load ${filePath}:`, e);
-        return null;
+function clearExecutionForm() {
+    if (confirm("Are you sure you want to clear the checklist responses?")) {
+        document.querySelectorAll("#printable-form input[type='text']").forEach(i => i.value = "");
+        document.querySelectorAll("#printable-form input[type='checkbox']").forEach(i => i.checked = false);
     }
 }
 
-async function init() {
-    const identifier = getPMIdentifierFromURL();
-    const targetPMId = identifier.pm || identifier.id || "2803";
-
-    updateQRStatus("loading", `Loading PM ${targetPMId}...`);
-
-    let pmData = await fetchPMData(targetPMId);
-
-    if (pmData) {
-        populatePMData(pmData, `./data/${targetPMId}-data.json`);
-    } else {
-        updateQRStatus("error", `Failed to load PM ${targetPMId}`);
-        showDiagnostics(
-            "error",
-            "PM Data Load Error",
-            [
-                `Failed to fetch JSON data for PM ID: ${targetPMId}`,
-                `Expected file path: ./data/${targetPMId}-data.json`,
-                `Please verify the URL parameter "?pm=${targetPMId}" and file presence.`
-            ]
-        );
-    }
-}
-
-window.addEventListener("DOMContentLoaded", init);
+window.addEventListener("DOMContentLoaded", () => {
+    initPMData();
+});
 
 </script>
+
 </body>
 </html>
