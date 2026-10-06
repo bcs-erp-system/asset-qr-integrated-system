@@ -941,10 +941,166 @@ textarea {
         grid-template-columns: repeat(3, 1fr);
     }
 }
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#1e3a8a;
+    color:white;
+    padding:10px 15px;
+    border-radius:8px;
+    margin-bottom:12px;
+}
+
+.logo{
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+/* Hamburger button */
+.hamburger{
+    display:none;
+    flex-direction:column;
+    gap:5px;
+    background:none;
+    border:none;
+    cursor:pointer;
+}
+
+.bar{
+    width:25px;
+    height:3px;
+    background:white;
+}
+
+/* Menu */
+.nav-menu{
+    display:flex;
+    list-style:none;
+    gap:15px;
+    margin:0;
+    padding:0;
+}
+
+.nav-menu a{
+    color:white;
+    text-decoration:none;
+}
+.hamburger-wrapper {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 999999;
+}
+
+.hamburger-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 28px;
+    background: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 220px;
+    background: white;
+    box-shadow: 0 5px 20px rgba(0,0,0,.3);
+}
+
+.nav-menu.active {
+    display: block;
+}
+
+.nav-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    text-decoration: none;
+    color: #111;
+    border-bottom: 1px solid #ddd;
+    transition: background-color .15s ease, padding-left .15s ease;
+}
+
+.nav-menu a:hover {
+    background: #eff6ff;
+    padding-left: 16px;
+}
+
+.nav-menu .menu-icon {
+    width: 26px;
+    min-width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    line-height: 1;
+}
+
+.nav-menu .menu-label {
+    flex: 1;
+}
+
 </style>
+
 </head>
 
 <body>
+<div class="hamburger-wrapper">
+
+    <button id="hamburger-btn" class="hamburger-btn" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-menu">
+        ☰
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+
+        <a href="./maintenance.html" data-menu-action="page">
+            <span class="menu-icon" aria-hidden="true">🔧</span>
+            <span class="menu-label">Maintenance</span>
+        </a>
+
+        <a href="./event-tracking.html" data-menu-action="page">
+            <span class="menu-icon" aria-hidden="true">📊</span>
+            <span class="menu-label">Event Tracking</span>
+        </a>
+
+        <a href="./hse-portal.html" data-menu-action="page">
+            <span class="menu-icon" aria-hidden="true">🦺</span>
+            <span class="menu-label">HSE Portal</span>
+        </a>
+
+        <a href="./inventory.html" data-menu-action="page">
+            <span class="menu-icon" aria-hidden="true">📦</span>
+            <span class="menu-label">Inventory</span>
+        </a>
+
+        <a href="./purchasing.html" data-menu-action="page">
+            <span class="menu-icon" aria-hidden="true">🛒</span>
+            <span class="menu-label">Purchasing</span>
+        </a>
+
+        <a href="./documents.html" data-menu-action="page">
+            <span class="menu-icon" aria-hidden="true">📄</span>
+            <span class="menu-label">Documents</span>
+        </a>
+
+        <a href="./administration.html" data-menu-action="page">
+            <span class="menu-icon" aria-hidden="true">⚙️</span>
+            <span class="menu-label">Administration</span>
+        </a>
+
+    </nav>
+
+</div>
 
 <!-- =========================================================
      APPLICATION HEADER
@@ -4820,12 +4976,28 @@ window.addEventListener(
    INITIALIZATION
 ============================================================ */
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     initializeDate();
     loadPMDatabase();
+    initHamburger();
 });
 
-</script>
+function initHamburger() {
 
+    const hamburger = document.getElementById("hamburger-btn");
+    const navMenu = document.getElementById("nav-menu");
+
+    if (!hamburger || !navMenu) return;
+
+    hamburger.addEventListener("click", function () {
+        navMenu.classList.toggle("active");
+    });
+}
+
+function closeMenu() {
+    document.getElementById("nav-menu").classList.remove("active");
+}
+
+</script>
 </body>
 </html>
