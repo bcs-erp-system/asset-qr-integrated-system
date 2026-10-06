@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Failure Analysis</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6fa;color:#1f2937}
+.container{max-width:1200px;margin:25px auto;padding:0 16px}
+.header{background:#123b63;color:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 4px 15px rgba(0,0,0,.12)}
+.header h1{margin:0 0 6px;font-size:25px}.header p{margin:0;opacity:.9}
+.card{background:#fff;border-radius:12px;padding:20px;margin-top:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-weight:700;font-size:13px;color:#374151}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input.readonly{background:#f8fafc}
+.badge{display:inline-block;padding:7px 12px;border-radius:20px;background:#dbeafe;color:#1e40af;font-weight:700}
+.section-title{margin:0 0 15px;font-size:18px;color:#123b63}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}
+.metric{padding:14px;border-radius:9px;background:#f8fafc;border-left:4px solid #2563eb}
+.metric strong{display:block;font-size:12px;color:#64748b;margin-bottom:4px}.metric span{font-size:22px;font-weight:700}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{border:0;border-radius:7px;padding:11px 16px;font-weight:700;cursor:pointer}
+.primary{background:#2563eb;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:#fff}
+.status{margin-top:12px;padding:10px;border-radius:7px;background:#f1f5f9;color:#334155}
+.error{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}
+.help{font-size:12px;color:#64748b;margin-top:5px}
+@media(max-width:800px){.grid,.metrics{grid-template-columns:1fr}.container{margin-top:10px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Dynamic Failure Analysis</h1>
+    <p>Failure analysis catalog is selected automatically from the equipment <b>failureClass</b>.</p>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">Equipment / PM Context</h2>
+    <div class="grid">
+      <div class="field"><label>PM ID</label><input id="pmId" class="readonly" readonly></div>
+      <div class="field"><label>Equipment Type</label><input id="equipmentType" class="readonly" readonly></div>
+      <div class="field"><label>Asset Tag</label><input id="assetTag" class="readonly" readonly></div>
+      <div class="field"><label>Asset</label><input id="asset" class="readonly" readonly></div>
+      <div class="field"><label>Failure Class</label><input id="failureClass" class="readonly" readonly></div>
+      <div class="field"><label>Failure Class Description</label><input id="failureClassName" class="readonly" readonly></div>
+    </div>
+    <div id="status" class="status">Loading PM and failure catalog...</div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">Failure Analysis Selection</h2>
+    <div class="grid">
+      <div class="field">
+        <label>Problem</label>
+        <select id="problem"><option value="">-- Select Problem --</option></select>
+      </div>
+      <div class="field">
+        <label>Problem ID</label>
+        <input id="problemId">
+        <div class="help">Automatically populated from the selected Problem; editable if required.</div>
+      </div>
+      <div class="field">
+        <label>SEVERITY</label>
+        <input id="severity" type="number" min="1" max="10">
+      </div>
+      <div class="field">
+        <label>Occurrence</label>
+        <input id="occurrence" type="number" min="1" max="10">
+      </div>
+      <div class="field">
+        <label>Detection</label>
+        <input id="detection" type="number" min="1" max="10">
+      </div>
+      <div class="field">
+        <label>RPN</label>
+        <input id="rpn" class="readonly" readonly>
+      </div>
+      <div class="field">
+        <label>Cause</label>
+        <select id="cause"><option value="">-- Select Cause --</option></select>
+      </div>
+      <div class="field">
+        <label>Cause ID</label>
+        <input id="causeId">
+        <div class="help">Automatically populated from the selected Cause.</div>
+      </div>
+      <div class="field">
+        <label>Remedy</label>
+        <select id="remedy"><option value="">-- Select Remedy --</option></select>
+      </div>
+      <div class="field">
+        <label>Remedy ID</label>
+        <input id="remedyId">
+        <div class="help">Automatically populated from the selected Remedy.</div>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><strong>Selected Problem</strong><span id="summaryProblem">—</span></div>
+      <div class="metric"><strong>Selected Cause</strong><span id="summaryCause">—</span></div>
+      <div class="metric"><strong>Selected Remedy</strong><span id="summaryRemedy">—</span></div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="primary" id="saveBtn">Save Failure Analysis JSON</button>
+      <button type="button" class="secondary" id="copyBtn">Copy JSON</button>
+      <button type="button" class="secondary" id="reloadBtn">Reload PM Data</button>
+      <button type="button" class="danger" id="clearBtn">Clear Selection</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">Generated Record</h2>
+    <textarea id="jsonOutput" rows="16" readonly></textarea>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const PM_ID = new URLSearchParams(location.search).get("pm") || "2803";
+const PM_URL = "./data/" + encodeURIComponent(PM_ID) + "-data.json";
+const FAILURE_URL = "./failure-data.json";
+
+let pmRecord = null;
+let failureCatalog = null;
+
+const $ = id => document.getElementById(id);
+
+function setStatus(message, type="") {
+  const el = $("status");
+  el.textContent = message;
+  el.className = "status" + (type ? " " + type : "");
+}
+
+async function loadJSON(url) {
+  const response = await fetch(url, {cache:"no-store"});
+  if (!response.ok) throw new Error(response.status + " " + response.statusText + ": " + url);
+  return response.json();
+}
+
+function unwrapPM(data) {
+  if (Array.isArray(data)) {
+    if (!data.length) throw new Error("PM JSON contains no records.");
+    return data[0];
+  }
+  if (!data || typeof data !== "object") throw new Error("Invalid PM JSON.");
+  if (data[PM_ID] && typeof data[PM_ID] === "object") return data[PM_ID];
+
+  const keys = Object.keys(data);
+  if (keys.length === 1 && data[keys[0]] && typeof data[keys[0]] === "object") {
+    return data[keys[0]];
+  }
+  return data;
+}
+
+function normalizeCatalog(data) {
+  if (data && Array.isArray(data.failureClasses)) return data.failureClasses;
+  if (Array.isArray(data)) return data;
+  throw new Error("Unsupported failure-data.json structure.");
+}
+
+function selectedClass() {
+  const fc = String(pmRecord?.failureClass || "").trim().toUpperCase();
+  return (failureCatalog || []).find(x => String(x.failureClass).toUpperCase() === fc);
+}
+
+function fillEquipment() {
+  $("pmId").value = pmRecord?.pmId || PM_ID;
+  $("equipmentType").value = pmRecord?.equipmentType || "";
+  $("assetTag").value = pmRecord?.assetTag || "";
+  $("asset").value = pmRecord?.asset || "";
+  $("failureClass").value = pmRecord?.failureClass || "";
+  $("failureClassName").value = selectedClass()?.failureId || "";
+}
+
+function option(text, value) {
+  const o = document.createElement("option");
+  o.value = value;
+  o.textContent = text;
+  return o;
+}
+
+function populateProblems() {
+  const sel = $("problem");
+  sel.innerHTML = "";
+  sel.appendChild(option("-- Select Problem --", ""));
+  const fc = selectedClass();
+  (fc?.problems || []).forEach(p => {
+    sel.appendChild(option(p.problem + " — " + p.problemId, p.problem));
+  });
+  $("cause").innerHTML = "";
+  $("cause").appendChild(option("-- Select Cause --", ""));
+  $("remedy").innerHTML = "";
+  $("remedy").appendChild(option("-- Select Remedy --", ""));
+  clearDependentFields();
+}
+
+function selectedProblem() {
+  return selectedClass()?.problems?.find(p => p.problem === $("problem").value);
+}
+
+function selectedCause() {
+  return selectedProblem()?.causes?.find(c => c.cause === $("cause").value);
+}
+
+function selectedRemedy() {
+  return selectedCause()?.remedies?.find(r => r.remedy === $("remedy").value);
+}
+
+function populateCauses() {
+  const p = selectedProblem();
+  $("problemId").value = p?.problemId || "";
+  $("severity").value = p?.severity ?? "";
+  $("occurrence").value = p?.occurrence ?? "";
+  $("detection").value = p?.detection ?? "";
+  $("cause").innerHTML = "";
+  $("cause").appendChild(option("-- Select Cause --", ""));
+  (p?.causes || []).forEach(c => {
+    $("cause").appendChild(option(c.cause + " — " + c.causeId, c.cause));
+  });
+  $("remedy").innerHTML = "";
+  $("remedy").appendChild(option("-- Select Remedy --", ""));
+  $("causeId").value = "";
+  $("remedyId").value = "";
+  updateRPN();
+  updateSummary();
+  updateJSON();
+}
+
+function populateRemedies() {
+  const c = selectedCause();
+  $("causeId").value = c?.causeId || "";
+  $("remedy").innerHTML = "";
+  $("remedy").appendChild(option("-- Select Remedy --", ""));
+  (c?.remedies || []).forEach(r => {
+    $("remedy").appendChild(option(r.remedy + " — " + r.remedyId, r.remedy));
+  });
+  $("remedyId").value = "";
+  updateSummary();
+  updateJSON();
+}
+
+function updateRemedy() {
+  const r = selectedRemedy();
+  $("remedyId").value = r?.remedyId || "";
+  updateSummary();
+  updateJSON();
+}
+
+function clearDependentFields() {
+  ["problemId","severity","occurrence","detection","rpn","causeId","remedyId"].forEach(id => $(id).value = "");
+  $("summaryProblem").textContent = "—";
+  $("summaryCause").textContent = "—";
+  $("summaryRemedy").textContent = "—";
+  updateJSON();
+}
+
+function updateRPN() {
+  const s = Number($("severity").value);
+  const o = Number($("occurrence").value);
+  const d = Number($("detection").value);
+  $("rpn").value = s && o && d ? s * o * d : "";
+}
+
+function updateSummary() {
+  $("summaryProblem").textContent = $("problem").value || "—";
+  $("summaryCause").textContent = $("cause").value || "—";
+  $("summaryRemedy").textContent = $("remedy").value || "—";
+}
+
+function collectRecord() {
+  return {
+    pmId: pmRecord?.pmId || PM_ID,
+    equipmentType: pmRecord?.equipmentType || "",
+    assetTag: pmRecord?.assetTag || "",
+    asset: pmRecord?.asset || "",
+    failureClass: pmRecord?.failureClass || "",
+    failureClassId: selectedClass()?.failureId || "",
+    problem: $("problem").value,
+    problemId: $("problemId").value,
+    severity: $("severity").value === "" ? null : Number($("severity").value),
+    occurrence: $("occurrence").value === "" ? null : Number($("occurrence").value),
+    detection: $("detection").value === "" ? null : Number($("detection").value),
+    rpn: $("rpn").value === "" ? null : Number($("rpn").value),
+    cause: $("cause").value,
+    causeId: $("causeId").value,
+    remedy: $("remedy").value,
+    remedyId: $("remedyId").value,
+    savedAt: new Date().toISOString()
+  };
+}
+
+function updateJSON() {
+  $("jsonOutput").value = JSON.stringify(collectRecord(), null, 2);
+}
+
+function clearSelection() {
+  $("problem").value = "";
+  $("cause").innerHTML = "";
+  $("cause").appendChild(option("-- Select Cause --", ""));
+  $("remedy").innerHTML = "";
+  $("remedy").appendChild(option("-- Select Remedy --", ""));
+  clearDependentFields();
+}
+
+function downloadJSON() {
+  updateJSON();
+  const blob = new Blob([$("jsonOutput").value], {type:"application/json;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "failure-analysis-" + (pmRecord?.pmId || PM_ID) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function copyJSON() {
+  updateJSON();
+  try {
+    await navigator.clipboard.writeText($("jsonOutput").value);
+    setStatus("Failure analysis JSON copied to clipboard.", "success");
+  } catch {
+    $("jsonOutput").select();
+    document.execCommand("copy");
+    setStatus("Failure analysis JSON copied.", "success");
+  }
+}
+
+async function loadAll() {
+  try {
+    setStatus("Loading PM data and failure catalog...");
+    const [pmData, failureData] = await Promise.all([
+      loadJSON(PM_URL),
+      loadJSON(FAILURE_URL)
+    ]);
+
+    pmRecord = unwrapPM(pmData);
+    failureCatalog = normalizeCatalog(failureData);
+
+    const fc = selectedClass();
+    if (!fc) {
+      throw new Error("Failure class '" + (pmRecord.failureClass || "") + "' was not found in failure-data.json.");
+    }
+
+    fillEquipment();
+    populateProblems();
+    setStatus(
+      "Loaded PM " + (pmRecord.pmId || PM_ID) +
+      ". Failure Class " + fc.failureClass +
+      " (" + fc.failureId + ") is active. " +
+      fc.problems.length + " problem(s) available.",
+      "success"
+    );
+  } catch (error) {
+    console.error(error);
+    setStatus("Load error: " + error.message, "error");
+  }
+}
+
+$("problem").addEventListener("change", populateCauses);
+$("cause").addEventListener("change", populateRemedies);
+$("remedy").addEventListener("change", updateRemedy);
+["problemId","severity","occurrence","detection","causeId","remedyId"].forEach(id => {
+  $(id).addEventListener("input", () => { updateRPN(); updateSummary(); updateJSON(); });
+});
+$("saveBtn").addEventListener("click", downloadJSON);
+$("copyBtn").addEventListener("click", copyJSON);
+$("reloadBtn").addEventListener("click", loadAll);
+$("clearBtn").addEventListener("click", clearSelection);
+
+loadAll();
+</script>
+</body>
+</html>
