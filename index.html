@@ -5011,6 +5011,26 @@ document.addEventListener("DOMContentLoaded", function () {
     initializeDate();
     loadPMDatabase();
     initHamburger();
+
+const maintenanceLink = document.getElementById("maintenance-link");
+
+    if (!maintenanceLink) {
+        console.error("Maintenance link not found.");
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const pmId = params.get("pm");
+
+    if (pmId) {
+        maintenanceLink.href =
+            "./failure-analysis.html?pm=" +
+            encodeURIComponent(pmId);
+
+        console.log("Maintenance URL:", maintenanceLink.href);
+    } else {
+        console.warn("No PM ID found in current URL.");
+    }
 });
 
 function initHamburger() {
