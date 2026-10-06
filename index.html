@@ -4916,35 +4916,6 @@ function clearExecutionForm() {
 
 
 /* ============================================================
-   open FailureAnalysis form
-============================================================ */
-
-
-function openFailureAnalysis() {
-    const params = new URLSearchParams(window.location.search);
-    const pmId = params.get("pm");
-
-    if (!pmId) {
-        alert("PM ID is missing from the current URL.");
-        return;
-    }
-
-    window.location.href =
-        "failure-analysis.html?pm=" +
-        encodeURIComponent(pmId);
-}
-
-/* ============================================================
-   Maintenance menu
-============================================================ */
-
-document.getElementById("maintenance-link").addEventListener("click", function (event) {
-    event.preventDefault();
-    openFailureAnalysis();
-});
-
-
-/* ============================================================
    GET VALUE
 ============================================================ */
 
@@ -5004,33 +4975,66 @@ window.addEventListener(
 
 
 /* ============================================================
-   INITIALIZATION
+   open FailureAnalysis form
 ============================================================ */
 
-document.addEventListener("DOMContentLoaded", function () {
-    initializeDate();
-    loadPMDatabase();
-    initHamburger();
+function openFailureAnalysis() {
 
-const maintenanceLink = document.getElementById("maintenance-link");
+    let pmId = "";
 
-    if (!maintenanceLink) {
-        console.error("Maintenance link not found.");
+    if (currentPM && currentPM.pmId) {
+        pmId = String(currentPM.pmId).trim();
+    }
+
+    if (!pmId) {
+        const identifier = getPMIdentifierFromURL();
+        pmId = String(identifier.pm || "").trim();
+    }
+
+    if (!pmId) {
+        alert("PM ID is missing. Please open the system using a valid PM URL.");
         return;
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const pmId = params.get("pm");
+    const failureURL = new URL(
+        "./failure-analysis.html",
+        window.location.href
+    );
 
-    if (pmId) {
-        maintenanceLink.href =
-            "./failure-analysis.html?pm=" +
-            encodeURIComponent(pmId);
+    failureURL.searchParams.set("pm", pmId);
 
-        console.log("Maintenance URL:", maintenanceLink.href);
-    } else {
-        console.warn("No PM ID found in current URL.");
+    console.log("Opening Failure Analysis");
+    console.log("PM ID:", pmId);
+    console.log("PM record:", currentPM);
+    console.log("Failure Analysis URL:", failureURL.href);
+
+    window.location.href = failureURL.href;
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    initializeDate();
+
+    loadPMDatabase();
+
+    initHamburger();
+
+    const maintenanceLink =
+        document.getElementById("maintenance-link");
+
+    if (maintenanceLink) {
+
+        maintenanceLink.addEventListener("click", function (event) {
+
+            event.preventDefault();
+
+            openFailureAnalysis();
+
+        });
+
     }
+
 });
 
 function initHamburger() {
