@@ -3,521 +3,2146 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Dynamic Failure Analysis</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6fa;color:#1f2937}
-.container{max-width:1250px;margin:24px auto;padding:0 16px}
-.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 3px 14px rgba(0,0,0,.08)}
-.header{background:#123b63;color:#fff;border-radius:12px;padding:18px 22px;margin-bottom:18px}
-.header h1{margin:0 0 5px;font-size:24px}.header p{margin:0;opacity:.9}
-.pmbar{display:grid;grid-template-columns:120px 150px 1fr;gap:12px;align-items:end}
-.field{min-width:0}.field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;text-transform:none}
-input,select{width:100%;height:42px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font:inherit;color:#111827}
-input:focus,select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-.readonly{background:#f8fafc!important}
-.analysis-grid{display:grid;grid-template-columns:minmax(260px,1.7fr) minmax(260px,1.7fr) 150px;gap:14px 18px;align-items:end}
-.analysis-grid .field:nth-child(4){grid-column:3}
-.section-title{margin:0 0 16px;color:#123b63;font-size:18px}
-.score{font-weight:700;text-align:center;background:#f8fafc}
-.rpn-row{display:grid;grid-template-columns:1fr 150px;gap:18px;margin-top:14px;align-items:end}
-.rpn-box label{color:#b45309;font-weight:800}.rpn-box input{font-size:20px;font-weight:800;text-align:center;background:#fff7ed;border-color:#fdba74}
-.summary-title{margin:0 0 12px;font-size:16px;color:#123b63}
-.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.summary-item{border:1px solid #dbe3ec;border-radius:8px;padding:12px;background:#f8fafc;min-height:66px}
-.summary-item strong{display:block;font-size:12px;color:#64748b;margin-bottom:6px}.summary-item span{font-weight:700;word-break:break-word}
-.status{padding:11px 13px;border-radius:8px;background:#f1f5f9;color:#334155;margin-top:15px;font-size:13px}
-.status.success{background:#dcfce7;color:#166534}.status.error{background:#fee2e2;color:#991b1b}.status.warning{background:#fef3c7;color:#92400e}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-button{border:0;border-radius:7px;padding:11px 16px;font-weight:700;cursor:pointer}
-.primary{background:#2563eb;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:#fff}
-textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;font:12px Consolas,monospace;background:#f8fafc}
-.help{font-size:11px;color:#64748b;margin-top:4px}
-@media(max-width:850px){.analysis-grid{grid-template-columns:1fr}.analysis-grid .field:nth-child(4){grid-column:auto}.pmbar,.rpn-row,.summary{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="header">
-    <h1>Dynamic Failure Analysis</h1>
-    <p>Failure analysis is automatically filtered from the <b>Failure Class</b> of the PM currently specified in the URL.</p>
-  </div>
-
-  <div class="card">
-    <div class="pmbar">
-      <div class="field"><label>Current PM ID</label><input id="pmId" class="readonly" readonly></div>
-      <div class="field"><label>Failure Class</label><input id="failureClass" class="readonly" readonly></div>
-      <div class="field"><label>Asset</label><input id="asset" class="readonly" readonly></div>
-    </div>
-    <div id="status" class="status">Loading current PM and failure catalog...</div>
-  </div>
-
-  <div class="card">
-    <h2 class="section-title">Failure Analysis</h2>
-
-    <div class="analysis-grid">
-      <div class="field">
-        <label>Problem</label>
-        <select id="problem" disabled><option value="">-- Select Problem --</option></select>
-      </div>
-
-      <div class="field">
-        <label>ID</label>
-        <input id="problemId" class="readonly" readonly>
-        <div class="help">Automatically populated with the Problem description.</div>
-      </div>
-
-      <div class="field">
-        <label><b>SEVERITY</b></label>
-        <input id="severity" class="score readonly" type="number" readonly>
-      </div>
-
-      <div class="field">
-        <label>Cause</label>
-        <select id="cause" disabled><option value="">-- Select Cause --</option></select>
-      </div>
-
-      <div class="field">
-        <label>ID</label>
-        <input id="causeId" class="readonly" readonly>
-        <div class="help">Automatically populated with the Cause description.</div>
-      </div>
-
-      <div class="field">
-        <label><b>Occurrence</b></label>
-        <input id="occurrence" class="score readonly" type="number" readonly>
-      </div>
-
-      <div class="field">
-        <label>Remedy</label>
-        <select id="remedy" disabled><option value="">-- Select Remedy --</option></select>
-      </div>
-
-      <div class="field">
-        <label>ID</label>
-        <input id="remedyId" class="readonly" readonly>
-        <div class="help">Automatically populated with the Remedy description, not the code.</div>
-      </div>
-
-      <div class="field">
-        <label><b>Detection</b></label>
-        <input id="detection" class="score readonly" type="number" readonly>
-      </div>
-    </div>
-
-    <div class="rpn-row">
-      <div></div>
-      <div class="field rpn-box">
-        <label><b>RPN</b></label>
-        <input id="rpn" class="readonly" readonly>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2 class="summary-title">Selected Failure Analysis</h2>
-    <div class="summary">
-      <div class="summary-item"><strong>Selected Problem</strong><span id="summaryProblem">—</span></div>
-      <div class="summary-item"><strong>Selected Cause</strong><span id="summaryCause">—</span></div>
-      <div class="summary-item"><strong>Selected Remedy</strong><span id="summaryRemedy">—</span></div>
-    </div>
-
-    <div class="actions">
-      <button type="button" class="primary" id="saveBtn">Save Failure Analysis JSON</button>
-      <button type="button" class="secondary" id="copyBtn">Copy JSON</button>
-      <button type="button" class="secondary" id="reloadBtn">Reload Current PM</button>
-      <button type="button" class="danger" id="clearBtn">Clear Selection</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2 class="section-title">Generated Record</h2>
-    <textarea id="jsonOutput" rows="13" readonly></textarea>
-  </div>
-</div>
-
-<script>
-"use strict";
 
 /* ============================================================
-   CURRENT PM REFERENCE
-   The PM is NEVER hard-coded. It comes from the current URL:
-   .../?pm=16059  -> PM_ID = 16059
-   ============================================================ */
-const params = new URLSearchParams(window.location.search);
-const PM_ID = String(params.get("pm") || "").trim();
+   GLOBAL
+============================================================ */
 
-/* The main EAM application uses data/[pmid]-data.json. */
-const PM_URL = "./data/" + encodeURIComponent(PM_ID) + "-data.json";
-const FAILURE_URL = "./failure-data.json";
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f3f6fa;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 25px auto;
+    padding: 0 16px;
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.header {
+    background: #123b63;
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,.12);
+}
+
+.header h1 {
+    margin: 0 0 6px;
+    font-size: 25px;
+}
+
+.header p {
+    margin: 0;
+    opacity: .9;
+}
+
+
+/* ============================================================
+   CARD
+============================================================ */
+
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.section-title {
+    margin: 0 0 18px;
+    font-size: 18px;
+    color: #123b63;
+}
+
+
+/* ============================================================
+   EQUIPMENT / PM GRID
+============================================================ */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field label {
+    font-weight: 700;
+    font-size: 13px;
+    color: #374151;
+}
+
+
+/* ============================================================
+   GENERAL INPUTS
+============================================================ */
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 10px 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #fff;
+    font: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+
+input.readonly {
+    background: #f8fafc;
+}
+
+
+/* ============================================================
+   FAILURE ANALYSIS FORM
+============================================================ */
+
+.failure-grid {
+
+    display: grid;
+
+    /*
+       Column 1 = Problem / Cause / Remedy
+       Column 2 = IDs
+       Column 3 = Severity / Occurrence / Detection
+    */
+
+    grid-template-columns:
+        minmax(280px, 1.55fr)
+        minmax(230px, 1.15fr)
+        minmax(120px, .65fr);
+
+    column-gap: 38px;
+    row-gap: 12px;
+
+    align-items: start;
+}
+
+.failure-field {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.failure-field label {
+
+    font-weight: 700;
+
+    font-size: 13px;
+
+    color: #374151;
+}
+
+
+/* ============================================================
+   FAILURE SELECT / INPUT
+============================================================ */
+
+.failure-field input,
+.failure-field select {
+
+    width: 100%;
+
+    height: 43px;
+
+    padding: 9px 13px;
+
+    border: 1px solid #cbd5e1;
+
+    border-radius: 7px;
+
+    background: #fff;
+
+    color: #111827;
+
+    font: inherit;
+}
+
+.failure-field input:focus,
+.failure-field select:focus {
+
+    outline: none;
+
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37,99,235,.12);
+}
+
+
+/* ============================================================
+   AUTOMATIC ID FIELDS
+============================================================ */
+
+.failure-id {
+
+    background: #f8fafc !important;
+
+    color: #111827;
+
+    cursor: default;
+}
+
+
+/* ============================================================
+   NUMERIC FIELDS
+============================================================ */
+
+.failure-number {
+
+    text-align: center;
+
+    font-weight: 700;
+
+    font-size: 16px;
+}
+
+
+/* ============================================================
+   SEVERITY / OCCURRENCE / DETECTION
+============================================================ */
+
+.failure-rating {
+
+    text-align: center;
+
+    font-weight: 700;
+
+    font-size: 16px;
+
+    background: #f8fafc !important;
+}
+
+
+/* ============================================================
+   RPN
+============================================================ */
+
+.rpn-field {
+
+    grid-column: 2;
+
+    margin-top: 36px;
+}
+
+.rpn-field label {
+
+    color: #f97316;
+
+    font-weight: 700;
+}
+
+.rpn-field input {
+
+    text-align: center;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    border-color: #f97316;
+
+    background: #f8fafc;
+
+    color: #111827;
+}
+
+
+/* ============================================================
+   HELP TEXT
+============================================================ */
+
+.failure-help {
+
+    font-size: 11px;
+
+    color: #64748b;
+
+    margin-top: 0;
+
+    line-height: 1.3;
+}
+
+
+/* ============================================================
+   BADGE
+============================================================ */
+
+.badge {
+
+    display: inline-block;
+
+    padding: 7px 12px;
+
+    border-radius: 20px;
+
+    background: #dbeafe;
+
+    color: #1e40af;
+
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+.status {
+
+    margin-top: 12px;
+
+    padding: 10px;
+
+    border-radius: 7px;
+
+    background: #f1f5f9;
+
+    color: #334155;
+}
+
+.error {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+}
+
+.success {
+
+    background: #dcfce7;
+
+    color: #166534;
+}
+
+
+/* ============================================================
+   SUMMARY
+============================================================ */
+
+.metrics {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 12px;
+
+    margin-top: 25px;
+}
+
+.metric {
+
+    padding: 14px;
+
+    border-radius: 9px;
+
+    background: #f8fafc;
+
+    border-left: 4px solid #2563eb;
+}
+
+.metric strong {
+
+    display: block;
+
+    font-size: 12px;
+
+    color: #64748b;
+
+    margin-bottom: 4px;
+}
+
+.metric span {
+
+    font-size: 18px;
+
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+
+.actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    margin-top: 18px;
+}
+
+button {
+
+    border: 0;
+
+    border-radius: 7px;
+
+    padding: 11px 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.primary {
+
+    background: #2563eb;
+
+    color: #fff;
+}
+
+.secondary {
+
+    background: #e5e7eb;
+
+    color: #111827;
+}
+
+.danger {
+
+    background: #dc2626;
+
+    color: #fff;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media (max-width: 800px) {
+
+    .grid {
+
+        grid-template-columns: 1fr;
+    }
+
+    .failure-grid {
+
+        grid-template-columns: 1fr;
+
+        column-gap: 0;
+
+        row-gap: 14px;
+    }
+
+    .rpn-field {
+
+        grid-column: auto;
+
+        margin-top: 0;
+    }
+
+    .metrics {
+
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+
+        margin-top: 10px;
+    }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- ========================================================
+         HEADER
+    ========================================================= -->
+
+    <div class="header">
+
+        <h1>
+            Dynamic Failure Analysis
+        </h1>
+
+        <p>
+            Failure analysis catalog is selected automatically
+            from the equipment <b>failureClass</b>.
+        </p>
+
+    </div>
+
+
+
+    <!-- ========================================================
+         EQUIPMENT / PM CONTEXT
+    ========================================================= -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            Equipment / PM Context
+        </h2>
+
+
+        <div class="grid">
+
+
+            <div class="field">
+
+                <label>
+                    PM ID
+                </label>
+
+                <input
+                    id="pmId"
+                    class="readonly"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Equipment Type
+                </label>
+
+                <input
+                    id="equipmentType"
+                    class="readonly"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Asset Tag
+                </label>
+
+                <input
+                    id="assetTag"
+                    class="readonly"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Asset
+                </label>
+
+                <input
+                    id="asset"
+                    class="readonly"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Failure Class
+                </label>
+
+                <input
+                    id="failureClass"
+                    class="readonly"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Failure Class Description
+                </label>
+
+                <input
+                    id="failureClassName"
+                    class="readonly"
+                    readonly
+                >
+
+            </div>
+
+
+        </div>
+
+
+        <div
+            id="status"
+            class="status"
+        >
+            Loading PM and failure catalog...
+        </div>
+
+    </div>
+
+
+
+    <!-- ========================================================
+         FAILURE ANALYSIS
+    ========================================================= -->
+
+    <div class="card">
+
+
+        <h2 class="section-title">
+            Failure Analysis
+        </h2>
+
+
+        <div class="failure-grid">
+
+
+            <!-- ==================================================
+                 ROW 1
+            =================================================== -->
+
+
+            <!-- Problem -->
+
+            <div class="failure-field">
+
+                <label for="problem">
+                    Problem
+                </label>
+
+                <select id="problem">
+
+                    <option value="">
+                        -- Select Problem --
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- Problem ID -->
+
+            <div class="failure-field">
+
+                <label for="problemId">
+                    ID
+                </label>
+
+                <input
+                    id="problemId"
+                    class="failure-id"
+                    readonly
+                >
+
+                <div class="failure-help">
+                    Automatically populated with the Problem description.
+                </div>
+
+            </div>
+
+
+
+            <!-- Severity -->
+
+            <div class="failure-field">
+
+                <label for="severity">
+                    SEVERITY
+                </label>
+
+                <input
+                    id="severity"
+                    class="failure-rating"
+                    type="number"
+                    min="1"
+                    max="10"
+                >
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 ROW 2
+            =================================================== -->
+
+
+            <!-- Cause -->
+
+            <div class="failure-field">
+
+                <label for="cause">
+                    Cause
+                </label>
+
+                <select id="cause">
+
+                    <option value="">
+                        -- Select Cause --
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- Cause ID -->
+
+            <div class="failure-field">
+
+                <label for="causeId">
+                    ID
+                </label>
+
+                <input
+                    id="causeId"
+                    class="failure-id"
+                    readonly
+                >
+
+                <div class="failure-help">
+                    Automatically populated with the Cause description.
+                </div>
+
+            </div>
+
+
+
+            <!-- Occurrence -->
+
+            <div class="failure-field">
+
+                <label for="occurrence">
+                    Occurrence
+                </label>
+
+                <input
+                    id="occurrence"
+                    class="failure-rating"
+                    type="number"
+                    min="1"
+                    max="10"
+                >
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 ROW 3
+            =================================================== -->
+
+
+            <!-- Remedy -->
+
+            <div class="failure-field">
+
+                <label for="remedy">
+                    Remedy
+                </label>
+
+                <select id="remedy">
+
+                    <option value="">
+                        -- Select Remedy --
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- Remedy ID -->
+
+            <div class="failure-field">
+
+                <label for="remedyId">
+                    ID
+                </label>
+
+                <input
+                    id="remedyId"
+                    class="failure-id"
+                    readonly
+                >
+
+                <div class="failure-help">
+                    Automatically populated with the Remedy description.
+                </div>
+
+            </div>
+
+
+
+            <!-- Detection -->
+
+            <div class="failure-field">
+
+                <label for="detection">
+                    Detection
+                </label>
+
+                <input
+                    id="detection"
+                    class="failure-rating"
+                    type="number"
+                    min="1"
+                    max="10"
+                >
+
+            </div>
+
+
+
+            <!-- ==================================================
+                 ROW 4
+            =================================================== -->
+
+
+            <!-- RPN -->
+
+            <div class="failure-field rpn-field">
+
+                <label for="rpn">
+                    RPN
+                </label>
+
+                <input
+                    id="rpn"
+                    class="failure-id"
+                    readonly
+                >
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- ====================================================
+             SUMMARY
+        ===================================================== -->
+
+        <div class="metrics">
+
+
+            <div class="metric">
+
+                <strong>
+                    Selected Problem
+                </strong>
+
+                <span id="summaryProblem">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="metric">
+
+                <strong>
+                    Selected Cause
+                </strong>
+
+                <span id="summaryCause">
+                    —
+                </span>
+
+            </div>
+
+
+            <div class="metric">
+
+                <strong>
+                    Selected Remedy
+                </strong>
+
+                <span id="summaryRemedy">
+                    —
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- ====================================================
+             ACTIONS
+        ===================================================== -->
+
+        <div class="actions">
+
+            <button
+                type="button"
+                class="primary"
+                id="saveBtn"
+            >
+                Save Failure Analysis JSON
+            </button>
+
+
+            <button
+                type="button"
+                class="secondary"
+                id="copyBtn"
+            >
+                Copy JSON
+            </button>
+
+
+            <button
+                type="button"
+                class="secondary"
+                id="reloadBtn"
+            >
+                Reload PM Data
+            </button>
+
+
+            <button
+                type="button"
+                class="danger"
+                id="clearBtn"
+            >
+                Clear Selection
+            </button>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- ========================================================
+         GENERATED RECORD
+    ========================================================= -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            Generated Record
+        </h2>
+
+        <textarea
+            id="jsonOutput"
+            rows="16"
+            readonly
+        ></textarea>
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+"use strict";
+
+
+/* ============================================================
+   PM / JSON CONFIGURATION
+============================================================ */
+
+const PM_ID =
+    new URLSearchParams(location.search).get("pm") || "2803";
+
+const PM_URL =
+    "./data/" +
+    encodeURIComponent(PM_ID) +
+    "-data.json";
+
+const FAILURE_URL =
+    "./failure-data.json";
+
 
 let pmRecord = null;
-let failureCatalog = [];
 
-const $ = id => document.getElementById(id);
+let failureCatalog = null;
+
+
+
+/* ============================================================
+   HELPER
+============================================================ */
+
+const $ = id =>
+    document.getElementById(id);
+
+
+
+/* ============================================================
+   STATUS
+============================================================ */
 
 function setStatus(message, type = "") {
-  const el = $("status");
-  el.textContent = message;
-  el.className = "status" + (type ? " " + type : "");
+
+    const el = $("status");
+
+    el.textContent = message;
+
+    el.className =
+        "status" +
+        (type ? " " + type : "");
 }
+
+
+
+/* ============================================================
+   LOAD JSON
+============================================================ */
 
 async function loadJSON(url) {
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(response.status + " " + response.statusText + " — " + url);
-  }
-  return response.json();
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache: "no-store"
+            }
+        );
+
+    if (!response.ok) {
+
+        throw new Error(
+            response.status +
+            " " +
+            response.statusText +
+            ": " +
+            url
+        );
+
+    }
+
+    return response.json();
 }
+
+
+
+/* ============================================================
+   UNWRAP PM JSON
+============================================================ */
 
 function unwrapPM(data) {
-  if (Array.isArray(data)) {
-    if (!data.length) throw new Error("PM JSON contains no records.");
-    return data[0];
-  }
 
-  if (!data || typeof data !== "object") {
-    throw new Error("Invalid PM JSON structure.");
-  }
+    if (Array.isArray(data)) {
 
-  /* Normal structure: { "16059": { ... } } */
-  if (data[PM_ID] && typeof data[PM_ID] === "object") {
-    return data[PM_ID];
-  }
+        if (!data.length) {
 
-  /* Also support a single wrapped object under another key. */
-  const keys = Object.keys(data);
-  if (
-    keys.length === 1 &&
-    data[keys[0]] &&
-    typeof data[keys[0]] === "object" &&
-    !Array.isArray(data[keys[0]])
-  ) {
-    return data[keys[0]];
-  }
+            throw new Error(
+                "PM JSON contains no records."
+            );
 
-  return data;
+        }
+
+        return data[0];
+    }
+
+
+    if (
+        !data ||
+        typeof data !== "object"
+    ) {
+
+        throw new Error(
+            "Invalid PM JSON."
+        );
+
+    }
+
+
+    /*
+     * Example:
+     *
+     * {
+     *     "1017": {
+     *         ...
+     *     }
+     * }
+     */
+
+    if (
+        data[PM_ID] &&
+        typeof data[PM_ID] === "object"
+    ) {
+
+        return data[PM_ID];
+
+    }
+
+
+    const keys =
+        Object.keys(data);
+
+
+    /*
+     * Single nested record
+     */
+
+    if (
+        keys.length === 1 &&
+        data[keys[0]] &&
+        typeof data[keys[0]] === "object"
+    ) {
+
+        return data[keys[0]];
+
+    }
+
+
+    /*
+     * Normal object
+     */
+
+    return data;
 }
+
+
+
+/* ============================================================
+   NORMALIZE FAILURE CATALOG
+============================================================ */
 
 function normalizeCatalog(data) {
-  if (data && Array.isArray(data.failureClasses)) {
-    return data.failureClasses;
-  }
 
-  if (Array.isArray(data)) {
-    return data;
-  }
+    if (
+        data &&
+        Array.isArray(data.failureClasses)
+    ) {
 
-  throw new Error("Unsupported failure-data.json structure. Expected failureClasses[].");
+        return data.failureClasses;
+
+    }
+
+
+    if (Array.isArray(data)) {
+
+        return data;
+
+    }
+
+
+    throw new Error(
+        "Unsupported failure-data.json structure."
+    );
 }
 
-function getFailureClass() {
-  const value = String(pmRecord?.failureClass || "").trim().toUpperCase();
-  return failureCatalog.find(item =>
-    String(item.failureClass || "").trim().toUpperCase() === value
-  ) || null;
+
+
+/* ============================================================
+   SELECT FAILURE CLASS
+============================================================ */
+
+function selectedClass() {
+
+    const fc =
+        String(
+            pmRecord?.failureClass || ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    return (
+        failureCatalog || []
+    ).find(
+        x =>
+            String(
+                x.failureClass
+            )
+            .trim()
+            .toUpperCase() === fc
+    );
 }
 
-function findProblem(code) {
-  return getFailureClass()?.problems?.find(p =>
-    String(p.problem || "").trim().toUpperCase() === String(code || "").trim().toUpperCase()
-  ) || null;
+
+
+/* ============================================================
+   FILL EQUIPMENT DATA
+============================================================ */
+
+function fillEquipment() {
+
+    $("pmId").value =
+        pmRecord?.pmId ||
+        PM_ID;
+
+
+    $("equipmentType").value =
+        pmRecord?.equipmentType ||
+        "";
+
+
+    $("assetTag").value =
+        pmRecord?.assetTag ||
+        "";
+
+
+    $("asset").value =
+        pmRecord?.asset ||
+        "";
+
+
+    $("failureClass").value =
+        pmRecord?.failureClass ||
+        "";
+
+
+    $("failureClassName").value =
+        selectedClass()?.failureId ||
+        "";
 }
 
-function findCause(code) {
-  return findProblem($("problem").value)?.causes?.find(c =>
-    String(c.cause || "").trim().toUpperCase() === String(code || "").trim().toUpperCase()
-  ) || null;
+
+
+/* ============================================================
+   CREATE OPTION
+============================================================ */
+
+function option(text, value) {
+
+    const o =
+        document.createElement("option");
+
+    o.value = value;
+
+    o.textContent = text;
+
+    return o;
 }
 
-function findRemedy(code) {
-  return findCause($("cause").value)?.remedies?.find(r =>
-    String(r.remedy || "").trim().toUpperCase() === String(code || "").trim().toUpperCase()
-  ) || null;
-}
 
-function addOption(select, text, value) {
-  const option = document.createElement("option");
-  option.value = value;
-  option.textContent = text;
-  select.appendChild(option);
-}
 
-function resetSelect(id, placeholder) {
-  const select = $(id);
-  select.innerHTML = "";
-  addOption(select, placeholder, "");
-  select.disabled = true;
-}
-
-function fillPMContext() {
-  $("pmId").value = pmRecord?.pmId || PM_ID;
-  $("failureClass").value = pmRecord?.failureClass || "";
-  $("asset").value = pmRecord?.asset || pmRecord?.assetTag || "";
-}
+/* ============================================================
+   POPULATE PROBLEMS
+============================================================ */
 
 function populateProblems() {
-  const select = $("problem");
-  select.innerHTML = "";
-  addOption(select, "-- Select Problem --", "");
 
-  const fc = getFailureClass();
-  const problems = Array.isArray(fc?.problems) ? fc.problems : [];
+    const sel =
+        $("problem");
 
-  problems.forEach(problem => {
-    /* Problem = CODE; ID = DESCRIPTION */
-    addOption(
-      select,
-      String(problem.problem || "") + " — " + String(problem.problemId || ""),
-      String(problem.problem || "")
+
+    sel.innerHTML = "";
+
+
+    sel.appendChild(
+        option(
+            "-- Select Problem --",
+            ""
+        )
     );
-  });
 
-  select.disabled = problems.length === 0;
-  resetSelect("cause", "-- Select Cause --");
-  resetSelect("remedy", "-- Select Remedy --");
-  clearAnalysisValues();
+
+    const fc =
+        selectedClass();
+
+
+    (
+        fc?.problems || []
+    )
+    .forEach(
+        p => {
+
+            sel.appendChild(
+                option(
+                    p.problem +
+                    " — " +
+                    p.problemId,
+
+                    p.problem
+                )
+            );
+
+        }
+    );
+
+
+    $("cause").innerHTML = "";
+
+    $("cause").appendChild(
+        option(
+            "-- Select Cause --",
+            ""
+        )
+    );
+
+
+    $("remedy").innerHTML = "";
+
+    $("remedy").appendChild(
+        option(
+            "-- Select Remedy --",
+            ""
+        )
+    );
+
+
+    clearDependentFields();
 }
+
+
+
+/* ============================================================
+   SELECTED PROBLEM
+============================================================ */
+
+function selectedProblem() {
+
+    return selectedClass()
+        ?.problems
+        ?.find(
+            p =>
+                p.problem ===
+                $("problem").value
+        );
+}
+
+
+
+/* ============================================================
+   SELECTED CAUSE
+============================================================ */
+
+function selectedCause() {
+
+    return selectedProblem()
+        ?.causes
+        ?.find(
+            c =>
+                c.cause ===
+                $("cause").value
+        );
+}
+
+
+
+/* ============================================================
+   SELECTED REMEDY
+============================================================ */
+
+function selectedRemedy() {
+
+    return selectedCause()
+        ?.remedies
+        ?.find(
+            r =>
+                r.remedy ===
+                $("remedy").value
+        );
+}
+
+
+
+/* ============================================================
+   POPULATE CAUSES
+============================================================ */
 
 function populateCauses() {
-  const problem = findProblem($("problem").value);
 
-  $("problemId").value = problem?.problemId || "";
-  $("severity").value = problem?.severity ?? "";
-  $("occurrence").value = problem?.occurrence ?? "";
-  $("detection").value = problem?.detection ?? "";
+    const p =
+        selectedProblem();
 
-  const causeSelect = $("cause");
-  causeSelect.innerHTML = "";
-  addOption(causeSelect, "-- Select Cause --", "");
 
-  const causes = Array.isArray(problem?.causes) ? problem.causes : [];
-  causes.forEach(cause => {
-    /* Cause = CODE; ID = DESCRIPTION */
-    addOption(
-      causeSelect,
-      String(cause.cause || "") + " — " + String(cause.causeId || ""),
-      String(cause.cause || "")
+    $("problemId").value =
+        p?.problemId ||
+        "";
+
+
+    $("severity").value =
+        p?.severity ??
+        "";
+
+
+    $("occurrence").value =
+        p?.occurrence ??
+        "";
+
+
+    $("detection").value =
+        p?.detection ??
+        "";
+
+
+    $("cause").innerHTML =
+        "";
+
+
+    $("cause").appendChild(
+        option(
+            "-- Select Cause --",
+            ""
+        )
     );
-  });
 
-  causeSelect.disabled = causes.length === 0;
-  resetSelect("remedy", "-- Select Remedy --");
-  $("causeId").value = "";
-  $("remedyId").value = "";
 
-  updateAll();
+    (
+        p?.causes || []
+    )
+    .forEach(
+        c => {
+
+            $("cause").appendChild(
+                option(
+                    c.cause +
+                    " — " +
+                    c.causeId,
+
+                    c.cause
+                )
+            );
+
+        }
+    );
+
+
+    $("remedy").innerHTML =
+        "";
+
+
+    $("remedy").appendChild(
+        option(
+            "-- Select Remedy --",
+            ""
+        )
+    );
+
+
+    $("causeId").value =
+        "";
+
+
+    $("remedyId").value =
+        "";
+
+
+    updateRPN();
+
+    updateSummary();
+
+    updateJSON();
 }
+
+
+
+/* ============================================================
+   POPULATE REMEDIES
+============================================================ */
 
 function populateRemedies() {
-  const cause = findCause($("cause").value);
-  $("causeId").value = cause?.causeId || "";
 
-  const remedySelect = $("remedy");
-  remedySelect.innerHTML = "";
-  addOption(remedySelect, "-- Select Remedy --", "");
+    const c =
+        selectedCause();
 
-  const remedies = Array.isArray(cause?.remedies) ? cause.remedies : [];
-  remedies.forEach(remedy => {
-    /* Remedy = CODE; ID = DESCRIPTION */
-    addOption(
-      remedySelect,
-      String(remedy.remedy || "") + " — " + String(remedy.remedyId || ""),
-      String(remedy.remedy || "")
+
+    $("causeId").value =
+        c?.causeId ||
+        "";
+
+
+    $("remedy").innerHTML =
+        "";
+
+
+    $("remedy").appendChild(
+        option(
+            "-- Select Remedy --",
+            ""
+        )
     );
-  });
 
-  remedySelect.disabled = remedies.length === 0;
-  $("remedyId").value = "";
-  updateAll();
+
+    (
+        c?.remedies || []
+    )
+    .forEach(
+        r => {
+
+            $("remedy").appendChild(
+                option(
+                    r.remedy +
+                    " — " +
+                    r.remedyId,
+
+                    r.remedy
+                )
+            );
+
+        }
+    );
+
+
+    $("remedyId").value =
+        "";
+
+
+    updateSummary();
+
+    updateJSON();
 }
+
+
+
+/* ============================================================
+   UPDATE REMEDY
+============================================================ */
 
 function updateRemedy() {
-  const remedy = findRemedy($("remedy").value);
 
-  /* IMPORTANT: Remedy ID receives the DESCRIPTION, not the code. */
-  $("remedyId").value = remedy?.remedyId || "";
+    const r =
+        selectedRemedy();
 
-  updateAll();
+
+    $("remedyId").value =
+        r?.remedyId ||
+        "";
+
+
+    updateSummary();
+
+    updateJSON();
 }
+
+
+
+/* ============================================================
+   CLEAR DEPENDENT FIELDS
+============================================================ */
+
+function clearDependentFields() {
+
+    [
+        "problemId",
+        "severity",
+        "occurrence",
+        "detection",
+        "rpn",
+        "causeId",
+        "remedyId"
+    ]
+    .forEach(
+        id =>
+            $(id).value = ""
+    );
+
+
+    $("summaryProblem")
+        .textContent = "—";
+
+
+    $("summaryCause")
+        .textContent = "—";
+
+
+    $("summaryRemedy")
+        .textContent = "—";
+
+
+    updateJSON();
+}
+
+
+
+/* ============================================================
+   CALCULATE RPN
+============================================================ */
 
 function updateRPN() {
-  const severity = Number($("severity").value);
-  const occurrence = Number($("occurrence").value);
-  const detection = Number($("detection").value);
 
-  $("rpn").value =
-    severity > 0 && occurrence > 0 && detection > 0
-      ? severity * occurrence * detection
-      : "";
+    const s =
+        Number(
+            $("severity").value
+        );
+
+
+    const o =
+        Number(
+            $("occurrence").value
+        );
+
+
+    const d =
+        Number(
+            $("detection").value
+        );
+
+
+    $("rpn").value =
+        s &&
+        o &&
+        d
+            ? s * o * d
+            : "";
 }
+
+
+
+/* ============================================================
+   UPDATE SUMMARY
+============================================================ */
 
 function updateSummary() {
-  const problem = findProblem($("problem").value);
-  const cause = findCause($("cause").value);
-  const remedy = findRemedy($("remedy").value);
 
-  $("summaryProblem").textContent = problem
-    ? problem.problem + " — " + problem.problemId
-    : "—";
+    $("summaryProblem")
+        .textContent =
+            $("problem").value ||
+            "—";
 
-  $("summaryCause").textContent = cause
-    ? cause.cause + " — " + cause.causeId
-    : "—";
 
-  $("summaryRemedy").textContent = remedy
-    ? remedy.remedy + " — " + remedy.remedyId
-    : "—";
+    $("summaryCause")
+        .textContent =
+            $("cause").value ||
+            "—";
+
+
+    $("summaryRemedy")
+        .textContent =
+            $("remedy").value ||
+            "—";
 }
+
+
+
+/* ============================================================
+   COLLECT FAILURE ANALYSIS RECORD
+============================================================ */
 
 function collectRecord() {
-  const problem = findProblem($("problem").value);
-  const cause = findCause($("cause").value);
-  const remedy = findRemedy($("remedy").value);
 
-  return {
-    pmId: pmRecord?.pmId || PM_ID,
-    asset: pmRecord?.asset || "",
-    assetTag: pmRecord?.assetTag || "",
-    equipmentType: pmRecord?.equipmentType || "",
-    failureClass: pmRecord?.failureClass || "",
+    return {
 
-    problem: problem?.problem || "",
-    problemId: problem?.problemId || "",
-    severity: problem?.severity ?? null,
-    occurrence: problem?.occurrence ?? null,
-    detection: problem?.detection ?? null,
-    rpn: $("rpn").value === "" ? null : Number($("rpn").value),
+        pmId:
+            pmRecord?.pmId ||
+            PM_ID,
 
-    cause: cause?.cause || "",
-    causeId: cause?.causeId || "",
+        equipmentType:
+            pmRecord?.equipmentType ||
+            "",
 
-    remedy: remedy?.remedy || "",
-    /* Description, NOT remedy code. */
-    remedyId: remedy?.remedyId || "",
+        assetTag:
+            pmRecord?.assetTag ||
+            "",
 
-    savedAt: new Date().toISOString()
-  };
+        asset:
+            pmRecord?.asset ||
+            "",
+
+        failureClass:
+            pmRecord?.failureClass ||
+            "",
+
+        failureClassId:
+            selectedClass()?.failureId ||
+            "",
+
+
+        problem:
+            $("problem").value,
+
+        problemId:
+            $("problemId").value,
+
+
+        severity:
+            $("severity").value === ""
+                ? null
+                : Number(
+                    $("severity").value
+                ),
+
+
+        occurrence:
+            $("occurrence").value === ""
+                ? null
+                : Number(
+                    $("occurrence").value
+                ),
+
+
+        detection:
+            $("detection").value === ""
+                ? null
+                : Number(
+                    $("detection").value
+                ),
+
+
+        rpn:
+            $("rpn").value === ""
+                ? null
+                : Number(
+                    $("rpn").value
+                ),
+
+
+        cause:
+            $("cause").value,
+
+        causeId:
+            $("causeId").value,
+
+
+        remedy:
+            $("remedy").value,
+
+        remedyId:
+            $("remedyId").value,
+
+
+        savedAt:
+            new Date().toISOString()
+    };
 }
+
+
+
+/* ============================================================
+   UPDATE JSON OUTPUT
+============================================================ */
 
 function updateJSON() {
-  $("jsonOutput").value = JSON.stringify(collectRecord(), null, 2);
+
+    $("jsonOutput").value =
+        JSON.stringify(
+            collectRecord(),
+            null,
+            2
+        );
 }
 
-function updateAll() {
-  updateRPN();
-  updateSummary();
-  updateJSON();
-}
 
-function clearAnalysisValues() {
-  ["problemId","severity","occurrence","detection","rpn","causeId","remedyId"]
-    .forEach(id => $(id).value = "");
 
-  $("summaryProblem").textContent = "—";
-  $("summaryCause").textContent = "—";
-  $("summaryRemedy").textContent = "—";
-  updateJSON();
-}
+/* ============================================================
+   CLEAR SELECTION
+============================================================ */
 
 function clearSelection() {
-  $("problem").value = "";
-  resetSelect("cause", "-- Select Cause --");
-  resetSelect("remedy", "-- Select Remedy --");
-  clearAnalysisValues();
+
+    $("problem").value =
+        "";
+
+
+    $("cause").innerHTML =
+        "";
+
+
+    $("cause").appendChild(
+        option(
+            "-- Select Cause --",
+            ""
+        )
+    );
+
+
+    $("remedy").innerHTML =
+        "";
+
+
+    $("remedy").appendChild(
+        option(
+            "-- Select Remedy --",
+            ""
+        )
+    );
+
+
+    clearDependentFields();
 }
+
+
+
+/* ============================================================
+   DOWNLOAD JSON
+============================================================ */
 
 function downloadJSON() {
-  const json = JSON.stringify(collectRecord(), null, 2);
-  const blob = new Blob([json], {type:"application/json;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "failure-analysis-" + (pmRecord?.pmId || PM_ID) + ".json";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+
+    updateJSON();
+
+
+    const blob =
+        new Blob(
+            [
+                $("jsonOutput").value
+            ],
+            {
+                type:
+                    "application/json;charset=utf-8"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const a =
+        document.createElement("a");
+
+
+    a.href = url;
+
+
+    a.download =
+        "failure-analysis-" +
+        (
+            pmRecord?.pmId ||
+            PM_ID
+        ) +
+        ".json";
+
+
+    a.click();
+
+
+    URL.revokeObjectURL(url);
 }
+
+
+
+/* ============================================================
+   COPY JSON
+============================================================ */
 
 async function copyJSON() {
-  updateJSON();
-  try {
-    await navigator.clipboard.writeText($("jsonOutput").value);
-    setStatus("Failure analysis JSON copied to clipboard.", "success");
-  } catch (error) {
-    $("jsonOutput").select();
-    document.execCommand("copy");
-    setStatus("Failure analysis JSON copied.", "success");
-  }
+
+    updateJSON();
+
+
+    try {
+
+        await navigator.clipboard
+            .writeText(
+                $("jsonOutput").value
+            );
+
+
+        setStatus(
+            "Failure analysis JSON copied to clipboard.",
+            "success"
+        );
+
+
+    } catch {
+
+        $("jsonOutput").select();
+
+        document.execCommand("copy");
+
+
+        setStatus(
+            "Failure analysis JSON copied.",
+            "success"
+        );
+    }
 }
+
+
+
+/* ============================================================
+   LOAD ALL DATA
+============================================================ */
 
 async function loadAll() {
-  if (!PM_ID) {
-    setStatus(
-      "No PM ID was found in the current URL. Open the application with ?pm=16059 (or another valid PM ID).",
-      "error"
-    );
-    return;
-  }
 
-  try {
-    setStatus("Loading PM " + PM_ID + " and its Failure Class...");
+    try {
 
-    const [pmData, failureData] = await Promise.all([
-      loadJSON(PM_URL),
-      loadJSON(FAILURE_URL)
-    ]);
+        setStatus(
+            "Loading PM data and failure catalog..."
+        );
 
-    pmRecord = unwrapPM(pmData);
-    failureCatalog = normalizeCatalog(failureData);
 
-    const fc = getFailureClass();
+        /*
+         * Load both JSON files.
+         *
+         * PM:
+         * ./data/[PM_ID]-data.json
+         *
+         * Failure catalog:
+         * ./failure-data.json
+         */
 
-    if (!pmRecord.failureClass) {
-      throw new Error("PM " + PM_ID + " does not contain a failureClass value.");
+        const [
+            pmData,
+            failureData
+        ] =
+            await Promise.all(
+                [
+                    loadJSON(PM_URL),
+                    loadJSON(FAILURE_URL)
+                ]
+            );
+
+
+        /*
+         * Convert PM JSON into one PM record.
+         */
+
+        pmRecord =
+            unwrapPM(pmData);
+
+
+        /*
+         * Normalize failure-data.json.
+         */
+
+        failureCatalog =
+            normalizeCatalog(
+                failureData
+            );
+
+
+        /*
+         * Find the failure class
+         * specified by the PM JSON.
+         */
+
+        const fc =
+            selectedClass();
+
+
+        if (!fc) {
+
+            throw new Error(
+                "Failure Class '" +
+                (
+                    pmRecord.failureClass ||
+                    ""
+                ) +
+                "' from PM " +
+                PM_ID +
+                " was not found in failure-data.json."
+            );
+        }
+
+
+        /*
+         * Fill PM information.
+         */
+
+        fillEquipment();
+
+
+        /*
+         * Populate the Problem dropdown
+         * based on the PM's failureClass.
+         */
+
+        populateProblems();
+
+
+        /*
+         * Show successful loading message.
+         */
+
+        setStatus(
+
+            "Loaded PM " +
+            (
+                pmRecord.pmId ||
+                PM_ID
+            ) +
+
+            ". Failure Class " +
+
+            fc.failureClass +
+
+            " (" +
+
+            fc.failureId +
+
+            ") is active. " +
+
+            fc.problems.length +
+
+            " problem(s) available.",
+
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        setStatus(
+            "Load error: " +
+            error.message,
+            "error"
+        );
+
     }
-
-    if (!fc) {
-      throw new Error(
-        "Failure Class '" + pmRecord.failureClass +
-        "' from PM " + PM_ID +
-        " was not found in failure-data.json."
-      );
-    }
-
-    fillPMContext();
-    populateProblems();
-
-    setStatus(
-      "PM " + PM_ID +
-      " loaded successfully. Failure Class " +
-      pmRecord.failureClass +
-      " is active; " +
-      (fc.problems || []).length +
-      " Problem(s) available.",
-      "success"
-    );
-  } catch (error) {
-    console.error("Dynamic Failure Analysis error:", error);
-    setStatus(
-      "Load error: " + error.message +
-      " | PM URL: " + PM_URL +
-      " | Failure catalog: " + FAILURE_URL,
-      "error"
-    );
-  }
 }
 
-$("problem").addEventListener("change", populateCauses);
-$("cause").addEventListener("change", populateRemedies);
-$("remedy").addEventListener("change", updateRemedy);
-$("saveBtn").addEventListener("click", downloadJSON);
-$("copyBtn").addEventListener("click", copyJSON);
-$("reloadBtn").addEventListener("click", loadAll);
-$("clearBtn").addEventListener("click", clearSelection);
+
+
+/* ============================================================
+   EVENT HANDLERS
+============================================================ */
+
+
+/*
+ * Problem selected
+ */
+
+$("problem")
+    .addEventListener(
+        "change",
+        populateCauses
+    );
+
+
+/*
+ * Cause selected
+ */
+
+$("cause")
+    .addEventListener(
+        "change",
+        populateRemedies
+    );
+
+
+/*
+ * Remedy selected
+ */
+
+$("remedy")
+    .addEventListener(
+        "change",
+        updateRemedy
+    );
+
+
+/*
+ * Manual field changes
+ */
+
+[
+    "problemId",
+    "severity",
+    "occurrence",
+    "detection",
+    "causeId",
+    "remedyId"
+]
+.forEach(
+    id => {
+
+        $(id)
+            .addEventListener(
+                "input",
+                () => {
+
+                    updateRPN();
+
+                    updateSummary();
+
+                    updateJSON();
+
+                }
+            );
+
+    }
+);
+
+
+/*
+ * Buttons
+ */
+
+$("saveBtn")
+    .addEventListener(
+        "click",
+        downloadJSON
+    );
+
+
+$("copyBtn")
+    .addEventListener(
+        "click",
+        copyJSON
+    );
+
+
+$("reloadBtn")
+    .addEventListener(
+        "click",
+        loadAll
+    );
+
+
+$("clearBtn")
+    .addEventListener(
+        "click",
+        clearSelection
+    );
+
+
+/* ============================================================
+   INITIAL LOAD
+============================================================ */
 
 loadAll();
+
 </script>
+
 </body>
 </html>
