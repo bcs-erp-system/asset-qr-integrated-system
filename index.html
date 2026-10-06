@@ -1063,10 +1063,12 @@ textarea {
 
     <nav id="nav-menu" class="nav-menu">
 
-        <a href="./failure-analysis.html" data-menu-action="page">
-            <span class="menu-icon" aria-hidden="true">🔧</span>
-            <span class="menu-label">Maintenance</span>
-        </a>
+        <a id="maintenance-link"
+   href="./failure-analysis.html"
+   data-menu-action="page">
+    <span class="menu-icon" aria-hidden="true">🔧</span>
+    <span class="menu-label">Maintenance</span>
+	</a>
 
         <a href="./event-tracking.html" data-menu-action="page">
             <span class="menu-icon" aria-hidden="true">📊</span>
@@ -4911,6 +4913,35 @@ function clearExecutionForm() {
         ]
     );
 }
+
+
+/* ============================================================
+   open FailureAnalysis form
+============================================================ */
+
+
+function openFailureAnalysis() {
+    const params = new URLSearchParams(window.location.search);
+    const pmId = params.get("pm");
+
+    if (!pmId) {
+        alert("PM ID is missing from the current URL.");
+        return;
+    }
+
+    window.location.href =
+        "failure-analysis.html?pm=" +
+        encodeURIComponent(pmId);
+}
+
+/* ============================================================
+   Maintenance menu
+============================================================ */
+
+document.getElementById("maintenance-link").addEventListener("click", function (event) {
+    event.preventDefault();
+    openFailureAnalysis();
+});
 
 
 /* ============================================================
