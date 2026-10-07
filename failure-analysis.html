@@ -5,114 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dynamic Failure Analysis</title>
 <style>
-/* ============================================================
-   FAILURE ANALYSIS FORM
-============================================================ */
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6fa;color:#1f2937}
+.container{max-width:1200px;margin:25px auto;padding:0 16px}
+.header{background:#123b63;color:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 4px 15px rgba(0,0,0,.12)}
+.header h1{margin:0 0 6px;font-size:25px}.header p{margin:0;opacity:.9}
+.card{background:#fff;border-radius:12px;padding:20px;margin-top:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.field{display:flex;flex-direction:column;gap:6px}.field label{font-weight:700;font-size:13px;color:#374151}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+input.readonly{background:#f8fafc}
+.badge{display:inline-block;padding:7px 12px;border-radius:20px;background:#dbeafe;color:#1e40af;font-weight:700}
+.section-title{margin:0 0 15px;font-size:18px;color:#123b63}
 
-.failure-grid {
-    display: grid;
-    grid-template-columns: 1.6fr 1.1fr 0.65fr;
-    column-gap: 38px;
-    row-gap: 12px;
-    align-items: start;
-}
+/* Analysis Grid & Last Row Middle RPN Layout */
+.analysis-grid{display:grid;grid-template-columns:2fr 2fr 1fr;gap:20px;align-items:start}
+.rpn-middle{grid-column:2;margin-top:10px}
 
-.failure-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.failure-field label {
-    font-weight: 700;
-    font-size: 13px;
-    color: #374151;
-}
-
-.failure-field input,
-.failure-field select {
-    width: 100%;
-    height: 43px;
-    padding: 9px 13px;
-    border: 1px solid #cbd5e1;
-    border-radius: 7px;
-    background: #fff;
-    color: #111827;
-    font: inherit;
-}
-
-.failure-field input:focus,
-.failure-field select:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-}
-
-/* Automatically populated ID fields */
-.failure-id {
-    background: #f8fafc !important;
-}
-
-/* Numeric fields */
-.failure-number {
-    text-align: center;
-    font-weight: 700;
-}
-
-/* RPN */
-.rpn-field {
-    grid-column: 2;
-    margin-top: 38px;
-}
-
-.rpn-field label {
-    color: #f97316;
-}
-
-.rpn-field input {
-    text-align: center;
-    font-size: 20px;
-    font-weight: 700;
-    border-color: #f97316;
-    background: #f8fafc;
-}
-
-/* Help text */
-.failure-help {
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 0;
-    line-height: 1.3;
-}
-
-
-/* ============================================================
-   RESPONSIVE
-============================================================ */
-
-@media (max-width: 800px) {
-
-    .failure-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-
-    .rpn-field {
-        grid-column: auto;
-        margin-top: 0;
-    }
-}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}
+.metric{padding:14px;border-radius:9px;background:#f8fafc;border-left:4px solid #2563eb}
+.metric strong{display:block;font-size:12px;color:#64748b;margin-bottom:4px}.metric span{font-size:22px;font-weight:700}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+button{border:0;border-radius:7px;padding:11px 16px;font-weight:700;cursor:pointer}
+.primary{background:#2563eb;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:#fff}
+.status{margin-top:12px;padding:10px;border-radius:7px;background:#f1f5f9;color:#334155}
+.error{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}
+.help{font-size:12px;color:#64748b;margin-top:5px}
+@media(max-width:900px){.analysis-grid,.metrics{grid-template-columns:1fr}.container{margin-top:10px}}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <h1>Dynamic Failure Analysis</h1>
-    <p>Failure analysis is automatically filtered from the <b>Failure Class</b> of the PM currently specified in the URL.</p>
+    <p>Failure analysis is automatically filtered from the <b>Failure Class</b> of the PM currently specified in the URL[cite: 1].</p>
   </div>
 
   <div class="card">
-    <div class="pmbar">
+    <div class="pmbar grid">
       <div class="field"><label>Current PM ID</label><input id="pmId" class="readonly" readonly></div>
       <div class="field"><label>Failure Class</label><input id="failureClass" class="readonly" readonly></div>
       <div class="field"><label>Asset</label><input id="asset" class="readonly" readonly></div>
@@ -124,6 +55,7 @@
     <h2 class="section-title">Failure Analysis</h2>
 
     <div class="analysis-grid">
+      <!-- Row 1: Problem -->
       <div class="field">
         <label>Problem</label>
         <select id="problem" disabled><option value="">-- Select Problem --</option></select>
@@ -140,6 +72,7 @@
         <input id="severity" class="score readonly" type="number" readonly>
       </div>
 
+      <!-- Row 2: Cause -->
       <div class="field">
         <label>Cause</label>
         <select id="cause" disabled><option value="">-- Select Cause --</option></select>
@@ -156,6 +89,7 @@
         <input id="occurrence" class="score readonly" type="number" readonly>
       </div>
 
+      <!-- Row 3: Remedy -->
       <div class="field">
         <label>Remedy</label>
         <select id="remedy" disabled><option value="">-- Select Remedy --</option></select>
@@ -171,23 +105,21 @@
         <label><b>Detection</b></label>
         <input id="detection" class="score readonly" type="number" readonly>
       </div>
-    </div>
 
-    <div class="rpn-row">
-      <div></div>
-      <div class="field rpn-box">
-        <label><b>RPN</b></label>
-        <input id="rpn" class="readonly" readonly>
+      <!-- Last Row, Middle Column (Column 2) for RPN -->
+      <div class="field rpn-middle">
+        <label style="text-align: center;"><b>RPN</b></label>
+        <input id="rpn" class="readonly" style="text-align: center; font-weight: bold; font-size: 18px;" readonly>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <h2 class="summary-title">Selected Failure Analysis</h2>
-    <div class="summary">
-      <div class="summary-item"><strong>Selected Problem</strong><span id="summaryProblem">—</span></div>
-      <div class="summary-item"><strong>Selected Cause</strong><span id="summaryCause">—</span></div>
-      <div class="summary-item"><strong>Selected Remedy</strong><span id="summaryRemedy">—</span></div>
+    <h2 class="section-title">Selected Failure Analysis</h2>
+    <div class="metrics">
+      <div class="metric"><strong>Selected Problem</strong><span id="summaryProblem">—</span></div>
+      <div class="metric"><strong>Selected Cause</strong><span id="summaryCause">—</span></div>
+      <div class="metric"><strong>Selected Remedy</strong><span id="summaryRemedy">—</span></div>
     </div>
 
     <div class="actions">
@@ -302,17 +234,6 @@ async function loadJSON(url) {
 
 function unwrapPM(data) {
 
-    /*
-     * Format:
-     *
-     * [
-     *   {
-     *      "pmId": "16059",
-     *      ...
-     *   }
-     * ]
-     */
-
     if (Array.isArray(data)) {
 
         if (!data.length) {
@@ -327,10 +248,6 @@ function unwrapPM(data) {
     }
 
 
-    /*
-     * Must be an object.
-     */
-
     if (
         !data ||
         typeof data !== "object"
@@ -343,17 +260,6 @@ function unwrapPM(data) {
     }
 
 
-    /*
-     * Format:
-     *
-     * {
-     *     "16059": {
-     *          "pmId": "16059",
-     *          ...
-     *     }
-     * }
-     */
-
     if (
         data[PM_ID] &&
         typeof data[PM_ID] === "object"
@@ -364,25 +270,12 @@ function unwrapPM(data) {
     }
 
 
-    /*
-     * Format:
-     *
-     * {
-     *     "pmId": "16059",
-     *     ...
-     * }
-     */
-
     if (data.pmId) {
 
         return data;
 
     }
 
-
-    /*
-     * Single wrapped object.
-     */
 
     const keys =
         Object.keys(data);
@@ -410,14 +303,6 @@ function unwrapPM(data) {
 
 function normalizeCatalog(data) {
 
-    /*
-     * Expected:
-     *
-     * {
-     *     "failureClasses": [...]
-     * }
-     */
-
     if (
         data &&
         Array.isArray(
@@ -428,15 +313,6 @@ function normalizeCatalog(data) {
         return data.failureClasses;
     }
 
-
-    /*
-     * Also support:
-     *
-     * [
-     *    {...},
-     *    {...}
-     * ]
-     */
 
     if (Array.isArray(data)) {
 
@@ -463,21 +339,6 @@ function getFailureClass() {
         )
         .trim()
         .toUpperCase();
-
-
-    console.log(
-        "PM failureClass:",
-        value
-    );
-
-
-    console.log(
-        "Available failure classes:",
-        failureCatalog.map(
-            item =>
-                item.failureClass
-        )
-    );
 
 
     return failureCatalog.find(
@@ -705,24 +566,12 @@ function populateProblems() {
             : [];
 
 
-    console.log(
-        "Problems loaded:",
-        problems
-    );
-
-
     problems.forEach(
         problem => {
 
             addOption(
 
                 select,
-
-                /*
-                 * Display:
-                 *
-                 * NOI — Noise
-                 */
 
                 String(
                     problem.problem || ""
@@ -731,12 +580,6 @@ function populateProblems() {
                 String(
                     problem.problemId || ""
                 ),
-
-                /*
-                 * Actual value:
-                 *
-                 * NOI
-                 */
 
                 String(
                     problem.problem || ""
@@ -777,12 +620,6 @@ function populateCauses() {
         findProblem(
             $("problem").value
         );
-
-
-    console.log(
-        "Selected problem:",
-        problem
-    );
 
 
     $("problemId").value =
@@ -884,12 +721,6 @@ function populateRemedies() {
         findCause(
             $("cause").value
         );
-
-
-    console.log(
-        "Selected cause:",
-        cause
-    );
 
 
     $("causeId").value =
@@ -1393,12 +1224,6 @@ async function copyJSON() {
 
 async function loadAll() {
 
-    /*
-     * Do NOT use a default PM ID.
-     *
-     * The form must always use the PM in the URL.
-     */
-
     if (!PM_ID) {
 
         setStatus(
@@ -1419,22 +1244,6 @@ async function loadAll() {
         );
 
 
-        console.log(
-            "PM URL:",
-            PM_URL
-        );
-
-
-        console.log(
-            "Failure URL:",
-            FAILURE_URL
-        );
-
-
-        /*
-         * Load both files.
-         */
-
         const [
             pmData,
             failureData
@@ -1451,41 +1260,17 @@ async function loadAll() {
         ]);
 
 
-        /*
-         * Convert PM JSON into PM record.
-         */
-
         pmRecord =
             unwrapPM(
                 pmData
             );
 
 
-        console.log(
-            "Loaded PM record:",
-            pmRecord
-        );
-
-
-        /*
-         * Load failure catalog.
-         */
-
         failureCatalog =
             normalizeCatalog(
                 failureData
             );
 
-
-        console.log(
-            "Failure catalog:",
-            failureCatalog
-        );
-
-
-        /*
-         * Find PM's failure class.
-         */
 
         const fc =
             getFailureClass();
@@ -1521,23 +1306,11 @@ async function loadAll() {
         }
 
 
-        /*
-         * Fill PM header.
-         */
-
         fillPMContext();
 
 
-        /*
-         * Populate Problem dropdown.
-         */
-
         populateProblems();
 
-
-        /*
-         * SUCCESS
-         */
 
         setStatus(
 
