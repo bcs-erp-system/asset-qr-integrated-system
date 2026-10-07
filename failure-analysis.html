@@ -7,372 +7,1572 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6fa;color:#1f2937}
-.container{max-width:1200px;margin:25px auto;padding:0 16px}
-.header{background:#123b63;color:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 4px 15px rgba(0,0,0,.12)}
-.header h1{margin:0 0 6px;font-size:25px}.header p{margin:0;opacity:.9}
-.card{background:#fff;border-radius:12px;padding:20px;margin-top:18px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.field{display:flex;flex-direction:column;gap:6px}.field label{font-weight:700;font-size:13px;color:#374151}
-input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font:inherit}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-input.readonly{background:#f8fafc}
-.badge{display:inline-block;padding:7px 12px;border-radius:20px;background:#dbeafe;color:#1e40af;font-weight:700}
-.section-title{margin:0 0 15px;font-size:18px;color:#123b63}
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}
-.metric{padding:14px;border-radius:9px;background:#f8fafc;border-left:4px solid #2563eb}
-.metric strong{display:block;font-size:12px;color:#64748b;margin-bottom:4px}.metric span{font-size:22px;font-weight:700}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.container{max-width:1250px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:18px;box-shadow:0 3px 14px rgba(0,0,0,.08)}
+.header{background:#123b63;color:#fff;border-radius:12px;padding:18px 22px;margin-bottom:18px}
+.header h1{margin:0 0 5px;font-size:24px}.header p{margin:0;opacity:.9}
+.pmbar{display:grid;grid-template-columns:120px 150px 1fr;gap:12px;align-items:end}
+.field{min-width:0}.field label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;text-transform:none}
+input,select{width:100%;height:42px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font:inherit;color:#111827}
+input:focus,select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.readonly{background:#f8fafc!important}
+.analysis-grid{display:grid;grid-template-columns:minmax(260px,1.7fr) minmax(260px,1.7fr) 150px;gap:14px 18px;align-items:end}
+.analysis-grid .field:nth-child(4){grid-column:3}
+.section-title{margin:0 0 16px;color:#123b63;font-size:18px}
+.score{font-weight:700;text-align:center;background:#f8fafc}
+.rpn-row{display:grid;grid-template-columns:1fr 150px;gap:18px;margin-top:14px;align-items:end}
+.rpn-box label{color:#b45309;font-weight:800}.rpn-box input{font-size:20px;font-weight:800;text-align:center;background:#fff7ed;border-color:#fdba74}
+.summary-title{margin:0 0 12px;font-size:16px;color:#123b63}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.summary-item{border:1px solid #dbe3ec;border-radius:8px;padding:12px;background:#f8fafc;min-height:66px}
+.summary-item strong{display:block;font-size:12px;color:#64748b;margin-bottom:6px}.summary-item span{font-weight:700;word-break:break-word}
+.status{padding:11px 13px;border-radius:8px;background:#f1f5f9;color:#334155;margin-top:15px;font-size:13px}
+.status.success{background:#dcfce7;color:#166534}.status.error{background:#fee2e2;color:#991b1b}.status.warning{background:#fef3c7;color:#92400e}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 button{border:0;border-radius:7px;padding:11px 16px;font-weight:700;cursor:pointer}
 .primary{background:#2563eb;color:#fff}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:#fff}
-.status{margin-top:12px;padding:10px;border-radius:7px;background:#f1f5f9;color:#334155}
-.error{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}
-.help{font-size:12px;color:#64748b;margin-top:5px}
-@media(max-width:800px){.grid,.metrics{grid-template-columns:1fr}.container{margin-top:10px}}
+textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;font:12px Consolas,monospace;background:#f8fafc}
+.help{font-size:11px;color:#64748b;margin-top:4px}
+@media(max-width:850px){.analysis-grid{grid-template-columns:1fr}.analysis-grid .field:nth-child(4){grid-column:auto}.pmbar,.rpn-row,.summary{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <h1>Dynamic Failure Analysis</h1>
-    <p>Failure analysis catalog is selected automatically from the equipment <b>failureClass</b>.</p>
+    <p>Failure analysis is automatically filtered from the <b>Failure Class</b> of the PM currently specified in the URL.</p>
   </div>
 
   <div class="card">
-    <h2 class="section-title">Equipment / PM Context</h2>
-    <div class="grid">
-      <div class="field"><label>PM ID</label><input id="pmId" class="readonly" readonly></div>
-      <div class="field"><label>Equipment Type</label><input id="equipmentType" class="readonly" readonly></div>
-      <div class="field"><label>Asset Tag</label><input id="assetTag" class="readonly" readonly></div>
-      <div class="field"><label>Asset</label><input id="asset" class="readonly" readonly></div>
+    <div class="pmbar">
+      <div class="field"><label>Current PM ID</label><input id="pmId" class="readonly" readonly></div>
       <div class="field"><label>Failure Class</label><input id="failureClass" class="readonly" readonly></div>
-      <div class="field"><label>Failure Class Description</label><input id="failureClassName" class="readonly" readonly></div>
+      <div class="field"><label>Asset</label><input id="asset" class="readonly" readonly></div>
     </div>
-    <div id="status" class="status">Loading PM and failure catalog...</div>
+    <div id="status" class="status">Loading current PM and failure catalog...</div>
   </div>
 
   <div class="card">
-    <h2 class="section-title">Failure Analysis Selection</h2>
-    <div class="grid">
+    <h2 class="section-title">Failure Analysis</h2>
+
+    <div class="analysis-grid">
       <div class="field">
         <label>Problem</label>
-        <select id="problem"><option value="">-- Select Problem --</option></select>
+        <select id="problem" disabled><option value="">-- Select Problem --</option></select>
       </div>
+
       <div class="field">
-        <label>Problem ID</label>
-        <input id="problemId">
-        <div class="help">Automatically populated from the selected Problem; editable if required.</div>
+        <label>ID</label>
+        <input id="problemId" class="readonly" readonly>
+        <div class="help">Automatically populated with the Problem description.</div>
       </div>
+
       <div class="field">
-        <label>SEVERITY</label>
-        <input id="severity" type="number" min="1" max="10">
+        <label><b>SEVERITY</b></label>
+        <input id="severity" class="score readonly" type="number" readonly>
       </div>
-      <div class="field">
-        <label>Occurrence</label>
-        <input id="occurrence" type="number" min="1" max="10">
-      </div>
-      <div class="field">
-        <label>Detection</label>
-        <input id="detection" type="number" min="1" max="10">
-      </div>
-      <div class="field">
-        <label>RPN</label>
-        <input id="rpn" class="readonly" readonly>
-      </div>
+
       <div class="field">
         <label>Cause</label>
-        <select id="cause"><option value="">-- Select Cause --</option></select>
+        <select id="cause" disabled><option value="">-- Select Cause --</option></select>
       </div>
+
       <div class="field">
-        <label>Cause ID</label>
-        <input id="causeId">
-        <div class="help">Automatically populated from the selected Cause.</div>
+        <label>ID</label>
+        <input id="causeId" class="readonly" readonly>
+        <div class="help">Automatically populated with the Cause description.</div>
       </div>
+
+      <div class="field">
+        <label><b>Occurrence</b></label>
+        <input id="occurrence" class="score readonly" type="number" readonly>
+      </div>
+
       <div class="field">
         <label>Remedy</label>
-        <select id="remedy"><option value="">-- Select Remedy --</option></select>
+        <select id="remedy" disabled><option value="">-- Select Remedy --</option></select>
       </div>
+
       <div class="field">
-        <label>Remedy ID</label>
-        <input id="remedyId">
-        <div class="help">Automatically populated from the selected Remedy.</div>
+        <label>ID</label>
+        <input id="remedyId" class="readonly" readonly>
+        <div class="help">Automatically populated with the Remedy description, not the code.</div>
+      </div>
+
+      <div class="field">
+        <label><b>Detection</b></label>
+        <input id="detection" class="score readonly" type="number" readonly>
       </div>
     </div>
 
-    <div class="metrics">
-      <div class="metric"><strong>Selected Problem</strong><span id="summaryProblem">—</span></div>
-      <div class="metric"><strong>Selected Cause</strong><span id="summaryCause">—</span></div>
-      <div class="metric"><strong>Selected Remedy</strong><span id="summaryRemedy">—</span></div>
+    <div class="rpn-row">
+      <div></div>
+      <div class="field rpn-box">
+        <label><b>RPN</b></label>
+        <input id="rpn" class="readonly" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="summary-title">Selected Failure Analysis</h2>
+    <div class="summary">
+      <div class="summary-item"><strong>Selected Problem</strong><span id="summaryProblem">—</span></div>
+      <div class="summary-item"><strong>Selected Cause</strong><span id="summaryCause">—</span></div>
+      <div class="summary-item"><strong>Selected Remedy</strong><span id="summaryRemedy">—</span></div>
     </div>
 
     <div class="actions">
       <button type="button" class="primary" id="saveBtn">Save Failure Analysis JSON</button>
       <button type="button" class="secondary" id="copyBtn">Copy JSON</button>
-      <button type="button" class="secondary" id="reloadBtn">Reload PM Data</button>
+      <button type="button" class="secondary" id="reloadBtn">Reload Current PM</button>
       <button type="button" class="danger" id="clearBtn">Clear Selection</button>
     </div>
   </div>
 
   <div class="card">
     <h2 class="section-title">Generated Record</h2>
-    <textarea id="jsonOutput" rows="16" readonly></textarea>
+    <textarea id="jsonOutput" rows="13" readonly></textarea>
   </div>
 </div>
 
 <script>
 "use strict";
 
-const PM_ID = new URLSearchParams(location.search).get("pm") || "2803";
-const PM_URL = "./data/" + encodeURIComponent(PM_ID) + "-data.json";
-const FAILURE_URL = "./failure-data.json";
+/* ============================================================
+   PM ID FROM URL
+   Example:
+   failure-analysis.html?pm=16059
+============================================================ */
+
+const params =
+    new URLSearchParams(window.location.search);
+
+const PM_ID =
+    String(params.get("pm") || "").trim();
+
+
+/* ============================================================
+   JSON FILES
+============================================================ */
+
+const PM_URL =
+    "./data/" +
+    encodeURIComponent(PM_ID) +
+    "-data.json";
+
+const FAILURE_URL =
+    "./failure-data.json";
+
 
 let pmRecord = null;
-let failureCatalog = null;
 
-const $ = id => document.getElementById(id);
+let failureCatalog = [];
 
-function setStatus(message, type="") {
-  const el = $("status");
-  el.textContent = message;
-  el.className = "status" + (type ? " " + type : "");
+
+/* ============================================================
+   HELPER
+============================================================ */
+
+const $ = id =>
+    document.getElementById(id);
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+function setStatus(message, type = "") {
+
+    const el = $("status");
+
+    if (!el) return;
+
+    el.textContent = message;
+
+    el.className =
+        "status" +
+        (type ? " " + type : "");
 }
+
+
+/* ============================================================
+   LOAD JSON
+============================================================ */
 
 async function loadJSON(url) {
-  const response = await fetch(url, {cache:"no-store"});
-  if (!response.ok) throw new Error(response.status + " " + response.statusText + ": " + url);
-  return response.json();
-}
 
-function unwrapPM(data) {
-  if (Array.isArray(data)) {
-    if (!data.length) throw new Error("PM JSON contains no records.");
-    return data[0];
-  }
-  if (!data || typeof data !== "object") throw new Error("Invalid PM JSON.");
-  if (data[PM_ID] && typeof data[PM_ID] === "object") return data[PM_ID];
+    const response =
+        await fetch(
+            url,
+            {
+                cache: "no-store"
+            }
+        );
 
-  const keys = Object.keys(data);
-  if (keys.length === 1 && data[keys[0]] && typeof data[keys[0]] === "object") {
-    return data[keys[0]];
-  }
-  return data;
-}
 
-function normalizeCatalog(data) {
-  if (data && Array.isArray(data.failureClasses)) return data.failureClasses;
-  if (Array.isArray(data)) return data;
-  throw new Error("Unsupported failure-data.json structure.");
-}
+    if (!response.ok) {
 
-function selectedClass() {
-  const fc = String(pmRecord?.failureClass || "").trim().toUpperCase();
-  return (failureCatalog || []).find(x => String(x.failureClass).toUpperCase() === fc);
-}
+        throw new Error(
+            response.status +
+            " " +
+            response.statusText +
+            " — " +
+            url
+        );
 
-function fillEquipment() {
-  $("pmId").value = pmRecord?.pmId || PM_ID;
-  $("equipmentType").value = pmRecord?.equipmentType || "";
-  $("assetTag").value = pmRecord?.assetTag || "";
-  $("asset").value = pmRecord?.asset || "";
-  $("failureClass").value = pmRecord?.failureClass || "";
-  $("failureClassName").value = selectedClass()?.failureId || "";
-}
-
-function option(text, value) {
-  const o = document.createElement("option");
-  o.value = value;
-  o.textContent = text;
-  return o;
-}
-
-function populateProblems() {
-  const sel = $("problem");
-  sel.innerHTML = "";
-  sel.appendChild(option("-- Select Problem --", ""));
-  const fc = selectedClass();
-  (fc?.problems || []).forEach(p => {
-    sel.appendChild(option(p.problem + " — " + p.problemId, p.problem));
-  });
-  $("cause").innerHTML = "";
-  $("cause").appendChild(option("-- Select Cause --", ""));
-  $("remedy").innerHTML = "";
-  $("remedy").appendChild(option("-- Select Remedy --", ""));
-  clearDependentFields();
-}
-
-function selectedProblem() {
-  return selectedClass()?.problems?.find(p => p.problem === $("problem").value);
-}
-
-function selectedCause() {
-  return selectedProblem()?.causes?.find(c => c.cause === $("cause").value);
-}
-
-function selectedRemedy() {
-  return selectedCause()?.remedies?.find(r => r.remedy === $("remedy").value);
-}
-
-function populateCauses() {
-  const p = selectedProblem();
-  $("problemId").value = p?.problemId || "";
-  $("severity").value = p?.severity ?? "";
-  $("occurrence").value = p?.occurrence ?? "";
-  $("detection").value = p?.detection ?? "";
-  $("cause").innerHTML = "";
-  $("cause").appendChild(option("-- Select Cause --", ""));
-  (p?.causes || []).forEach(c => {
-    $("cause").appendChild(option(c.cause + " — " + c.causeId, c.cause));
-  });
-  $("remedy").innerHTML = "";
-  $("remedy").appendChild(option("-- Select Remedy --", ""));
-  $("causeId").value = "";
-  $("remedyId").value = "";
-  updateRPN();
-  updateSummary();
-  updateJSON();
-}
-
-function populateRemedies() {
-  const c = selectedCause();
-  $("causeId").value = c?.causeId || "";
-  $("remedy").innerHTML = "";
-  $("remedy").appendChild(option("-- Select Remedy --", ""));
-  (c?.remedies || []).forEach(r => {
-    $("remedy").appendChild(option(r.remedy + " — " + r.remedyId, r.remedy));
-  });
-  $("remedyId").value = "";
-  updateSummary();
-  updateJSON();
-}
-
-function updateRemedy() {
-  const r = selectedRemedy();
-  $("remedyId").value = r?.remedyId || "";
-  updateSummary();
-  updateJSON();
-}
-
-function clearDependentFields() {
-  ["problemId","severity","occurrence","detection","rpn","causeId","remedyId"].forEach(id => $(id).value = "");
-  $("summaryProblem").textContent = "—";
-  $("summaryCause").textContent = "—";
-  $("summaryRemedy").textContent = "—";
-  updateJSON();
-}
-
-function updateRPN() {
-  const s = Number($("severity").value);
-  const o = Number($("occurrence").value);
-  const d = Number($("detection").value);
-  $("rpn").value = s && o && d ? s * o * d : "";
-}
-
-function updateSummary() {
-  $("summaryProblem").textContent = $("problem").value || "—";
-  $("summaryCause").textContent = $("cause").value || "—";
-  $("summaryRemedy").textContent = $("remedy").value || "—";
-}
-
-function collectRecord() {
-  return {
-    pmId: pmRecord?.pmId || PM_ID,
-    equipmentType: pmRecord?.equipmentType || "",
-    assetTag: pmRecord?.assetTag || "",
-    asset: pmRecord?.asset || "",
-    failureClass: pmRecord?.failureClass || "",
-    failureClassId: selectedClass()?.failureId || "",
-    problem: $("problem").value,
-    problemId: $("problemId").value,
-    severity: $("severity").value === "" ? null : Number($("severity").value),
-    occurrence: $("occurrence").value === "" ? null : Number($("occurrence").value),
-    detection: $("detection").value === "" ? null : Number($("detection").value),
-    rpn: $("rpn").value === "" ? null : Number($("rpn").value),
-    cause: $("cause").value,
-    causeId: $("causeId").value,
-    remedy: $("remedy").value,
-    remedyId: $("remedyId").value,
-    savedAt: new Date().toISOString()
-  };
-}
-
-function updateJSON() {
-  $("jsonOutput").value = JSON.stringify(collectRecord(), null, 2);
-}
-
-function clearSelection() {
-  $("problem").value = "";
-  $("cause").innerHTML = "";
-  $("cause").appendChild(option("-- Select Cause --", ""));
-  $("remedy").innerHTML = "";
-  $("remedy").appendChild(option("-- Select Remedy --", ""));
-  clearDependentFields();
-}
-
-function downloadJSON() {
-  updateJSON();
-  const blob = new Blob([$("jsonOutput").value], {type:"application/json;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "failure-analysis-" + (pmRecord?.pmId || PM_ID) + ".json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-async function copyJSON() {
-  updateJSON();
-  try {
-    await navigator.clipboard.writeText($("jsonOutput").value);
-    setStatus("Failure analysis JSON copied to clipboard.", "success");
-  } catch {
-    $("jsonOutput").select();
-    document.execCommand("copy");
-    setStatus("Failure analysis JSON copied.", "success");
-  }
-}
-
-async function loadAll() {
-  try {
-    setStatus("Loading PM data and failure catalog...");
-    const [pmData, failureData] = await Promise.all([
-      loadJSON(PM_URL),
-      loadJSON(FAILURE_URL)
-    ]);
-
-    pmRecord = unwrapPM(pmData);
-    failureCatalog = normalizeCatalog(failureData);
-
-    const fc = selectedClass();
-    if (!fc) {
-      throw new Error("Failure class '" + (pmRecord.failureClass || "") + "' was not found in failure-data.json.");
     }
 
-    fillEquipment();
-    populateProblems();
-    setStatus(
-      "Loaded PM " + (pmRecord.pmId || PM_ID) +
-      ". Failure Class " + fc.failureClass +
-      " (" + fc.failureId + ") is active. " +
-      fc.problems.length + " problem(s) available.",
-      "success"
-    );
-  } catch (error) {
-    console.error(error);
-    setStatus("Load error: " + error.message, "error");
-  }
+
+    return response.json();
 }
 
-$("problem").addEventListener("change", populateCauses);
-$("cause").addEventListener("change", populateRemedies);
-$("remedy").addEventListener("change", updateRemedy);
-["problemId","severity","occurrence","detection","causeId","remedyId"].forEach(id => {
-  $(id).addEventListener("input", () => { updateRPN(); updateSummary(); updateJSON(); });
-});
-$("saveBtn").addEventListener("click", downloadJSON);
-$("copyBtn").addEventListener("click", copyJSON);
-$("reloadBtn").addEventListener("click", loadAll);
-$("clearBtn").addEventListener("click", clearSelection);
+
+/* ============================================================
+   UNWRAP PM JSON
+============================================================ */
+
+function unwrapPM(data) {
+
+    /*
+     * Format:
+     *
+     * [
+     *   {
+     *      "pmId": "16059",
+     *      ...
+     *   }
+     * ]
+     */
+
+    if (Array.isArray(data)) {
+
+        if (!data.length) {
+
+            throw new Error(
+                "PM JSON contains no records."
+            );
+
+        }
+
+        return data[0];
+    }
+
+
+    /*
+     * Must be an object.
+     */
+
+    if (
+        !data ||
+        typeof data !== "object"
+    ) {
+
+        throw new Error(
+            "Invalid PM JSON structure."
+        );
+
+    }
+
+
+    /*
+     * Format:
+     *
+     * {
+     *     "16059": {
+     *          "pmId": "16059",
+     *          ...
+     *     }
+     * }
+     */
+
+    if (
+        data[PM_ID] &&
+        typeof data[PM_ID] === "object"
+    ) {
+
+        return data[PM_ID];
+
+    }
+
+
+    /*
+     * Format:
+     *
+     * {
+     *     "pmId": "16059",
+     *     ...
+     * }
+     */
+
+    if (data.pmId) {
+
+        return data;
+
+    }
+
+
+    /*
+     * Single wrapped object.
+     */
+
+    const keys =
+        Object.keys(data);
+
+
+    if (
+        keys.length === 1 &&
+        data[keys[0]] &&
+        typeof data[keys[0]] === "object" &&
+        !Array.isArray(data[keys[0]])
+    ) {
+
+        return data[keys[0]];
+
+    }
+
+
+    return data;
+}
+
+
+/* ============================================================
+   FAILURE CATALOG
+============================================================ */
+
+function normalizeCatalog(data) {
+
+    /*
+     * Expected:
+     *
+     * {
+     *     "failureClasses": [...]
+     * }
+     */
+
+    if (
+        data &&
+        Array.isArray(
+            data.failureClasses
+        )
+    ) {
+
+        return data.failureClasses;
+    }
+
+
+    /*
+     * Also support:
+     *
+     * [
+     *    {...},
+     *    {...}
+     * ]
+     */
+
+    if (Array.isArray(data)) {
+
+        return data;
+    }
+
+
+    throw new Error(
+        "Unsupported failure-data.json structure. " +
+        "Expected failureClasses[]."
+    );
+}
+
+
+/* ============================================================
+   GET FAILURE CLASS FOR CURRENT PM
+============================================================ */
+
+function getFailureClass() {
+
+    const value =
+        String(
+            pmRecord?.failureClass || ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    console.log(
+        "PM failureClass:",
+        value
+    );
+
+
+    console.log(
+        "Available failure classes:",
+        failureCatalog.map(
+            item =>
+                item.failureClass
+        )
+    );
+
+
+    return failureCatalog.find(
+        item =>
+
+            String(
+                item.failureClass || ""
+            )
+            .trim()
+            .toUpperCase() === value
+
+    ) || null;
+}
+
+
+/* ============================================================
+   FIND PROBLEM
+============================================================ */
+
+function findProblem(code) {
+
+    const fc =
+        getFailureClass();
+
+
+    return (
+        fc?.problems || []
+    )
+    .find(
+        p =>
+
+            String(
+                p.problem || ""
+            )
+            .trim()
+            .toUpperCase() ===
+
+            String(
+                code || ""
+            )
+            .trim()
+            .toUpperCase()
+    ) || null;
+}
+
+
+/* ============================================================
+   FIND CAUSE
+============================================================ */
+
+function findCause(code) {
+
+    const problem =
+        findProblem(
+            $("problem").value
+        );
+
+
+    return (
+        problem?.causes || []
+    )
+    .find(
+        c =>
+
+            String(
+                c.cause || ""
+            )
+            .trim()
+            .toUpperCase() ===
+
+            String(
+                code || ""
+            )
+            .trim()
+            .toUpperCase()
+
+    ) || null;
+}
+
+
+/* ============================================================
+   FIND REMEDY
+============================================================ */
+
+function findRemedy(code) {
+
+    const cause =
+        findCause(
+            $("cause").value
+        );
+
+
+    return (
+        cause?.remedies || []
+    )
+    .find(
+        r =>
+
+            String(
+                r.remedy || ""
+            )
+            .trim()
+            .toUpperCase() ===
+
+            String(
+                code || ""
+            )
+            .trim()
+            .toUpperCase()
+
+    ) || null;
+}
+
+
+/* ============================================================
+   OPTION HELPER
+============================================================ */
+
+function addOption(
+    select,
+    text,
+    value
+) {
+
+    const option =
+        document.createElement(
+            "option"
+        );
+
+
+    option.value =
+        value;
+
+
+    option.textContent =
+        text;
+
+
+    select.appendChild(
+        option
+    );
+}
+
+
+/* ============================================================
+   RESET SELECT
+============================================================ */
+
+function resetSelect(
+    id,
+    placeholder
+) {
+
+    const select =
+        $(id);
+
+
+    select.innerHTML =
+        "";
+
+
+    addOption(
+        select,
+        placeholder,
+        ""
+    );
+
+
+    select.disabled =
+        true;
+}
+
+
+/* ============================================================
+   FILL PM INFORMATION
+============================================================ */
+
+function fillPMContext() {
+
+    $("pmId").value =
+        pmRecord?.pmId ||
+        PM_ID;
+
+
+    $("failureClass").value =
+        pmRecord?.failureClass ||
+        "";
+
+
+    $("asset").value =
+        pmRecord?.asset ||
+        pmRecord?.assetTag ||
+        "";
+}
+
+
+/* ============================================================
+   POPULATE PROBLEMS
+============================================================ */
+
+function populateProblems() {
+
+    const select =
+        $("problem");
+
+
+    select.innerHTML =
+        "";
+
+
+    addOption(
+        select,
+        "-- Select Problem --",
+        ""
+    );
+
+
+    const fc =
+        getFailureClass();
+
+
+    const problems =
+        Array.isArray(fc?.problems)
+            ? fc.problems
+            : [];
+
+
+    console.log(
+        "Problems loaded:",
+        problems
+    );
+
+
+    problems.forEach(
+        problem => {
+
+            addOption(
+
+                select,
+
+                /*
+                 * Display:
+                 *
+                 * NOI — Noise
+                 */
+
+                String(
+                    problem.problem || ""
+                ) +
+                " — " +
+                String(
+                    problem.problemId || ""
+                ),
+
+                /*
+                 * Actual value:
+                 *
+                 * NOI
+                 */
+
+                String(
+                    problem.problem || ""
+                )
+            );
+
+        }
+    );
+
+
+    select.disabled =
+        problems.length === 0;
+
+
+    resetSelect(
+        "cause",
+        "-- Select Cause --"
+    );
+
+
+    resetSelect(
+        "remedy",
+        "-- Select Remedy --"
+    );
+
+
+    clearAnalysisValues();
+}
+
+
+/* ============================================================
+   POPULATE CAUSES
+============================================================ */
+
+function populateCauses() {
+
+    const problem =
+        findProblem(
+            $("problem").value
+        );
+
+
+    console.log(
+        "Selected problem:",
+        problem
+    );
+
+
+    $("problemId").value =
+        problem?.problemId ||
+        "";
+
+
+    $("severity").value =
+        problem?.severity ??
+        "";
+
+
+    $("occurrence").value =
+        problem?.occurrence ??
+        "";
+
+
+    $("detection").value =
+        problem?.detection ??
+        "";
+
+
+    const causeSelect =
+        $("cause");
+
+
+    causeSelect.innerHTML =
+        "";
+
+
+    addOption(
+        causeSelect,
+        "-- Select Cause --",
+        ""
+    );
+
+
+    const causes =
+        Array.isArray(
+            problem?.causes
+        )
+            ? problem.causes
+            : [];
+
+
+    causes.forEach(
+        cause => {
+
+            addOption(
+
+                causeSelect,
+
+                String(
+                    cause.cause || ""
+                ) +
+                " — " +
+                String(
+                    cause.causeId || ""
+                ),
+
+                String(
+                    cause.cause || ""
+                )
+            );
+
+        }
+    );
+
+
+    causeSelect.disabled =
+        causes.length === 0;
+
+
+    resetSelect(
+        "remedy",
+        "-- Select Remedy --"
+    );
+
+
+    $("causeId").value =
+        "";
+
+
+    $("remedyId").value =
+        "";
+
+
+    updateAll();
+}
+
+
+/* ============================================================
+   POPULATE REMEDIES
+============================================================ */
+
+function populateRemedies() {
+
+    const cause =
+        findCause(
+            $("cause").value
+        );
+
+
+    console.log(
+        "Selected cause:",
+        cause
+    );
+
+
+    $("causeId").value =
+        cause?.causeId ||
+        "";
+
+
+    const remedySelect =
+        $("remedy");
+
+
+    remedySelect.innerHTML =
+        "";
+
+
+    addOption(
+        remedySelect,
+        "-- Select Remedy --",
+        ""
+    );
+
+
+    const remedies =
+        Array.isArray(
+            cause?.remedies
+        )
+            ? cause.remedies
+            : [];
+
+
+    remedies.forEach(
+        remedy => {
+
+            addOption(
+
+                remedySelect,
+
+                String(
+                    remedy.remedy || ""
+                ) +
+                " — " +
+                String(
+                    remedy.remedyId || ""
+                ),
+
+                String(
+                    remedy.remedy || ""
+                )
+            );
+
+        }
+    );
+
+
+    remedySelect.disabled =
+        remedies.length === 0;
+
+
+    $("remedyId").value =
+        "";
+
+
+    updateAll();
+}
+
+
+/* ============================================================
+   UPDATE REMEDY
+============================================================ */
+
+function updateRemedy() {
+
+    const remedy =
+        findRemedy(
+            $("remedy").value
+        );
+
+
+    $("remedyId").value =
+        remedy?.remedyId ||
+        "";
+
+
+    updateAll();
+}
+
+
+/* ============================================================
+   RPN
+============================================================ */
+
+function updateRPN() {
+
+    const severity =
+        Number(
+            $("severity").value
+        );
+
+
+    const occurrence =
+        Number(
+            $("occurrence").value
+        );
+
+
+    const detection =
+        Number(
+            $("detection").value
+        );
+
+
+    $("rpn").value =
+
+        severity > 0 &&
+        occurrence > 0 &&
+        detection > 0
+
+            ? severity *
+              occurrence *
+              detection
+
+            : "";
+}
+
+
+/* ============================================================
+   SUMMARY
+============================================================ */
+
+function updateSummary() {
+
+    const problem =
+        findProblem(
+            $("problem").value
+        );
+
+
+    const cause =
+        findCause(
+            $("cause").value
+        );
+
+
+    const remedy =
+        findRemedy(
+            $("remedy").value
+        );
+
+
+    $("summaryProblem")
+        .textContent =
+
+        problem
+            ? problem.problem +
+              " — " +
+              problem.problemId
+
+            : "—";
+
+
+    $("summaryCause")
+        .textContent =
+
+        cause
+            ? cause.cause +
+              " — " +
+              cause.causeId
+
+            : "—";
+
+
+    $("summaryRemedy")
+        .textContent =
+
+        remedy
+            ? remedy.remedy +
+              " — " +
+              remedy.remedyId
+
+            : "—";
+}
+
+
+/* ============================================================
+   COLLECT RECORD
+============================================================ */
+
+function collectRecord() {
+
+    const problem =
+        findProblem(
+            $("problem").value
+        );
+
+
+    const cause =
+        findCause(
+            $("cause").value
+        );
+
+
+    const remedy =
+        findRemedy(
+            $("remedy").value
+        );
+
+
+    return {
+
+        pmId:
+            pmRecord?.pmId ||
+            PM_ID,
+
+
+        asset:
+            pmRecord?.asset ||
+            "",
+
+
+        assetTag:
+            pmRecord?.assetTag ||
+            "",
+
+
+        equipmentType:
+            pmRecord?.equipmentType ||
+            "",
+
+
+        failureClass:
+            pmRecord?.failureClass ||
+            "",
+
+
+        problem:
+            problem?.problem ||
+            "",
+
+
+        problemId:
+            problem?.problemId ||
+            "",
+
+
+        severity:
+            problem?.severity ??
+            null,
+
+
+        occurrence:
+            problem?.occurrence ??
+            null,
+
+
+        detection:
+            problem?.detection ??
+            null,
+
+
+        rpn:
+            $("rpn").value === ""
+                ? null
+                : Number(
+                    $("rpn").value
+                ),
+
+
+        cause:
+            cause?.cause ||
+            "",
+
+
+        causeId:
+            cause?.causeId ||
+            "",
+
+
+        remedy:
+            remedy?.remedy ||
+            "",
+
+
+        remedyId:
+            remedy?.remedyId ||
+            "",
+
+
+        savedAt:
+            new Date().toISOString()
+
+    };
+}
+
+
+/* ============================================================
+   UPDATE JSON
+============================================================ */
+
+function updateJSON() {
+
+    $("jsonOutput").value =
+        JSON.stringify(
+            collectRecord(),
+            null,
+            2
+        );
+}
+
+
+/* ============================================================
+   UPDATE ALL
+============================================================ */
+
+function updateAll() {
+
+    updateRPN();
+
+    updateSummary();
+
+    updateJSON();
+}
+
+
+/* ============================================================
+   CLEAR
+============================================================ */
+
+function clearAnalysisValues() {
+
+    [
+        "problemId",
+        "severity",
+        "occurrence",
+        "detection",
+        "rpn",
+        "causeId",
+        "remedyId"
+    ]
+    .forEach(
+        id => {
+
+            $(id).value =
+                "";
+
+        }
+    );
+
+
+    $("summaryProblem")
+        .textContent = "—";
+
+
+    $("summaryCause")
+        .textContent = "—";
+
+
+    $("summaryRemedy")
+        .textContent = "—";
+
+
+    updateJSON();
+}
+
+
+/* ============================================================
+   CLEAR SELECTION
+============================================================ */
+
+function clearSelection() {
+
+    $("problem").value =
+        "";
+
+
+    resetSelect(
+        "cause",
+        "-- Select Cause --"
+    );
+
+
+    resetSelect(
+        "remedy",
+        "-- Select Remedy --"
+    );
+
+
+    clearAnalysisValues();
+}
+
+
+/* ============================================================
+   DOWNLOAD JSON
+============================================================ */
+
+function downloadJSON() {
+
+    const json =
+        JSON.stringify(
+            collectRecord(),
+            null,
+            2
+        );
+
+
+    const blob =
+        new Blob(
+            [json],
+            {
+                type:
+                    "application/json;charset=utf-8"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        "failure-analysis-" +
+        (
+            pmRecord?.pmId ||
+            PM_ID
+        ) +
+        ".json";
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+}
+
+
+/* ============================================================
+   COPY JSON
+============================================================ */
+
+async function copyJSON() {
+
+    updateJSON();
+
+
+    try {
+
+        await navigator.clipboard
+            .writeText(
+                $("jsonOutput").value
+            );
+
+
+        setStatus(
+            "Failure analysis JSON copied to clipboard.",
+            "success"
+        );
+
+
+    } catch {
+
+        $("jsonOutput").select();
+
+        document.execCommand(
+            "copy"
+        );
+
+
+        setStatus(
+            "Failure analysis JSON copied.",
+            "success"
+        );
+
+    }
+}
+
+
+/* ============================================================
+   LOAD ALL DATA
+============================================================ */
+
+async function loadAll() {
+
+    /*
+     * Do NOT use a default PM ID.
+     *
+     * The form must always use the PM in the URL.
+     */
+
+    if (!PM_ID) {
+
+        setStatus(
+            "No PM ID found in URL. Example: failure-analysis.html?pm=16059",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        setStatus(
+            "Loading PM " +
+            PM_ID +
+            " and failure catalog..."
+        );
+
+
+        console.log(
+            "PM URL:",
+            PM_URL
+        );
+
+
+        console.log(
+            "Failure URL:",
+            FAILURE_URL
+        );
+
+
+        /*
+         * Load both files.
+         */
+
+        const [
+            pmData,
+            failureData
+        ] = await Promise.all([
+
+            loadJSON(
+                PM_URL
+            ),
+
+            loadJSON(
+                FAILURE_URL
+            )
+
+        ]);
+
+
+        /*
+         * Convert PM JSON into PM record.
+         */
+
+        pmRecord =
+            unwrapPM(
+                pmData
+            );
+
+
+        console.log(
+            "Loaded PM record:",
+            pmRecord
+        );
+
+
+        /*
+         * Load failure catalog.
+         */
+
+        failureCatalog =
+            normalizeCatalog(
+                failureData
+            );
+
+
+        console.log(
+            "Failure catalog:",
+            failureCatalog
+        );
+
+
+        /*
+         * Find PM's failure class.
+         */
+
+        const fc =
+            getFailureClass();
+
+
+        if (!pmRecord.failureClass) {
+
+            throw new Error(
+                "PM " +
+                PM_ID +
+                " does not contain a failureClass value."
+            );
+
+        }
+
+
+        if (!fc) {
+
+            throw new Error(
+
+                "Failure Class '" +
+
+                pmRecord.failureClass +
+
+                "' from PM " +
+
+                PM_ID +
+
+                " was not found in failure-data.json."
+
+            );
+
+        }
+
+
+        /*
+         * Fill PM header.
+         */
+
+        fillPMContext();
+
+
+        /*
+         * Populate Problem dropdown.
+         */
+
+        populateProblems();
+
+
+        /*
+         * SUCCESS
+         */
+
+        setStatus(
+
+            "PM " +
+            PM_ID +
+
+            " loaded successfully. " +
+
+            "Failure Class: " +
+
+            pmRecord.failureClass +
+
+            ". " +
+
+            (
+                fc.problems || []
+            ).length +
+
+            " problem(s) available.",
+
+            "success"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Failure Analysis loading error:",
+            error
+        );
+
+
+        setStatus(
+
+            "Load error: " +
+            error.message,
+
+            "error"
+        );
+
+    }
+}
+
+
+/* ============================================================
+   EVENTS
+============================================================ */
+
+$("problem")
+    .addEventListener(
+        "change",
+        populateCauses
+    );
+
+
+$("cause")
+    .addEventListener(
+        "change",
+        populateRemedies
+    );
+
+
+$("remedy")
+    .addEventListener(
+        "change",
+        updateRemedy
+    );
+
+
+$("saveBtn")
+    .addEventListener(
+        "click",
+        downloadJSON
+    );
+
+
+$("copyBtn")
+    .addEventListener(
+        "click",
+        copyJSON
+    );
+
+
+$("reloadBtn")
+    .addEventListener(
+        "click",
+        loadAll
+    );
+
+
+$("clearBtn")
+    .addEventListener(
+        "click",
+        clearSelection
+    );
+
+
+/* ============================================================
+   START
+============================================================ */
 
 loadAll();
+
 </script>
 </body>
 </html>
