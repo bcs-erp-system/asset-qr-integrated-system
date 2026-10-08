@@ -1671,46 +1671,123 @@ function fillSelect(id, arr){
   }
 
 
-/* --- Auto Load CSV File --- */
-function autoLoadCSV() {
-  // Show loading status
-  showCSVStatus('loading', 'Loading CSV data from server...');
-  
-  // Try to fetch and load data.csv from the same directory
-  fetch('data.csv')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('CSV file not found');
-      }
-      return response.text();
-    })
-    .then(csvText => {
-      // Parse and load the CSV data
-      parseCSVText(csvText);
-      populateDropdownsFromCsv();
-      buildTreeFromCsv();
-      
-      // Save to localStorage for future sessions
-      localStorage.setItem('csvRaw', csvText);
-      
-      showCSVStatus('success', 'CSV data loaded successfully from data.csv');
-      console.log('CSV data loaded automatically from data.csv');
-    })
-    .catch(error => {
-      console.log('Could not auto-load data.csv:', error.message);
-      // If auto-load fails, check if we have saved CSV data
-      const savedCSV = localStorage.getItem('csvRaw');
-      if (savedCSV) {
-        parseCSVText(savedCSV);
+/* =========================================================
+   AUTO LOAD DataSources.csv FROM GITHUB PAGES
+   ========================================================= */
+
+async function autoLoadCSV() {
+    showCSVStatus('loading', 'Loading DataSources.csv...');
+
+    try {
+        // DataSources.csv is in the same folder as this HTML file
+        const csvUrl = 'DataSources.csv';
+
+        const response = await fetch(csvUrl, {
+            cache: 'no-store'
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `DataSources.csv could not be loaded. HTTP ${response.status}`
+            );
+        }
+
+        const csvText = await response.text();
+
+        if (!csvText.trim()) {
+            throw new Error('DataSources.csv is empty.');
+        }
+
+        // Parse CSV
+        parseCSVText(csvText);
+
+        // Populate the application
         populateDropdownsFromCsv();
         buildTreeFromCsv();
-        showCSVStatus('success', 'Loaded CSV data from browser storage');
-        console.log('Loaded CSV data from localStorage');
-      } else {
-        showCSVStatus('error', 'No CSV data available. Please upload CSV file.');
-        console.log('No CSV data available. Please upload CSV file.');
-      }
-    });
+        setupDropdownListeners();
+
+        // Save a backup in browser storage
+        localStorage.setItem('csvRaw', csvText);
+
+        // Also keep compatibility with the older storage mechanism
+        saveCSVData(csvText);
+
+        showCSVStatus(
+            'success',
+            'DataSources.csv loaded successfully.'
+        );
+
+        console.log(
+            'DataSources.csv loaded successfully from GitHub Pages.'
+        );
+
+    } catch (error) {
+
+        console.error(
+            'Failed to load DataSources.csv:',
+            error
+        );
+
+        // -----------------------------------------
+        // FALLBACK 1: Previously loaded localStorage
+        // -----------------------------------------
+        const savedCSV = localStorage.getItem('csvRaw');
+
+        if (savedCSV) {
+
+            parseCSVText(savedCSV);
+            populateDropdownsFromCsv();
+            buildTreeFromCsv();
+            setupDropdownListeners();
+
+            showCSVStatus(
+                'success',
+                'GitHub CSV unavailable. Using saved CSV data.'
+            );
+
+            console.log(
+                'Using DataSources.csv backup from localStorage.'
+            );
+
+            return;
+        }
+
+        // -----------------------------------------
+        // FALLBACK 2: Older csvData storage
+        // -----------------------------------------
+        const oldSavedCSV = localStorage.getItem('csvData');
+
+        if (oldSavedCSV) {
+
+            parseCSVText(oldSavedCSV);
+            populateDropdownsFromCsv();
+            buildTreeFromCsv();
+            setupDropdownListeners();
+
+            showCSVStatus(
+                'success',
+                'Using previously saved CSV data.'
+            );
+
+            console.log(
+                'Using csvData from localStorage.'
+            );
+
+            return;
+        }
+
+        // -----------------------------------------
+        // Nothing available
+        // -----------------------------------------
+        showCSVStatus(
+            'error',
+            'DataSources.csv could not be loaded. Please upload the CSV manually.'
+        );
+
+        console.error(
+            'No DataSources.csv or saved CSV data available.'
+        );
+    }
 }
 
 /* --- Show CSV Status --- */
@@ -2949,23 +3026,28 @@ function handleLogin(){
 }
 
 function afterLogin(role){
-  $('loginPage').classList.add('hidden'); 
-  $('mainPage').classList.remove('hidden');
-  $('roleInfo').textContent = role; 
-  $('sessionRole').textContent = role === 'Admin' ? 'Admin' : '';
-  $('logoutBtn').classList.remove('hidden');
-  
-  // First try to auto-load CSV from server
-  autoLoadCSV();
-  
-  // Then check localStorage as fallback
-  const raw = localStorage.getItem('csvRaw'); 
-  if(raw){ 
-    parseCSVText(raw); 
-    populateDropdownsFromCsv(); 
-    buildTreeFromCsv(); 
-    renderTrackingTable();
 
+    $('loginPage').classList.add('hidden');
+    $('mainPage').classList.remove('hidden');
+
+    $('roleInfo').textContent = role;
+
+    $('sessionRole').textContent =
+        role === 'Admin' ? 'Admin' : '';
+
+    $('logoutBtn').classList.remove('hidden');
+
+    // CSV is already loaded during application startup
+
+    const raw = localStorage.getItem('csvRaw');
+
+    if (raw) {
+        parseCSVText(raw);
+        populateDropdownsFromCsv();
+        buildTreeFromCsv();
+        setupDropdownListeners();
+        renderTrackingTable();
+    
   const container = $('selectedEventData');
   container.innerHTML = '';
    showTab(0); // Investigations tab  
@@ -3172,32 +3254,46 @@ function skipCsv(){ closeCsvModal(); }
         div.appendChild(btnGroup);
         fileList.appendChild(div);
       });
-    }   
-/* --- Startup --- */
-document.addEventListener('DOMContentLoaded', () => {
-  initializeState();
-  $('loginPage').classList.remove('hidden'); 
-  $('mainPage').classList.add('hidden');
-  
-  try { 
-    const raw = localStorage.getItem('csvRaw'); 
-    if(raw){ 
-      parseCSVText(raw); 
-    } 
-  } catch(e){}
-  
-  if (localStorage.getItem('loggedIn') === 'true') {
-    const role = localStorage.getItem('role') || 'User';
-    afterLogin(role);
-  }
+    }  
+ 
+/* =========================================================
+   APPLICATION STARTUP
+   ========================================================= */
 
-  // Add admin upload button handler
-  const adminUploadBtn = $('adminUploadBtn');
-  if (adminUploadBtn) {
-    adminUploadBtn.onclick = openCsvModal;
-  }
+document.addEventListener('DOMContentLoaded', async () => {
+
+    // Initialize application state
+    initializeState();
+
+    // Show login page initially
+    $('loginPage').classList.remove('hidden');
+    $('mainPage').classList.add('hidden');
+
+    // -----------------------------------------------------
+    // Automatically load DataSources.csv from GitHub
+    // -----------------------------------------------------
+    await autoLoadCSV();
+
+    // -----------------------------------------------------
+    // Restore previous login
+    // -----------------------------------------------------
+    if (localStorage.getItem('loggedIn') === 'true') {
+
+        const role =
+            localStorage.getItem('role') || 'User';
+
+        afterLogin(role);
+    }
+
+    // -----------------------------------------------------
+    // Admin upload button
+    // -----------------------------------------------------
+    const adminUploadBtn = $('adminUploadBtn');
+
+    if (adminUploadBtn) {
+        adminUploadBtn.onclick = openCsvModal;
+    }
 });
-
 async function exportInvestigationsToPDF() {
   const { jsPDF } = window.jspdf;
   if (!jsPDF) {
