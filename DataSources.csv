@@ -1,0 +1,252 @@
+Field,P/F,System,Package,Package-TAG
+Field_1,PF#1,PF#1-SYS-73,AIR COMPRESSOR  PACKAGE,PF#1-Z-211
+Field_1,PF#1,PF#1-SYS-73,Separator - Power Gas Filter  Package,PF#1-Z-3406
+Field_1,PF#1,PF#1-SYS-16,Package -isolation Valves Of Gas Lift  Sys,PF#1-Z-HV-01
+Field_1,PF#1,PF#1-SYS-10,Package -isolation Valves Gay-3405 Oil Manifold,PF#1-Z-HV
+Field_1,PF#1,PF#1-SYS-52,Package - Solar Panel - For Automation System - Bad - A,PF#1-Z-SOP-GS315-A
+Field_1,PF#1,PF#1-SYS-80,Gas Generator Package - Main Power Generation,PF#1-Z-J201
+Field_1,PF#1,PF#1-SYS-47,Emergency Diesel Generator Package - Emergency Power System,PF#1-Z-J202
+Field_1,PF#1,PF#1-SYS-80,DIESEL ENGINE GENRATOR PACKAGE,PF#1-Z-202
+Field_1,PF#1,PF#1-SYS-24,Crude Oil Pump Package C - Crude Oil Pumping System,PF#1-Z-205C
+Field_1,PF#1,PF#1-SYS-24,Crude Oil Pump Package B - Crude Oil Pumping System,PF#1-Z-205B
+Field_1,PF#1,PF#1-SYS-24,Crude Oil Pump Package A - Crude Oil Pumping System,PF#1-Z-205A
+Field_1,PF#1,PF#1-SYS-24,CRUDE OIL PUMP Package,PF#1-Z-205
+Field_1,PF#1,PF#1-SYS-73,AIR COMPRESSOR  PACKAGE,PF#1-Z-211
+Field_2,PF#2,PF#2-SYS-50,Package - Horn,PF#2-ON-Z-HN
+Field_2,PF#3,PF#3-SYS-50,Package - Horn,PF#3Z-HN
+Field_2,PF#4,PF#4-SYS-44,Package - Heat Detector,PF#4-Z-DH
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module H,PF#4-Z-MOD-H
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module G,PF#4-Z-MOD-G
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module F,PF#4-Z-MOD-F
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module E,PF#4-Z-MOD-E
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module D,PF#4-Z-MOD-D
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module C,PF#4-Z-MOD-C
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module B,PF#4-Z-MOD-B
+Field_2,PF#4,PF#4-SYS-30,Package - Gas Lift Module A,PF#4-Z-MOD-A
+Field_2,PF#5,PF#5-SYS-80,Package - Gas Engine Generator  No 2 - Main Power Generation System,PF#5-ON-Z-G2
+Field_2,PF#5,PF#5-SYS-80,Package - Gas Engine Generator  No 1 - Main Power Generation System,PF#5-ON-Z-G1
+Field_2,PF#6,PF#6-SYS-44,Package - Gas Detectors Main Deck - J-10 G L,PF#6-Z-GD
+Field_2,PF#6,PF#6-SYS-44,Package - Gas Detectors Cellar Deck - J-10 G L,PF#6-Z-DG
+Field_2,PF#6,PF#6-SYS-44,Package - Gas Detector Toxic,PF#6-Z-DGT
+Field_2,PF#6,PF#6-SYS-44,Package - Flam Detectors Cellar Deck - J-10 G L,PF#6-Z-DF
+Field_2,PF#6,PF#6-SYS-46,Package - Emergency Manual Shut Down Switch,PF#6-Z-ESD
+Field_2,PF#6,PF#6-SYS-47,Package - Diesel Generator  No 3 - Emegency Power System,PF#6-ON-Z-G3
+Field_2,PF#7,PF#7-SYS-47,Package - Diesel Engine Generator - G-1 C,PF#7-Z-G-1C
+Field_2,PF#7,PF#7-SYS-47,Package - Diesel Engine Generator - G-1 C,PF#7-Z-G-1C
+Field_2,PF#7,PF#7-SYS-43,Package - Deluge Zones,PF#7-Z-DZ
+Field_2,PF#7,PF#7-SYS-46,Package - Deluge Valve Zone Stations,PF#7-Z-DVZS
+Field_2,PF#7,PF#7-SYS-24,Package - Crude Oil Pump No 6 - Crude Oil Pumping System,PF#7-Z-P1E
+Field_2,PF#7,PF#7-SYS-24,Package - Crude Oil Pump No 5 - Crude Oil Pumping System,PF#7-Z-P1D
+Field_2,PF#7,PF#7-SYS-24,Package - Crude Oil Pump No 2 - Crude Oil Pumping System,PF#7-Z-P1B
+Field_2,PF#7,PF#7-SYS-24,Package - Crude Oil Pump No 1 - Crude Oil Pumping System,PF#7-Z-P1A
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod H,PF#7-Z-401H-5
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod G,PF#7-Z-401G-5
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod F,PF#7-Z-401F-5
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod E,PF#7-Z-401E-5
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod D,PF#7-Z-401D-5
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod C,PF#7-Z-401C-5
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod B,PF#7-Z-401B-5
+Field_2,PF#7,PF#7-SYS-94,Package - Control System - Mod A,PF#7-Z-401A-5
+Field_2,PF#7,PF#7-SYS-90,Package - Control Room Ac & Pressurisation,PF#7-Z-9001
+Field_2,PF#7,PF#7-SYS-90,Package - Air Conditioning And Ventilation No.2,PF#7-Z-HVAC-2
+Field_2,PF#7,PF#7-SYS-90,Package - Air Conditioning And Ventilation No.1,PF#7-Z-HVAC-1
+Field_2,PF#7,PF#7-SYS-90,PACKAGE - AIR CONDITION PACKAGE,PF#7-Z-90-001
+Field_2,PF#7,PF#7-SYS-43,Deluge Zones,PF#7-Z-DZ
+Field_3,PF#8,PF#8-SYS-84,package junction box,PF#8Z-JB
+Field_3,PF#8,PF#8-SYS-50,Package - Public Address,PF#8Z-PAD
+Field_3,PF#8,PF#8-SYS-50,Package - Public Address,PF#8Z-PAD
+Field_3,PF#8,PF#8-SYS-10,Package - Production / Test Manifold M-1 D,PF#8Z-GAY-0100
+Field_3,PF#8,PF#8-SYS-16,Package - Isolation Valves For Gas Lift To Wellhead,PF#8-Z-HV-1
+Field_3,PF#8,PF#8-SYS-16,Package - Isolation Valves For Gas Lift,PF#8-HV-1
+Field_3,PF#8,PF#8-SYS-80,Package - Gas Engine Generator,PF#8Z-ZAN-0560
+Field_3,PF#8,PF#8-SYS-44,Package - Gas Detector Toxic,PF#8Z-DGT
+Field_3,PF#8,PF#8-SYS-24,Package - Crude Oil Pump P-3,PF#8Z-P-021
+Field_3,PF#8,PF#8-SYS-24,Package - Crude Oil Pump P-2,PF#8Z-P-011
+Field_3,PF#8,PF#8-SYS-24,Package - Crude Oil Pump P-1,PF#8Z-P-010
+Field_3,PF#8,PF#8-SYS-90,Package - Control Room Central Air Condition M -1 T,PF#8Z-HVAC
+Field_3,PF#8,PF#8-SYS-61,Package - Air Compressors,PF#8Z-C00-C550
+Field_3,PF#8,PF#8-SYS-10,Package -  Isolation Valves,PF#8-HV
+Field_3,PF#8,PF#8-SYS-47,Diesel Generator Package - Emergency Power Generation System,PF#8Z-J202
+Field_4,PF#9,PF#9-SYS-62,Start / Fuel Gas Package - Start / Fuel Gas System,PF#9Z-207
+Field_4,PF#9,PF#9-SYS-10,Package -isolation Valve,PF#9-Z-HV
+Field_4,PF#9,PF#9-SYS-61,Package -gas Supply To Cac Panel,PF#9-Z-400
+Field_4,PF#9,PF#9-SYS-50,Package - Public Address,PF#9Z-PAD
+Field_4,PF#9,PF#9-SYS-50,Package - Public Address,PF#9Z-PAD
+Field_4,PF#9,PF#9-SYS-16,Package - Isolation Valves For Gas Lift To Wellheads,PF#9-Z-HV-1
+Field_4,PF#9,PF#9-SYS-16,Package - Isolation Valves For Gas Lift To Wellheads,PF#9-Z-HV-1
+Field_4,PF#9,PF#9-SYS-16,Package - Isolation Valves For Gas Lift,PF#9-Z-HV
+Field_4,PF#9,PF#9-SYS-16,Package - Isolation Valves For Gas Lift,PF#9-Z-HV-1
+Field_4,PF#9,PF#9-SYS-14,Package - Isolation Valves,PF#9-Z-MV-01
+Field_4,PF#9,PF#9-SYS-10,Package - Isolation Valves,PF#9-Z-HV
+Field_4,PF#9,PF#9-SYS-61,Package - Instrument & Utility Air System,PF#9Z-203
+Field_4,PF#9,PF#9-SYS-50,PACKAGE - HORN,PF#9Z-HN
+Field_4,PF#9,PF#9-SYS-50,Package - Horn,PF#9Z-HN
+Field_4,PF#9,PF#9-SYS-30,Package - Gas Lift Compression Turbine Mod - B,PF#9Z-K201-B
+Field_4,PF#9,PF#9-SYS-30,Package - Gas Lift Compression Turbine Mod - A,PF#9Z-K201-A
+Field_4,PF#9,PF#9-SYS-80,Package - Gas Engine Generator Package D,PF#9Z-202D
+Field_4,PF#9,PF#9-SYS-80,Package - Gas Engine Generator Package C,PF#9Z-202C
+Field_4,PF#9,PF#9-SYS-80,Package - Gas Engine Generator Package B,PF#9Z-202B
+Field_4,PF#9,PF#9-SYS-80,Package - Gas Engine Generator Package A,PF#9Z-202A
+Field_4,PF#9,PF#9-SYS-47,Package - Emergency Diesel Generator -  Emergency Power System,PF#9Z-G401D
+Field_4,PF#9,PF#9-SYS-43,Package - Deluge Zones,PF#9Z-DZ
+Field_4,PF#9,PF#9-SYS-43,Package - Deluge Zones,PF#9Z-DZ
+Field_4,PF#9,PF#9-SYS-90,Package - Control Room Central Air Condition PH5,PF#9Z-HVAC
+Field_4,PF#9,PF#9-SYS-11,Package -  Isolation Valves,PF#9Z-HV
+Field_4,PF#9,PF#9-SYS-80,Gas Generator Package 3 - Main Power Generation System,PF#9Z-G401C
+Field_4,PF#9,PF#9-SYS-80,Gas Generator Package 2 - Main Power Generation System,PF#9Z-G401B
+Field_4,PF#9,PF#9-SYS-80,Gas Generator Package 1 - Main Power Generation System,PF#9Z-G401A
+Field_5,PF#10,PF#10-SYS-50,Package - Public Address,PF#10-Z-PAD
+Field_5,PF#10,PF#10-SYS-50,Package - Public Address,PF#10-Z-PAD
+Field_5,PF#10,PF#10-SYS-50,Package - Public Address,PF#10Z-PAD
+Field_5,PF#10,PF#10-SYS-24,Package - Pipeline Pump C,PF#10-Z-P-205C
+Field_5,PF#10,PF#10-SYS-24,Package - Pipeline Pump B,PF#10-Z-P-205B
+Field_5,PF#10,PF#10-SYS-24,Package - Pipeline Pump A,PF#10-Z-P-205A
+Field_5,PF#10,PF#10-SYS-16,Package - Isolation Valves For Gas Left,PF#10-Z-HV-1
+Field_5,PF#10,PF#10-SYS-61,Package - Instrument Air Package,PF#10-Z-209
+Field_5,PF#10,PF#10-SYS-90,Package - Control Room Central Air Condition M55P,PF#10-Z-HVAC
+Field_5,PF#10,PF#10-SYS-10,Package -  Isolation Valves System 10,PF#10-Z-HV-10
+Field_5,PF#10,PF#10-SYS-80,Gas Generator Package - Main Power Generation,PF#10-Z-J201
+Field_5,PF#10,PF#10-SYS-47,Diesel Generator Package - Emergency Power Generation,PF#10-Z-J202
+Field_6,PF#11,PF#11-SYS-50,Package - Public Address,PF#11Z-PAD
+Field_7,PF#12,PF#12-SYS-31,Package - Glycol Inlet Filter/ Coalescer,PF#12Z-611
+Field_7,PF#12,PF#12-SYS-32,Package - Gas Turbine - Compressor A,PF#12Z-630A
+Field_7,PF#12,PF#12-SYS-32,Package - Gas Turbine - Compresor  B,PF#12Z-630B
+Field_7,PF#12,PF#12-SYS-80,Package - Gas Fueled Engine And Electrical Generator,PF#12Z-G-609
+Field_7,PF#12,PF#12-SYS-80,Package - Gas Engine Electric Generator 1,PF#12-Z-7710
+Field_7,PF#12,PF#12-SYS-31,Package - Gas Dehydration Slug Catcher (v-7110),PF#12-Z-7110
+Field_7,PF#12,PF#12-SYS-31,Package - Gas Dehydration Slug Catcher (v-7080),PF#12-Z-7080
+Field_7,PF#12,PF#12-SYS-30,Package - Gas Compressor ( C-30 ),PF#12-Z-30
+Field_7,PF#12,PF#12-SYS-30,Package - Gas Compressor ( C-20 ),PF#12-Z-20
+Field_7,PF#12,PF#12-SYS-30,Package - Gas Compressor ( C-10 ),PF#12-Z-10
+Field_7,PF#12,PF#12-SYS-35,Package - Flame Ignitorflare System,PF#12-Z-7430
+Field_7,PF#12,PF#12-SYS-47,Package - Emergency Generator Diesel Fueled,PF#12-Z-G402
+Field_7,PF#12,PF#12-SYS-47,Package - Diesel Driven Generator,PF#12-Z-7700
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump Package No 8 - Crude Oil Pump System,PF#12-Z-7370
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump Package No 7 - Crude Oil Pump System,PF#12-Z-7360
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump Package No 6 - Crude Oil Pump System,PF#12-Z-7350
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump Package No 5 - Crude Oil Pump System,PF#12-Z-7340
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump Package No 4 - Crude Oil Pump System,PF#12-Z-7330
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump 105 D - For Separator V-105D,PF#12-Z-P-105D
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump 105 C - For Separator V-105C,PF#12-Z-P-105C
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump 105 B - For Separator V-105B,PF#12-Z-P-105B
+Field_7,PF#12,PF#12-SYS-24,Package - Crude Oil Pump 105 A - For Separator V-105A,PF#12-Z-P-105A
+Field_7,PF#12,PF#12-SYS-16,Package -  Isolation Valve Gas Lift To Wealhead,PF#12-Z-HV-1
+Field_7,PF#12,PF#12-SYS-16,Package -  Isolation Valve Gas Lift To Wealhead,PF#12-Z-HV-1
+Field_7,PF#12,PF#12-SYS-61,Air Compressor Package - Instrument & Utility Air System,PF#12-Z-7520
+Field_7,PF#12,PF#12-SYS-61,Air Compressor Package - Instrument & Utility Air System,PF#12-Z-7530
+Field_8,PF#13,PF#13-SYS-63,V-73-01 Low Pressure Vent-Drain Drum,PF#13-V-73-01
+Field_8,PF#13,PF#13-SYS-84,UPS2 AND BATTERIES,PF#13-UPS2
+Field_8,PF#13,PF#13-SYS-84,UPS1 AND BATTERIES,PF#13-UPS1
+Field_8,PF#13,PF#13-SYS-84,POWER TRANSFORMER FOR WELL#6,PF#13-TRANSFORMER-W06
+Field_8,PF#13,PF#13-SYS-84,POWER TRANSFORMER FOR WELL#5,PF#13-TRANSFORMER-W05
+Field_8,PF#13,PF#13-SYS-84,POWER TRANSFORMER FOR WELL#4,PF#13-TRANSFORMER-W04
+Field_8,PF#13,PF#13-SYS-84,POWER TRANSFORMER FOR WELL#3,PF#13-TRANSFORMER-W03
+Field_8,PF#13,PF#13-SYS-84,POWER TRANSFORMER FOR WELL#2,PF#13-TRANSFORMER-W02
+Field_8,PF#13,PF#13-SYS-84,POWER TRANSFORMER FOR WELL#1,PF#13-TRANSFORMER-W01
+Field_8,PF#13,PF#13-SYS-44,PACKAGE- SOUNDER - GAS LIFT  PLATFORM,PF#13-Z-44-006
+Field_8,PF#13,PF#13-SYS-44,PACKAGE- SOUNDER - DRILLING PLATFORM,PF#13Z-44-006
+Field_8,PF#13,PF#13-SYS-44,PACKAGE- SOUNDER - BOOSTER  PLATFORM,PF#13Z-44-006
+Field_8,PF#13,PF#13-SYS-44,PACKAGE- SOUNDER -  PRODUCTION PLATFORM,PF#13Z-44-006
+Field_8,PF#13,PF#13-SYS-61,Package - Utility And Instrument Air,PF#13-Z-202
+Field_8,PF#13,PF#13-SYS-61,Package - Rotary Air Compressor - 010,PF#13Z-A010
+Field_8,PF#13,PF#13-SYS-16,Package - Isolation Valves For Gas To Wells,PF#13-Z-HV-1
+Field_8,PF#13,PF#13-SYS-31,Package - Inlet Slug Catcher,PF#13-Z-211
+Field_8,PF#13,PF#13-SYS-52,Package - Industrial Computer - For Mtu,PF#13Z-1000
+Field_8,PF#13,PF#13-SYS-31,Package - Glycol Regeneration,PF#13-Z-201
+Field_8,PF#13,PF#13-SYS-62,Package - Fuel Gas Scrubber,PF#13-Z-210
+Field_8,PF#13,PF#13-SYS-47,Package - Emergency Generator Diesel Fuelled,PF#13Z-G-040
+Field_8,PF#13,PF#13-SYS-24,Package - Crude Oil Shipping Pump 050,PF#13Z-P050
+Field_8,PF#13,PF#13-SYS-24,Package - Crude Oil Shipping Pump 020,PF#13Z-P020
+Field_8,PF#13,PF#13-SYS-24,Package - Crude Oil Shipping Pump 010,PF#13Z-P010
+Field_8,PF#13,PF#13-SYS-90,Package - Battery Room & Emergency Generator Pressurization,PF#13Z-9002
+Field_8,PF#13,PF#13-SYS-63,LOW LOW PRESSURE IN DAIN PUMP DISCHARGE LINE (P-73-01B),PF#13-PSLL-DP-1B
+Field_8,PF#13,PF#13-SYS-63,LOW LOW PRESSURE IN DAIN PUMP DISCHARGE LINE (P-73-01A),PF#13-PSLL-DP-1A
+Field_8,PF#13,PF#13-SYS-84,LIGHTING SYSTEM,PF#13-LIGHTING SYSTEM
+Field_8,PF#13,PF#13-SYS-63,level Switch HIGH HIGH / LOW LOW IN IN VENT/DRAIN DRUM,PF#13-LSHH-LSLL-VDD-01
+Field_8,PF#13,PF#13-SYS-63,level Switch HIGH HIGH / LOW LOW IN IN VENT/DRAIN DRUM,PF#13-LSHH-LSLL-VDD-02
+Field_8,PF#13,PF#13-SYS-63,HIGH HIGH PRESSURE IN DRAIN PUMP DISCHARGE LINE (P-73-01A),PF#13-PSHH-DP-1A
+Field_8,PF#13,PF#13-SYS-63,HIGH HIGH PRESSURE IN DAIN PUMP DISCHARGE LINE (P-73-01B),PF#13-PSHH-DP-1B
+Field_8,PF#13,PF#13-SYS-15,HIGH HIGH / LOW LOW PRESSURE IN WATER INJECTION PIPELINE,PF#13-PSHH-WI-01
+Field_8,PF#13,PF#13-SYS-46,FUSIBLE LOOP SYSTEM,PF#13-FPPS
+Field_8,PF#13,PF#13-SYS-84,DISTRIBUTION PANEL,PF#13-DISTRIBUTION PANEL
+Field_8,PF#13,PF#13-SYS-13,Control Panel - Well Safety Control Panel - C A C,PF#13-CP-CAC1
+Field_8,PF#13,PF#13-SYS-63,CAVITY PUMP PANEL,PF#13-CAVITY PUMP PANEL
+Field_9,PF#14,PF#14-SYS-86,TNKF cathodic protection package,PF#14-Z-1
+Field_9,PF#14,PF#14-SYS-86,process cathodic protection package,PF#14-Z-1
+Field_9,PF#14,PF#14-SYS-49,Package- Telecom Towers,PF#14-Z-TTW
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 404,PF#14-TG404
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 403,PF#14-TG403
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 401,PF#14-TG401
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 303,PF#14-TG303
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 302,PF#14-TG302
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 301,PF#14-TG301
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 206,PF#14-TG206
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 205,PF#14-TG205
+Field_9,PF#14,PF#14-SYS-80,Package- Power Generation Module 204,PF#14-TG204
+Field_9,PF#14,PF#14-SYS-15,Package -isolation Valves,PF#14Z-15-HV
+Field_9,PF#14,PF#14-SYS-84,Package- Electrical  Towers,PF#14-Z-ETW
+Field_9,PF#14,PF#14-SYS-52,Package - Turbines Pumps Control System,PF#14Z-PLC
+Field_9,PF#14,PF#14-SYS-28,Package - Tanks,PF#14-Z-TNK
+Field_9,PF#14,PF#14-SYS-28,Package - Sumps,PF#14-Z-SUMP
+Field_9,PF#14,PF#14-SYS-28,Package - Produced Water Degassing Vessels,PF#14-Z-PWD
+Field_9,PF#14,PF#14-SYS-61,Package - Process Area Air Compressor - 1,PF#14-Z-C1400
+Field_9,PF#14,PF#14-SYS-80,Package - Power Supply,PF#14Z-E
+Field_9,PF#14,PF#14-SYS-76,Package - Methanol Pipework,PF#14-Z-PIPE
+Field_9,PF#14,PF#14-SYS-67,Package - Main Plant Filters - M Waterflood,PF#14Z-F2
+Field_9,PF#14,PF#14-SYS-67,Package - Main Plant Filters - July Waterflood,PF#14Z-F2
+Field_9,PF#14,PF#14-SYS-61,Package - Instrument Air Package,PF#14Z-01
+Field_9,PF#14,PF#14-SYS-50,Package - Horn,PF#14-HN
+Field_9,PF#14,PF#14-SYS-50,Package - Horn,PF#14-Z-HN
+Field_9,PF#14,PF#14-SYS-67,Package - Green Sand Filter,PF#14-Z-F-GS
+Field_9,PF#14,PF#14-SYS-28,Package - Gas Saturation Vessels 6 Units,PF#14-Z-GSV
+Field_9,PF#14,PF#14-SYS-62,Package - Gas Coolers,PF#14-Z-COOL
+Field_9,PF#14,PF#14-SYS-46,Package - Fusible Loop Of Turbines,PF#14Z-DHP
+Field_9,PF#14,PF#14-SYS-61,Package - Free Water Knockout Area Air Compressor -1 & 2,PF#14-Z-C4000
+Field_9,PF#14,PF#14-SYS-43,Package - Foam Station -in Fwko Area,PF#14-Z-SFH
+Field_9,PF#14,PF#14-SYS-44,Package - Fir And Gas Of Turbines,PF#14Z-FG
+Field_9,PF#14,PF#14-SYS-67,"Package - Feed Pump - Building  Ro - Unit - 7, 8, 9",PF#14-Z-FP-O
+Field_9,PF#14,PF#14-SYS-67,Package - Feed Pump - Building  Ro - Unit - 7 - 8 -  9,PF#14-Z-FP-O
+Field_9,PF#14,PF#14-SYS-67,"Package - Feed Pump - Building  Ro - Unit - 4, 5, 6",PF#14-Z-FP-N
+Field_9,PF#14,PF#14-SYS-67,Package - Feed Pump - Building  Ro - Unit - 4 - 5 -6,PF#14-Z-FP-N
+Field_9,PF#14,PF#14-SYS-47,Package - Emergency Diesel Generator Package`,PF#14Z-GD-G1
+Field_9,PF#14,PF#14-SYS-66,Package - Emergancy Power Diesel Generator For enviroment burner,PF#14-Z-BEDG
+Field_9,PF#14,PF#14-SYS-47,Package - Emergancy Power Diesel Generator,PF#14F_WNG-Z-DG
+Field_9,PF#14,PF#14-SYS-47,Package - Emergancy Power Diesel Generator,PF#14Z-DG
+Field_9,PF#14,PF#14-SYS-67,Package - Clearwell Package,PF#14Z-CW
+Field_9,PF#14,PF#14-SYS-93,Package - Central Air Condition Unit,PF#14Z-1
+Field_9,PF#14,PF#14-SYS-28,Package - Ballast Water Filters 6 Units,PF#14-Z-BWF
+Field_9,PF#14,PF#14-SYS-28,Package - Ballast Surface Wash Pumps,PF#14-Z-BSWP
+Field_9,PF#14,PF#14-SYS-61,Package - Air Compressors,PF#14Z-C1
+Field_9,PF#14,PF#14-SYS-61,Package - Air Compressor,PF#14-Z-C00-550
+Field_9,PF#14,PF#14-SYS-61,Package - Air Compressor,PF#14Z-C1
+Field_9,PF#14,PF#14-SYS-66,Old Sewage Plant,PF#14-Z-SWG-1
+Field_9,PF#14,PF#14-SYS-66,New Sewage Plant,PF#14-Z-SWG-2
+Field_9,PF#14,PF#14-SYS-61,Instrument Air Compressor Package - Instrument & Utility Air System,PF#14-C6101
+Field_9,PF#14,PF#14-SYS-86,free water cathodic protection package,PF#14-Z-3
+Field_9,PF#14,PF#14-SYS-86,ballast cathodic protection package,PF#14-Z-2
+Field_10,PF#15,PF#15-SYS-86,RUSH CATHODIC PROTECTION SYSTEM,PF#15-Z-1
+Field_10,PF#15,PF#15-SYS-86,PACKAGE-BATTERIES FOR SOLAR SYSTEM,PF#15-Z-86-02
+Field_10,PF#15,PF#15-SYS-69,Package- Pipe System 69,PF#15-Z-69
+Field_10,PF#15,PF#15-SYS-44,Package -FUSIBLE BULB HEAT DETECTORS PACKAGE,PF#15-Z-44-01
+Field_10,PF#15,PF#15-SYS-63,Package -DRAINS PIPEWORKS FROM GAS INJECTION PIPES ,PF#15-Z-63-05
+Field_10,PF#15,PF#15-SYS-63,Package -DRAINS PIPEWORKS FROM GAS INJECTION PIPES,PF#15-Z-63-05
+Field_10,PF#15,PF#15-SYS-50,Package - Public Address,PF#15-Z-PAD
+Field_10,PF#15,PF#15-SYS-80,Gas Generator Package - Main Power  Generation,PF#15-Z-5710
+Field_10,PF#15,PF#15-SYS-80,Gas Generator Package - Main Power  Generation,PF#15-Z-5720
+Field_10,PF#15,PF#15-SYS-47,Diesel Generator Package - Main Power  Generation,PF#15-Z-5700
+Field_10,PF#15,PF#15-SYS-24,Crude Oil Pump Package No 4 - Crude Oil Pump System,PF#15-Z-P5330
+Field_10,PF#15,PF#15-SYS-24,Crude Oil Pump Package No 3 - Crude Oil Pump System,PF#15-Z-P5320
+Field_11,PF#16,PF#16-SYS-65,Package - Sea Water Media Filter Package,PF#16Z-F403
+Field_11,PF#16,PF#16-SYS-10,Package - Isolation Valves,PF#16-Z-HV
+Field_11,PF#16,PF#16-SYS-16,Package - Isolation Valve System 16,PF#16-Z-16-HV
+Field_12,PF#17,PF#17-SYS-32,PACKAGE;SALES GAS COMRESSOR TRANS GULF PHI #B.,PF#17-33-K-1B
+Field_12,PF#17,PF#17-SYS-32,PACKAGE;SALES GAS COMRESSOR TRANS GULF PHI #B.,PF#17-33-K-1B
+Field_12,PF#17,PF#17-SYS-32,PACKAGE;SALES GAS COMRESSOR  FOR TRANS GULF #A.,PF#17-33-K-1A
+Field_12,PF#17,PF#17-SYS-30,PACKAGE;MAIN TURBINE COMPRESSOR 1C1C.,PF#17-1A-C1C
+Field_12,PF#17,PF#17-SYS-30,PACKAGE;MAIN TUEBINE COMPRESSOR IC1B,PF#17-1A-C1B
+Field_12,PF#17,PF#17-SYS-62,PACKAGE; START UP FUEL GAS COMPRESSOR 1-C3,PF#17-1C3
+Field_12,PF#17,PF#17-SYS-30,PACKAGE; MAIN TURBINE COMRESSOR  IC1A.,PF#17-1A-C1A
+Field_12,PF#17,PF#17-SYS-47,PACKAGE; ENGINES & GENERATORS #A FOR TRANS GULF.,PF#175Z-1A
+Field_12,PF#17,PF#17-SYS-47,PACKAGE; ENGINE & GENERATOR OF A101. TRAIN # B,PF#17Z-1B
+Field_12,PF#17,PF#17-SYS-47,PACKAGE; ENGINE & GENERATOR OF A101. TRAIN # A,PF#17Z-1A
+Field_12,PF#17,PF#17-SYS-32,"PACKAGE, SALES GAS COMPRESSOR",PF#170-X-4
